@@ -18,7 +18,7 @@ class Solution (
     ){
 
 	def evaluate(problem:Problem):EvaluatedSolution = 
-	  problem.evaluateSolution(this)
+	  problem.eval(this)
 }
 
 object Solution{

@@ -4,6 +4,7 @@ import org.scalatest.Assertions
 import org.junit.Test
 import it.polimi.hyperh.problem.Problem
 import solution.Solution
+import solution.EvaluatedSolution
 
 class TestProblem extends Assertions {
 
@@ -13,10 +14,12 @@ class TestProblem extends Assertions {
 	
 	val optsolution = Solution("./resources/sol_ta001")
 	val solution = optsolution.getOrElse(throw new RuntimeException("ParserError"))   
+	
+	val optevalsolution = EvaluatedSolution("./resources/sol_ta001")
+	val evalsolution = optevalsolution.getOrElse(throw new RuntimeException("ParserError"))   
 		
-	//val solution = new Solution(List(2, 16, 14, 7, 8, 5, 4, 13, 15, 6, 10, 12, 17, 18, 0, 3, 1, 9, 19, 11).toArray)   
 	val evalSolution = solution.evaluate(problem)
-	assert(evalSolution.value===1278)
+	assert(evalSolution.value===evalsolution.value)
    }
      
 @Test def calculateSmallSolutionTranspose() {
