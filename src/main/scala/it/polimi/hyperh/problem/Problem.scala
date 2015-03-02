@@ -43,7 +43,6 @@ class Problem  (
 	
 	def eval(solution: Solution):EvaluatedSolution = {
 	  val jobs = solution.permutation
-	  val jobEndTimes = ofDim(m)
 	  def encapsulate(value:Value) = new EvaluatedSolution(value,jobs)
 	  def initTimes(values:Array[Int]):Array[Int] = {
 	    def iterInitPerm(index:List[Int], acc:List[Int]):List[Int] = index match {
@@ -56,16 +55,21 @@ class Problem  (
 	    case List() => List()
 	    case x::xs 	=> x+xs.foldRight(0)(_+_)::sum(xs) 
 	  }
-	  def apply(values:Array[Int],machine:Int,index:Int):Int = 
+	  var jobEndTimes = initTimes(delays(0))
+	  def apply(machine:Int,index:Int):Unit = 
 			  if(index>0)
-			    Math.max(values(index),values(index-1)+delays(machine)(jobs(index-1)))+delays(machine)(jobs(index))
+			    jobEndTimes(index)=Math.max(jobEndTimes(index),jobEndTimes(index-1))+delays(machine)(jobs(index))
 			  else
-			    values(index)+delays(machine)(jobs(index))
-	  def iterEval(machine:Int,values:Array[Int]):Value = {
-	  	  if (machine == np) values(values.length-1)
-	  	  else 	iterEval(machine+1, Array.tabulate(values.length)(i=>apply(values,machine+1,i)))
+			    jobEndTimes(index)=jobEndTimes(index)+delays(machine)(jobs(index))
+	  def iterEval(machine:Int):Value = {
+		//println(jobEndTimes.mkString(" "))
+	  	  if (machine == np) jobEndTimes(jobEndTimes.length-1)
+	  	  else 	{
+	  	    Array.tabulate(jobEndTimes.length)(i=>apply(machine+1,i))
+	  	    iterEval(machine+1)
+	  	  }
 	  }
-	  encapsulate(iterEval(0, initTimes(delays(0))))
+	  encapsulate(iterEval(0))
 	}
 }
 

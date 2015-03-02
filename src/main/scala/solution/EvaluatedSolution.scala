@@ -6,7 +6,7 @@ import util.EvaluatedSolutionParser
 import scala.io.Source
 
 
-class EvaluatedSolution 
+case class EvaluatedSolution 
 (
     val value:Int,
     solution: Permutation 
