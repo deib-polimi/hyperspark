@@ -3,29 +3,33 @@ package it.polimi.hyperh
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import Types._
+import it.polimi.hyperh.problem.Problem
+import solution.Solution
 
 /**
  * @author ${user.name}
  */
 object App {
   
-  type Solution = List[Int]
   
-  def hyperMap(value: Int, position: Int, problem: Problem): List[Int] = 1 to problem.n toList
+  def hyperMap(value: Int, position: Int, problem: Problem): Solution = new Solution(1 to problem.jobs toArray)
   
-  def hyperReduce(sol1: Solution, sol2: Solution,  problem: Problem): Solution = (sol1, sol2).zipped.map(Math.max(_,_))
+  def hyperReduce(sol1: Solution, sol2: Solution,  problem: Problem): Solution = new Solution ((sol1.permutation, sol2.permutation).zipped.map(Math.max(_,_)))
   
   def main(args : Array[String]) {
-    val conf = new SparkConf().setAppName("HyperH").setMaster("local[4]")
-    val sc = new SparkContext(conf)
+    //val conf = new SparkConf().setAppName("HyperH").setMaster("local[4]")
+    //val sc = new SparkContext(conf)
     
-    val n = if (args.length > 0) args(0).toInt else 2
-    val initial = sc.parallelize(1 until n,n).cache
+   // val m = if (args.length > 0) args(0).toInt else 3
+   // val initial = sc.parallelize(1 until m,m).cache
     
-    val problem = new Problem(n,x=>0)
-    val solution = loop(initial,problem)
-    
-    println(solution)
+//    val problem = new Problem(3,4)
+//    
+//    val sol = new Solution(List(2,3,1).toArray)
+//    
+    //val solution = loop(initial,problem)
+    //println(solution)
     
   }
   
