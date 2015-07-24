@@ -13,7 +13,7 @@ import solution.Solution
 object App {
   
   
-  def hyperMap(value: Int, position: Int, problem: Problem): Solution = new Solution(1 to problem.jobs toArray)
+  def hyperMap(value: Int, position: Int, problem: Problem): Solution = new Solution(1 to problem.numOfJobs toArray)
   
   def hyperReduce(sol1: Solution, sol2: Solution,  problem: Problem): Solution = new Solution ((sol1.permutation, sol2.permutation).zipped.map(Math.max(_,_)))
   

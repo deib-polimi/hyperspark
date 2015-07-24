@@ -2,20 +2,17 @@ package it.polimi.hyperh
 import solution._
 import it.polimi.hyperh.Types._
 
-object test {
+object test {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(110); 
 
-	val numOfJobs = 5                         //> numOfJobs  : Int = 5
-	val numOfMachines = 5                     //> numOfMachines  : Int = 5
+	val numOfJobs = 5;System.out.println("""numOfJobs  : Int = """ + $show(numOfJobs ));$skip(23); 
+	val numOfMachines = 5;System.out.println("""numOfMachines  : Int = """ + $show(numOfMachines ));$skip(119); 
 	
-	def jobTimesMatrix = Array(Array(5,9,8,10,1),Array(9,3,10,1,8),Array(9,4,5,8,6),Array(4,8,8,7,2),Array(3,5,6,3,7))
-                                                  //> jobTimesMatrix: => Array[Array[Int]]
+	def jobTimesMatrix = Array(Array(5,9,8,10,1),Array(9,3,10,1,8),Array(9,4,5,8,6),Array(4,8,8,7,2),Array(3,5,6,3,7));System.out.println("""jobTimesMatrix: => Array[Array[Int]]""");$skip(40); 
 	
-  val jobs = (1 to numOfJobs) toArray             //> jobs  : Array[Int] = Array(1, 2, 3, 4, 5)
+  val jobs = (1 to numOfJobs) toArray;System.out.println("""jobs  : Array[Int] = """ + $show(jobs ));$skip(178); 
   
 	//associate sequentially job key to array of times present in matrix
-  def associateJobToArray(jobs: Array[Int], jobTimesMatrix: Array[Array[Int]]) = jobs zip jobTimesMatrix
-                                                  //> associateJobToArray: (jobs: Array[Int], jobTimesMatrix: Array[Array[Int]])Ar
-                                                  //| ray[(Int, Array[Int])]
+  def associateJobToArray(jobs: Array[Int], jobTimesMatrix: Array[Array[Int]]) = jobs zip jobTimesMatrix;System.out.println("""associateJobToArray: (jobs: Array[Int], jobTimesMatrix: Array[Array[Int]])Array[(Int, Array[Int])]""");$skip(761); 
   //associateJobToArray(jobs, jobTimesMatrix)
 
 	//calculate end (completion) times for all jobs on each machine
@@ -35,49 +32,38 @@ object test {
     for (i <- 0 until jobTimesMatrix.size)
       resultingMatrix(i) = calculateInitEndTimes(jobTimesMatrix(i))
     resultingMatrix
-  }                                               //> jobsInitialTimes: ()Array[Array[Int]]
+  };System.out.println("""jobsInitialTimes: ()Array[Array[Int]]""");$skip(298); 
   //GLOBAL VARIABLES, //calculated only during initialization of the algorithm
   //global matrix of end times
-  val initEndTimesMatrix = jobsInitialTimes()     // Array(Array(5, 14, 22, 32, 33), Array(9, 12, 22, 23, 31), Array(9, 13, 18, 26, 32), Array(4, 12, 20, 27, 29), Array(3, 8, 14, 17, 24))
-                                                  //> initEndTimesMatrix  : Array[Array[Int]] = Array(Array(5, 14, 22, 32, 33), A
-                                                  //| rray(9, 12, 22, 23, 31), Array(9, 13, 18, 26, 32), Array(4, 12, 20, 27, 29)
-                                                  //| , Array(3, 8, 14, 17, 24))
+  val initEndTimesMatrix = jobsInitialTimes();System.out.println("""initEndTimesMatrix  : Array[Array[Int]] = """ + $show(initEndTimesMatrix ));$skip(276);      // Array(Array(5, 14, 22, 32, 33), Array(9, 12, 22, 23, 31), Array(9, 13, 18, 26, 32), Array(4, 12, 20, 27, 29), Array(3, 8, 14, 17, 24))
   //associate job to an array of its init end times
-  val jobTimesPairs = associateJobToArray(jobs, initEndTimesMatrix)//Array((1,Array(5, 14, 22, 32, 33)), (2,Array(9, 12, 22, 23, 31)), (3,Array(9, 13, 18, 26, 32)), (4,Array(4, 12, 20, 27, 29)), (5,Array(3, 8, 14, 17, 24)))
-                                                  //> jobTimesPairs  : Array[(Int, Array[Int])] = Array((1,Array(5, 14, 22, 32, 3
-                                                  //| 3)), (2,Array(9, 12, 22, 23, 31)), (3,Array(9, 13, 18, 26, 32)), (4,Array(4
-                                                  //| , 12, 20, 27, 29)), (5,Array(3, 8, 14, 17, 24)))
+  val jobTimesPairs = associateJobToArray(jobs, initEndTimesMatrix);System.out.println("""jobTimesPairs  : Array[(Int, Array[Int])] = """ + $show(jobTimesPairs ));$skip(201); //Array((1,Array(5, 14, 22, 32, 33)), (2,Array(9, 12, 22, 23, 31)), (3,Array(9, 13, 18, 26, 32)), (4,Array(4, 12, 20, 27, 29)), (5,Array(3, 8, 14, 17, 24)))
   
   //extracts end times from initEndTimesMatrix, e.g. Array(33, 31, 32, 29, 24)
   def extractEndTimes(matrix: Array[Array[Int]]): Array[Int] = {
     matrix map (array => array(array.length - 1))
-  }                                               //> extractEndTimes: (matrix: Array[Array[Int]])Array[Int]
+  };System.out.println("""extractEndTimes: (matrix: Array[Array[Int]])Array[Int]""");$skip(267); 
   //extractEndTimes(initEndTimesMatrix)           //Array(33, 31, 32, 29, 24)
   //associates job key to value of its end time.e.g. Array((1,33), (2,31), (3,32), (4,29), (5,24))
   def createJobValuePairs(jobs: Array[Int], times: Array[Int]) = {
     jobs zip times
-  }                                               //> createJobValuePairs: (jobs: Array[Int], times: Array[Int])Array[(Int, Int)]
-                                                  //| 
+  };System.out.println("""createJobValuePairs: (jobs: Array[Int], times: Array[Int])Array[(Int, Int)]""");$skip(130); 
   //associate job to value of its last init end time
-  val pairs = createJobValuePairs(jobs, extractEndTimes(initEndTimesMatrix))
-                                                  //> pairs  : Array[(Int, Int)] = Array((1,33), (2,31), (3,32), (4,29), (5,24))
-                                                  //| 
+  val pairs = createJobValuePairs(jobs, extractEndTimes(initEndTimesMatrix));System.out.println("""pairs  : Array[(Int, Int)] = """ + $show(pairs ));$skip(192); 
   
   //returns array of times when provided the job value (key)
-  def getTimesArrayByJobKey(job: Int, pairs: Array[(Int, Array[Int])]) = pairs.filter(_._1 == job).map(pair => pair._2).flatten
-                                                  //> getTimesArrayByJobKey: (job: Int, pairs: Array[(Int, Array[Int])])Array[Int
-                                                  //| ]
-  getTimesArrayByJobKey(1, jobTimesPairs)         //> res0: Array[Int] = Array(5, 14, 22, 32, 33)
+  def getTimesArrayByJobKey(job: Int, pairs: Array[(Int, Array[Int])]) = pairs.filter(_._1 == job).map(pair => pair._2).flatten;System.out.println("""getTimesArrayByJobKey: (job: Int, pairs: Array[(Int, Array[Int])])Array[Int]""");$skip(42); val res$0 = 
+  getTimesArrayByJobKey(1, jobTimesPairs);System.out.println("""res0: Array[Int] = """ + $show(res$0));$skip(175); 
   
   //sort pairs of (jobkey,endTime) by second parameter, in a decreasing order
   def sortJobsDecreasing(pairs: Array[(Int, Int)]) = {
       pairs.sortBy(_._2).reverse
-    }                                             //> sortJobsDecreasing: (pairs: Array[(Int, Int)])Array[(Int, Int)]
+    };System.out.println("""sortJobsDecreasing: (pairs: Array[(Int, Int)])Array[(Int, Int)]""");$skip(211); 
   //gets first N jobs from a sorted (in decreased order) list of pairs (jobkey,endTime)
   def getWorstNJobs(pairs: Array[(Int, Int)], n: Int) = {
     val sorted = sortJobsDecreasing(pairs)
     pairs.take(n)
-  }                                               //> getWorstNJobs: (pairs: Array[(Int, Int)], n: Int)Array[(Int, Int)]
+  };System.out.println("""getWorstNJobs: (pairs: Array[(Int, Int)], n: Int)Array[(Int, Int)]""");$skip(1279); 
   
   
   def evaluatePartialSolution(jobsPermutation: Permutation):EvaluatedSolution = {
@@ -105,8 +91,7 @@ object test {
       }
       def encapsulate(value:Value,permutation: Array[Int]) = new EvaluatedSolution(value,permutation)
       encapsulate(extractEndTimes(table).max, jobsPermutation)
-  }                                               //> evaluatePartialSolution: (jobsPermutation: it.polimi.hyperh.Types.Permutati
-                                                  //| on)solution.EvaluatedSolution
+  };System.out.println("""evaluatePartialSolution: (jobsPermutation: it.polimi.hyperh.Types.Permutation)solution.EvaluatedSolution""");$skip(789); 
   //evaluatePartialSolution(Array(1,2,3,4,5))
   //insert the kth job at place,which minimises the partial makespan among the k possible ones
   //first we need to generate all the inserts, e.g.generateInserts(List(1,3),2) produces List(List(2,1,3),List(1,2,3),List(1,3,2))
@@ -126,11 +111,10 @@ object test {
       matrix = matrix ::: List(insertAt(value,i+1,list))
     }
     matrix
-  }                                               //> generateInserts: (list: List[Int], value: Int)List[List[Int]]
+  };System.out.println("""generateInserts: (list: List[Int], value: Int)List[List[Int]]""");$skip(216); 
   //generateInserts(List(1,3),2)                  //List(List(2, 1, 3), List(1, 2, 3), List(1, 3, 2))
   //generates permutations
-  def generatePermutations(list: List[Int]):List[List[Int]] = list.permutations.toList
-                                                  //> generatePermutations: (list: List[Int])List[List[Int]]
+  def generatePermutations(list: List[Int]):List[List[Int]] = list.permutations.toList;System.out.println("""generatePermutations: (list: List[Int])List[List[Int]]""");$skip(620); 
   //generatePermutations(List(1,3))                 //List(List(1, 3), List(3, 1))
   //evaluate all permutations, and return the best evaluated solution as pair (value, permutation)
 	def getBestPermutation(permutations: List[List[Int]]): EvaluatedSolution = {
@@ -141,13 +125,12 @@ object test {
 	  }
 	  val minEvaluatedSolution = evaluatedSolutions.sortBy(_.value).head//endTimes.min
 	  minEvaluatedSolution
-	}                                         //> getBestPermutation: (permutations: List[List[Int]])solution.EvaluatedSoluti
-                                                  //| on
+	};System.out.println("""getBestPermutation: (permutations: List[List[Int]])solution.EvaluatedSolution""");$skip(337); 
   //getBestPermutation(List(List(1, 3), List(3, 1)))//EvaluatedSolution(value:42, solution:Array(3, 1))
 	def evaluate(solution: Solution):EvaluatedSolution = {
 	  val jobsArray = solution.permutation                      //Array[Int] e.g. 1,2,3,4,5
     val evaluatedSolution = evaluatePartialSolution(jobsArray)
     evaluatedSolution
-	}                                         //> evaluate: (solution: solution.Solution)solution.EvaluatedSolution
+	};System.out.println("""evaluate: (solution: solution.Solution)solution.EvaluatedSolution""")}
 	
 }

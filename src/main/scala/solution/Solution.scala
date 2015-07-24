@@ -17,8 +17,15 @@ class Solution (
     val permutation:Permutation
     ){
 
-	def evaluate(problem:Problem):EvaluatedSolution = 
-	  problem.eval(this)
+	def evaluate(p:Problem):EvaluatedSolution = {
+    val initEndTimesMatrix = p.jobsInitialTimes()
+	  new EvaluatedSolution(p.evaluatePartialSolution(permutation, p.jobTimesMatrix, initEndTimesMatrix).value, permutation)
+  }
+    override def toString = {
+      val permString = permutation.mkString(", ")
+      val str = "Solution(permutation:Array(" + permString+"))"
+      str
+    }
 }
 
 object Solution{

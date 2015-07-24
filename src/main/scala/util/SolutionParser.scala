@@ -6,7 +6,7 @@ import solution.EvaluatedSolution
 
 object SolutionParser extends RegexParsers {
 
-	def number: Parser[Int] = """\d+""".r ^^ { _.toInt-1 }
+	def number: Parser[Int] = """\d+""".r ^^ { _.toInt }
 	def identifier  = """[_\p{L}][_\p{L}\p{Nd}]*""".r	
 	def row: Parser[Array[Int]] = number.+ ^^ {_.toArray}
 	def solution: Parser[Solution] = identifier ~> number ~ row ^^ {
@@ -21,11 +21,11 @@ object SolutionParser extends RegexParsers {
 
 object EvaluatedSolutionParser extends RegexParsers {
 
-	def number: Parser[Int] = """\d+""".r ^^ { _.toInt-1 }
+	def number: Parser[Int] = """\d+""".r ^^ { _.toInt }
 	def identifier  = """[_\p{L}][_\p{L}\p{Nd}]*""".r	
 	def row: Parser[Array[Int]] = number.+ ^^ {_.toArray}
 	def solution: Parser[EvaluatedSolution] = identifier ~> number ~ row ^^ {
-	  case ms ~ r => new EvaluatedSolution(ms+1,r)
+	  case ms ~ r => new EvaluatedSolution(ms,r)
 	}	
 	def apply(input: String): Option[EvaluatedSolution] = parseAll(solution, input) match {
     	case Success(result, _) => Some(result)

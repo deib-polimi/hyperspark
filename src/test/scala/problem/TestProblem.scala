@@ -5,6 +5,7 @@ import org.junit.Test
 import it.polimi.hyperh.problem.Problem
 import solution.Solution
 import solution.EvaluatedSolution
+import it.polimi.hyperh.problem.IGAlgorithm
 
 class TestProblem extends Assertions {
 
@@ -18,12 +19,18 @@ class TestProblem extends Assertions {
 	
 	val optevalsolution = EvaluatedSolution("./resources/sol_ta00"+i)
 	val evalsolution = optevalsolution.getOrElse(throw new RuntimeException("ParserError"))   
-		
+  
 	val evalSolution = solution.evaluate(problem)
 	assert(evalSolution.value===evalsolution.value)
   }
 }
-     
+
+////////////////////////////////////////////////////
+@Test def testIgOnTaillardInstances() {
+  
+  assert(true)
+}
+////////////////////////////////////////////////////
 @Test def testEvalSyntetic() {
 	val problem = new Problem(2,3,Array(Array(1,3,5),Array(3,2,4)))
 	val solution = new Solution(List(1,2,0).toArray)

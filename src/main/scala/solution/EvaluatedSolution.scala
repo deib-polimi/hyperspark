@@ -14,6 +14,11 @@ case class EvaluatedSolution
 extends Solution(solution) {
   
   override def evaluate(problem:Problem):EvaluatedSolution = this
+  override def toString = {
+      val permString = solution.mkString(", ")
+      val str = "EvaluatedSolution(value:"+ value + ", solution:Array(" + permString+"))"
+      str
+    }
 }
 
 object EvaluatedSolution{
