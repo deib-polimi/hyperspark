@@ -3,7 +3,7 @@ package it.polimi.hyperh.algorithms
 import Array._
 import it.polimi.hyperh._
 import it.polimi.hyperh.types.Types._
-import solution.EvaluatedSolution
+import it.polimi.hyperh.solution.EvaluatedSolution
 import util.PermutationUtility
 import it.polimi.hyperh.problem.Problem
 

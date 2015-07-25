@@ -4,7 +4,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import it.polimi.hyperh.problem.Problem
-import solution.Solution
+import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.types.Types._
 
 /**

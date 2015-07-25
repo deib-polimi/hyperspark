@@ -5,8 +5,8 @@ import scala.io.Source
 import it.polimi.hyperh._
 import it.polimi.hyperh.types.Types._
 import util.ProblemParser
-import solution.Solution
-import solution.EvaluatedSolution
+import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.solution.EvaluatedSolution
 
 @SerialVersionUID(100L)
 class Problem  (

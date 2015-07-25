@@ -3,9 +3,9 @@ import scala.util.Random
 import Array._
 import it.polimi.hyperh._
 import it.polimi.hyperh.types.Types._
-import solution.EvaluatedSolution
+import it.polimi.hyperh.solution.EvaluatedSolution
 import util.PermutationUtility
-import algorithms.NEHAlgorithm._
+import it.polimi.hyperh.algorithms.NEHAlgorithm._
 import it.polimi.hyperh.problem.Problem
 /**
  * @author Nemanja
