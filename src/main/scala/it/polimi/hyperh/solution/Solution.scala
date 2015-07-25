@@ -1,8 +1,8 @@
 /**
  *
  */
-package solution
-import it.polimi.hyperh.Types._
+package it.polimi.hyperh.solution
+import it.polimi.hyperh.types.Types._
 import it.polimi.hyperh.problem.Problem
 import util.SolutionParser
 import scala.io.Source

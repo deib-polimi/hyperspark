@@ -13,7 +13,7 @@ object testIGproblem {
 
   val problem = Problem(path+"inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
                                                   //> problem  : it.polimi.hyperh.problem.Problem = it.polimi.hyperh.problem.Probl
-                                                  //| em@34c4973
+                                                  //| em@76f2b07d
   //problem.numOfMachines
  	//problem.numOfJobs
   //problem.jobTimesMatrix
@@ -30,7 +30,7 @@ object testIGproblem {
   //Use IGAlgorithm to evaluate inst_ta001
   val igEvSolution = IGAlgorithm.evaluate(problem, 2, 0.2)
                                                   //> igEvSolution  : solution.EvaluatedSolution = EvaluatedSolution(value:1278, s
-                                                  //| olution:Array(17, 3, 15, 6, 9, 14, 13, 11, 5, 7, 8, 1, 19, 18, 16, 4, 2, 10,
+                                                  //| olution:Array(3, 17, 9, 15, 4, 11, 14, 19, 13, 6, 5, 2, 1, 18, 7, 8, 16, 10,
                                                   //|  20, 12))
  
 

@@ -1,4 +1,4 @@
-package it.polimi.hyperh
+package it.polimi.hyperh.types
 
 object Types {
 

@@ -1,8 +1,8 @@
 package util
 
 import scala.util.parsing.combinator.RegexParsers
-import solution.Solution
-import solution.EvaluatedSolution
+import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.solution.EvaluatedSolution
 
 object SolutionParser extends RegexParsers {
 

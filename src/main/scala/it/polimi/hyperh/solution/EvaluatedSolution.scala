@@ -1,6 +1,6 @@
-package solution
+package it.polimi.hyperh.solution
 
-import it.polimi.hyperh.Types._
+import it.polimi.hyperh.types.Types._
 import it.polimi.hyperh.problem.Problem
 import util.EvaluatedSolutionParser
 import scala.io.Source

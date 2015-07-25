@@ -3,9 +3,9 @@ package it.polimi.hyperh
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import Types._
 import it.polimi.hyperh.problem.Problem
 import solution.Solution
+import it.polimi.hyperh.types.Types._
 
 /**
  * @author ${user.name}

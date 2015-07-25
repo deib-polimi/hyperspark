@@ -5,7 +5,7 @@ import org.junit.Test
 import it.polimi.hyperh.problem.Problem
 import solution.Solution
 import solution.EvaluatedSolution
-import it.polimi.hyperh.problem.IGAlgorithm
+import algorithms.IGAlgorithm
 
 class TestProblem extends Assertions {
 
@@ -27,8 +27,15 @@ class TestProblem extends Assertions {
 
 ////////////////////////////////////////////////////
 @Test def testIgOnTaillardInstances() {
+  val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
+  val problem = Problem(path+"inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
   
-  assert(true)
+  //Get OPTIMAL SOLUTION from sol_ta001
+  val optimalSolution = EvaluatedSolution(path+"sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
+
+  //Use IGAlgorithm to evaluate inst_ta001
+  val igEvSolution = IGAlgorithm.evaluate(problem, 2, 0.2)
+  assert(optimalSolution.value == igEvSolution.value)
 }
 ////////////////////////////////////////////////////
 @Test def testEvalSyntetic() {

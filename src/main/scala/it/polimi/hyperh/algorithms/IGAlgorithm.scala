@@ -1,13 +1,12 @@
-package it.polimi.hyperh.problem
+package it.polimi.hyperh.algorithms
 import scala.util.Random
 import Array._
-import scala.io.Source
 import it.polimi.hyperh._
-import it.polimi.hyperh.Types._
-import util.ProblemParser
-import solution.Solution
+import it.polimi.hyperh.types.Types._
 import solution.EvaluatedSolution
-import types.PermutationUtility
+import util.PermutationUtility
+import algorithms.NEHAlgorithm._
+import it.polimi.hyperh.problem.Problem
 /**
  * @author Nemanja
  */

@@ -3,12 +3,10 @@ package it.polimi.hyperh.problem
 import Array._
 import scala.io.Source
 import it.polimi.hyperh._
-import it.polimi.hyperh.Types._
+import it.polimi.hyperh.types.Types._
 import util.ProblemParser
 import solution.Solution
 import solution.EvaluatedSolution
-
-
 
 @SerialVersionUID(100L)
 class Problem  (
@@ -20,12 +18,11 @@ class Problem  (
 	val numOfMachines = n
 	val numOfJobs = m
 	val jobTimesMatrix = d
-	
-  
+
+  val jobs = (1 to numOfJobs) toArray
+
   //associate sequentially job key to array of times present in matrix
   def associateJobToArray(jobs: Array[Int], jobTimesMatrix: Array[Array[Int]]) = {
-    val array = new Array[Int](numOfMachines)
-    
     jobs zip jobTimesMatrix
   }
   //returns array of times when provided the job value (key)
@@ -57,14 +54,6 @@ class Problem  (
     val sorted = sortJobsDecreasing(pairs)
     pairs.take(n)
   }
-  //GLOBAL VARIABLES, //calculated only during initialization of the algorithm
-  //global matrix of end times
-  val initEndTimesMatrix = jobsInitialTimes()
-  val jobs = (1 to numOfJobs) toArray
-  //associate job to value of its last init end time
-  val pairs = createJobValuePairs(jobs, extractEndTimes(initEndTimesMatrix))
-  //associate job to an array of its init end times
-  val jobTimesPairs = associateJobToArray(jobs, initEndTimesMatrix)
   
   def evaluatePartialSolution(jobsPermutation: Permutation,jobTimesMatrix:Array[Array[Int]],initEndTimesMatrix:Array[Array[Int]]):EvaluatedSolution = {
      val numOfPartJobs = jobsPermutation.length
@@ -82,7 +71,6 @@ class Problem  (
       def encapsulate(value:Value,permutation: Array[Int]) = new EvaluatedSolution(value,permutation)
       encapsulate(table(table.size-1).max, jobsPermutation)
   }    
-  //insert the kth job at place,which minimises the partial makespan among the k possible ones
    
 }
 

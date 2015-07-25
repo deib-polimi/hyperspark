@@ -1,6 +1,6 @@
-package types
+package util
 import it.polimi.hyperh.problem.Problem
-import solution.EvaluatedSolution
+import it.polimi.hyperh.solution.EvaluatedSolution
 
 /**
  * @author Nemanja
