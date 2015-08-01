@@ -1,7 +1,9 @@
 package it.polimi.hyperh
 import scala.util.Random
+import it.polimi.hyperh.algorithms.NEHAlgorithm
+import it.polimi.hyperh.solution.EvaluatedSolution
 
-object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(117); 
+object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(216); 
 	println("Welcome to the scala worksheet");$skip(749); 
 	
 	def crossoverLOX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
@@ -62,5 +64,41 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
 		}
 		(child1.toList, child2.toList)
 	};System.out.println("""crossoverNABEL: (parent1: List[Int], parent2: List[Int])(List[Int], List[Int])""");$skip(65); val res$3 = 
-	crossoverNABEL(List(2,6,4,7,3,5,8,9,1),List(4,5,2,1,8,7,6,9,3));System.out.println("""res3: (List[Int], List[Int]) = """ + $show(res$3))}
+	crossoverNABEL(List(2,6,4,7,3,5,8,9,1),List(4,5,2,1,8,7,6,9,3));System.out.println("""res3: (List[Int], List[Int]) = """ + $show(res$3));$skip(427); 
+	
+	def mutationSWAP(parent:List[Int]): List[Int] = {
+		val firstPoint = Random.nextInt(parent.size)//[0,n-1]
+		var secondPoint = firstPoint
+		while( secondPoint == firstPoint) {	//second point must be different than first
+			secondPoint= Random.nextInt(parent.size)
+		}
+		val mutated = parent.toArray
+		val tmp = mutated(firstPoint)
+		mutated(firstPoint) = mutated(secondPoint)
+		mutated(secondPoint) = tmp
+		mutated.toList
+	};System.out.println("""mutationSWAP: (parent: List[Int])List[Int]""");$skip(39); val res$4 = 
+	mutationSWAP(List(2,6,4,7,3,5,8,9,1));System.out.println("""res4: List[Int] = """ + $show(res$4));$skip(445); 
+	
+	def mutationINV(parent: List[Int]):List[Int] = {
+    val firstPoint = Random.nextInt(parent.size - 1)//[0,n-2]
+    val secondPoint = firstPoint + 1 + Random.nextInt(parent.size - firstPoint)//[firstPoint+1,n]
+    val mutatedPart1 = parent.take(firstPoint)
+    val mutatedPart2 = parent.drop(firstPoint).take(secondPoint-firstPoint).reverse
+    val mutatedPart3 = parent.drop(secondPoint)
+    mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
+	};System.out.println("""mutationINV: (parent: List[Int])List[Int]""");$skip(38); val res$5 = 
+	mutationINV(List(2,6,4,7,3,5,8,9,1));System.out.println("""res5: List[Int] = """ + $show(res$5));$skip(511); 
+	
+	def mutationINS(parent: List[Int]): List[Int] = {
+    val firstPoint = Random.nextInt(parent.size - 1)//[0,n-2]
+    val secondPoint = firstPoint + 1 + Random.nextInt(parent.size - firstPoint - 1)//[firstPoint+1,n]
+		println(firstPoint+","+secondPoint)
+    val mutatedPart1 = parent.take(firstPoint)
+    val mutatedPart2 = parent.drop(secondPoint).take(1)
+    val mutatedPart3 = parent.drop(firstPoint).filterNot(mutatedPart2.toSet)
+		val mutated = mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
+		mutated
+	};System.out.println("""mutationINS: (parent: List[Int])List[Int]""");$skip(38); val res$6 = 
+	mutationINS(List(2,6,4,7,3,5,8,9,1));System.out.println("""res6: List[Int] = """ + $show(res$6))}
 }

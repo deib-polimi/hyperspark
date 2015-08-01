@@ -7,6 +7,7 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import util.PermutationUtility
 import it.polimi.hyperh.algorithms.NEHAlgorithm._
 import it.polimi.hyperh.problem.Problem
+import util.Timeout
 /**
  * @author Nemanja
  */
@@ -71,19 +72,11 @@ object IGAlgorithm {
     var currentSolution = NEHAlgorithm.evaluate(p)
     currentSolution = localSearch(currentSolution.solution,p,initEndTimesMatrix)//improve it by local search
     var bestSolution = currentSolution
-     //termination is n*(m/2)*60 milliseconds
-    var timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60  //in Millis
-    def setTimeout(limit: Double) = {//introduce thread time here
-      val expireTime = System.currentTimeMillis() + limit
-      expireTime
-    }
-    val expireTimeMillis = setTimeout(timeLimit)
-    def notTimeout():Boolean = {
-      if(System.currentTimeMillis() > expireTimeMillis)
-        false
-      else true
-    }
-    while(notTimeout()) {
+    
+    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    
+    while(Timeout.notTimeout(expireTimeMillis)) {
       val pair = IGAlgorithm.destruction(currentSolution.solution, d)
       val bestPermutation = construction(pair._1, pair._2,p,initEndTimesMatrix)
       bestSolution = p.evaluatePartialSolution(bestPermutation,p.jobTimesMatrix,initEndTimesMatrix)
