@@ -10,6 +10,7 @@ import it.polimi.hyperh.algorithms.NEHAlgorithm
 import it.polimi.hyperh.algorithms.GAAlgorithm
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import it.polimi.hyperh.algorithms.SAAlgorithm
 
 class TestProblem extends Assertions {
 
@@ -79,13 +80,28 @@ class TestProblem extends Assertions {
     //assert(optimalSolution.value == gaEvSolution.value)
     assert(true)
   }
+  
+  @Test def testSA() {
+    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
+    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+
+    //Get OPTIMAL SOLUTION from sol_ta001
+    val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    println("Optimal solution " + optimalSolution)
+    //Use SAAlgorithm to evaluate inst_ta001
+    //temperatureUB: 1.0, temperatureLB: 0.00001, coolingRate: 0.9
+    val saEvSolution = SAAlgorithm.evaluate(problem, 1.0, 0.00001, 0.9)
+    println("SA solution " + saEvSolution)
+    //assert(optimalSolution.value == gaEvSolution.value)
+    assert(true)
+  }
   ////////////////////////////////////////////////////
-  @Test def testEvalSyntetic() {
+  /*@Test def testEvalSyntetic() {
     val problem = new Problem(3, 2, Array(Array(1, 3, 5), Array(3, 2, 4)))
     val solution = new Solution(List(2, 3, 1).toArray)
     val evalSolution = Problem.evaluate(problem, solution)
     println("syntetic solution"+evalSolution.value)
     assert(true)
-  }
+  }*/
 
 }
