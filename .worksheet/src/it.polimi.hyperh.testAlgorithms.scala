@@ -100,5 +100,35 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
 		val mutated = mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
 		mutated
 	};System.out.println("""mutationINS: (parent: List[Int])List[Int]""");$skip(38); val res$6 = 
-	mutationINS(List(2,6,4,7,3,5,8,9,1));System.out.println("""res6: List[Int] = """ + $show(res$6))}
+	mutationINS(List(2,6,4,7,3,5,8,9,1));System.out.println("""res6: List[Int] = """ + $show(res$6));$skip(484); 
+ def BckINS(list: List[Int]): List[Int] = {
+    val firstPoint = Random.nextInt(list.size - 1)//[0,n-2]
+    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1)//[firstPoint+1,n]
+		println(firstPoint+","+secondPoint)
+    val resultPart1 = list.take(firstPoint)
+    val resultPart2 = list.drop(secondPoint).take(1)
+    val resultPart3 = list.drop(firstPoint).filterNot(resultPart2.toSet)
+		val result = resultPart1 ::: resultPart2 ::: resultPart3
+		result
+  };System.out.println("""BckINS: (list: List[Int])List[Int]""");$skip(34); val res$7 = 
+  BckINS(List(2,6,4,7,3,5,8,9,1));System.out.println("""res7: List[Int] = """ + $show(res$7));$skip(471); 
+  def FwINS(list: List[Int]): List[Int] = {
+    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
+    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1) //[firstPoint+1,n]
+		println(firstPoint+","+secondPoint)
+    val el1 = list.drop(firstPoint).take(1)
+    val resultPart1 = list.take(secondPoint+1).filterNot(el1.toSet)
+    val resultPart2 = list.drop(secondPoint+1)
+    val result = resultPart1 ::: el1 ::: resultPart2
+    result
+  };System.out.println("""FwINS: (list: List[Int])List[Int]""");$skip(33); val res$8 = 
+  FwINS(List(2,6,4,7,3,5,8,9,1));System.out.println("""res8: List[Int] = """ + $show(res$8));$skip(152); 
+  
+  def SHIFT(list: List[Int]): List[Int] = {
+  	val randomNo = Random.nextDouble()
+  	if(randomNo < 0.5)
+  		BckINS(list)
+  	else
+  		FwINS(list)
+  };System.out.println("""SHIFT: (list: List[Int])List[Int]""")}
 }

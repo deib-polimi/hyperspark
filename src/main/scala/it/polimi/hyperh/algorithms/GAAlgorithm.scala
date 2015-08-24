@@ -4,6 +4,7 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import util.Timeout
+import it.polimi.hyperh.search.NeighbourhoodSearch
 
 /**
  * @author Nemanja
@@ -84,35 +85,14 @@ object GAAlgorithm {
     (child1.toList, child2.toList)
   }
   def mutationSWAP(parent: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(parent.size) //[0,n-1]
-    var secondPoint = firstPoint
-    while (secondPoint == firstPoint) { //second point must be different than first
-      secondPoint = Random.nextInt(parent.size)
-    }
-    val mutated = parent.toArray
-    val tmp = mutated(firstPoint)
-    mutated(firstPoint) = mutated(secondPoint)
-    mutated(secondPoint) = tmp
-    mutated.toList
+    NeighbourhoodSearch.SWAP(parent)
   }
   def mutationINV(parent: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(parent.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(parent.size - firstPoint) //[firstPoint+1,n]
-    val mutatedPart1 = parent.take(firstPoint)
-    val mutatedPart2 = parent.drop(firstPoint).take(secondPoint - firstPoint).reverse
-    val mutatedPart3 = parent.drop(secondPoint)
-    mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
+    NeighbourhoodSearch.INV(parent)
   }
 
   def mutationINS(parent: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(parent.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(parent.size - firstPoint - 1) //[firstPoint+1,n]
-    println(firstPoint + "," + secondPoint)
-    val mutatedPart1 = parent.take(firstPoint)
-    val mutatedPart2 = parent.drop(secondPoint).take(1)
-    val mutatedPart3 = parent.drop(firstPoint).filterNot(mutatedPart2.toSet)
-    val mutated = mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
-    mutated
+    NeighbourhoodSearch.BckINS(parent)
   }
   def calculateStatistics(population:Array[EvaluatedSolution]):(Double,Int,Int) = {
     val makespans = population.map(_.value)

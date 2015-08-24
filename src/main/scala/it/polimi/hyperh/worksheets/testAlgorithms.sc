@@ -20,8 +20,8 @@ object testAlgorithms {
   }                                               //> crossoverLOX: (parent1: List[Int], parent2: List[Int])(List[Int], List[Int])
                                                   //| 
   crossoverLOX(List(2,6,4,7,3,5,8,9,1),List(4,5,2,1,8,7,6,9,3))
-                                                  //> res0: (List[Int], List[Int]) = (List(4, 5, 2, 6, 7, 3, 8, 9, 1),List(2, 6, 
-                                                  //| 4, 5, 1, 8, 7, 9, 3))
+                                                  //> res0: (List[Int], List[Int]) = (List(2, 4, 5, 8, 1, 7, 6, 9, 3),List(4, 2, 
+                                                  //| 7, 6, 3, 5, 8, 9, 1))
   //https://books.google.it/books?id=j5_kKgpjMBQC&pg=PA65&lpg=PA65&dq=linear+order+crossover+and+partially+mapped+crossover+same&source=bl&ots=hlkfaRCoe0&sig=_lrXIS_d-Bskx-fskTtR5sckOH0&hl=en&sa=X&ved=0CCcQ6AEwAWoVChMImKGrtYf3xgIVQ8AUCh0IUwDw#v=onepage&q=linear%20order%20crossover%20and%20partially%20mapped%20crossover%20same&f=false
   def crossoverPMX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
     val firstPoint = Random.nextInt(parent1.size - 1)//[0,n-2]
@@ -47,8 +47,8 @@ object testAlgorithms {
   }                                               //> crossoverPMX: (parent1: List[Int], parent2: List[Int])(List[Int], List[Int]
                                                   //| )
   crossoverPMX(List(3,9,5,4,6,2,7,1,8),List(7,4,3,8,9,2,1,5,6))
-                                                  //> res1: (List[Int], List[Int]) = (List(3, 6, 1, 4, 9, 2, 1, 5, 6),List(1, 4, 
-                                                  //| 3, 6, 6, 2, 7, 1, 8))
+                                                  //> res1: (List[Int], List[Int]) = (List(7, 4, 3, 8, 9, 2, 3, 1, 4),List(3, 9, 
+                                                  //| 5, 4, 6, 2, 1, 3, 9))
 
 	def crossoverC1(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
     val crossoverPoint = 1 + Random.nextInt(parent1.size - 2)//[1,n-2]
@@ -90,7 +90,7 @@ object testAlgorithms {
 		mutated(secondPoint) = tmp
 		mutated.toList
 	}                                         //> mutationSWAP: (parent: List[Int])List[Int]
-	mutationSWAP(List(2,6,4,7,3,5,8,9,1))     //> res4: List[Int] = List(6, 2, 4, 7, 3, 5, 8, 9, 1)
+	mutationSWAP(List(2,6,4,7,3,5,8,9,1))     //> res4: List[Int] = List(2, 6, 4, 7, 3, 5, 8, 1, 9)
 	
 	def mutationINV(parent: List[Int]):List[Int] = {
     val firstPoint = Random.nextInt(parent.size - 1)//[0,n-2]
@@ -100,7 +100,7 @@ object testAlgorithms {
     val mutatedPart3 = parent.drop(secondPoint)
     mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
 	}                                         //> mutationINV: (parent: List[Int])List[Int]
-	mutationINV(List(2,6,4,7,3,5,8,9,1))      //> res5: List[Int] = List(2, 6, 1, 9, 8, 5, 3, 7, 4)
+	mutationINV(List(2,6,4,7,3,5,8,9,1))      //> res5: List[Int] = List(2, 6, 4, 7, 3, 1, 9, 8, 5)
 	
 	def mutationINS(parent: List[Int]): List[Int] = {
     val firstPoint = Random.nextInt(parent.size - 1)//[0,n-2]
@@ -112,6 +112,38 @@ object testAlgorithms {
 		val mutated = mutatedPart1 ::: mutatedPart2 ::: mutatedPart3
 		mutated
 	}                                         //> mutationINS: (parent: List[Int])List[Int]
-	mutationINS(List(2,6,4,7,3,5,8,9,1))      //> 6,8
-                                                  //| res6: List[Int] = List(2, 6, 4, 7, 3, 5, 1, 8, 9)
+	mutationINS(List(2,6,4,7,3,5,8,9,1))      //> 4,7
+                                                  //| res6: List[Int] = List(2, 6, 4, 7, 9, 3, 5, 8, 1)
+ def BckINS(list: List[Int]): List[Int] = {
+    val firstPoint = Random.nextInt(list.size - 1)//[0,n-2]
+    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1)//[firstPoint+1,n]
+		println(firstPoint+","+secondPoint)
+    val resultPart1 = list.take(firstPoint)
+    val resultPart2 = list.drop(secondPoint).take(1)
+    val resultPart3 = list.drop(firstPoint).filterNot(resultPart2.toSet)
+		val result = resultPart1 ::: resultPart2 ::: resultPart3
+		result
+  }                                               //> BckINS: (list: List[Int])List[Int]
+  BckINS(List(2,6,4,7,3,5,8,9,1))                 //> 4,7
+                                                  //| res7: List[Int] = List(2, 6, 4, 7, 9, 3, 5, 8, 1)
+  def FwINS(list: List[Int]): List[Int] = {
+    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
+    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1) //[firstPoint+1,n]
+		println(firstPoint+","+secondPoint)
+    val el1 = list.drop(firstPoint).take(1)
+    val resultPart1 = list.take(secondPoint+1).filterNot(el1.toSet)
+    val resultPart2 = list.drop(secondPoint+1)
+    val result = resultPart1 ::: el1 ::: resultPart2
+    result
+  }                                               //> FwINS: (list: List[Int])List[Int]
+  FwINS(List(2,6,4,7,3,5,8,9,1))                  //> 4,5
+                                                  //| res8: List[Int] = List(2, 6, 4, 7, 5, 3, 8, 9, 1)
+  
+  def SHIFT(list: List[Int]): List[Int] = {
+  	val randomNo = Random.nextDouble()
+  	if(randomNo < 0.5)
+  		BckINS(list)
+  	else
+  		FwINS(list)
+  }                                               //> SHIFT: (list: List[Int])List[Int]
 }

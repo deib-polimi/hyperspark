@@ -58,8 +58,8 @@ class TestProblem extends Assertions {
     println(problem.jobTimesMatrix(i).mkString("Array[", ",", "]"))*/
 
     //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    println("Optimal solution " + optimalSolution)
+    //val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    //println("Optimal solution " + optimalSolution)
     //Use IGAlgorithm to evaluate inst_ta001
     val igEvSolution = IGAlgorithm.evaluate(problem, 2, 0.2)
     println("IG solution " + igEvSolution)
@@ -71,8 +71,8 @@ class TestProblem extends Assertions {
     val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
 
     //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    println("Optimal solution " + optimalSolution)
+    //val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    //println("Optimal solution " + optimalSolution)
     //Use GAAlgorithm to evaluate inst_ta001
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     val gaEvSolution = GAAlgorithm.evaluate(problem, 30, 1.0, 0.8, 0.99, 0.95)
@@ -86,11 +86,10 @@ class TestProblem extends Assertions {
     val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
 
     //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    println("Optimal solution " + optimalSolution)
+    //val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    //println("Optimal solution " + optimalSolution)
     //Use SAAlgorithm to evaluate inst_ta001
-    //temperatureUB: 1.0, temperatureLB: 0.00001, coolingRate: 0.9
-    val saEvSolution = SAAlgorithm.evaluate(problem, 1.0, 0.00001, 0.9)
+    val saEvSolution = SAAlgorithm.evaluate(problem)
     println("SA solution " + saEvSolution)
     //assert(optimalSolution.value == gaEvSolution.value)
     assert(true)
