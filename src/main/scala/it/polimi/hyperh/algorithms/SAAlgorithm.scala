@@ -13,6 +13,9 @@ object SAAlgorithm {
   def apply(p: Problem, temperatureUB: Double, temperatureLB: Double, coolingRate: Double): EvaluatedSolution = {
     evaluate(p, temperatureUB, temperatureLB, coolingRate)
   }
+  def apply(p: Problem): EvaluatedSolution = {
+    evaluate(p)
+  }
   //temperatureUB: 1.0, temperatureLB: 0.00001, coolingRate: 0.9
   def evaluate(p: Problem, temperatureUB: Double, temperatureLB: Double, coolingRate: Double): EvaluatedSolution = {
     val initEndTimesMatrix = p.jobsInitialTimes()

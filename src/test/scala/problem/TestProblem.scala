@@ -2,6 +2,8 @@ package problem
 
 import org.scalatest.Assertions
 import org.junit.Test
+import org.junit._
+import Assert._
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
@@ -11,7 +13,9 @@ import it.polimi.hyperh.algorithms.GAAlgorithm
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import it.polimi.hyperh.algorithms.SAAlgorithm
+import it.polimi.hyperh.algorithms.ISAAlgorithm
 
+@Test
 class TestProblem extends Assertions {
 
   @Test def testEvalReal() {
@@ -80,7 +84,7 @@ class TestProblem extends Assertions {
     //assert(optimalSolution.value == gaEvSolution.value)
     assert(true)
   }
-  
+
   @Test def testSA() {
     val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
     val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
@@ -92,6 +96,14 @@ class TestProblem extends Assertions {
     val saEvSolution = SAAlgorithm.evaluate(problem)
     println("SA solution " + saEvSolution)
     //assert(optimalSolution.value == gaEvSolution.value)
+    assert(true)
+  }
+  @Test def testISA() {
+    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
+    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    //Use ISAAlgorithm to evaluate inst_ta001
+    val isaEvSolution = ISAAlgorithm.evaluate(problem)
+    println("ISA solution " + isaEvSolution)
     assert(true)
   }
   ////////////////////////////////////////////////////
