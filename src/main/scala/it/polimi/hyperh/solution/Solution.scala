@@ -16,7 +16,12 @@ import scala.io.Source
 class Solution (
     val permutation:Permutation
     ){
-
+    /**
+     * A secondary constructor.
+     */
+    def this(list: List[Int]) {
+      this(list.toArray);
+    }
 	def evaluate(p:Problem):EvaluatedSolution = {
     val initEndTimesMatrix = p.jobsInitialTimes()
 	  new EvaluatedSolution(p.evaluatePartialSolution(permutation, p.jobTimesMatrix, initEndTimesMatrix).value, permutation)

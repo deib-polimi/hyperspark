@@ -14,27 +14,11 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import it.polimi.hyperh.algorithms.SAAlgorithm
 import it.polimi.hyperh.algorithms.ISAAlgorithm
+import it.polimi.hyperh.algorithms.TSAlgorithm
 
 @Test
-class TestProblem extends Assertions {
+class AlgorithmsTest extends Assertions {
 
-  @Test def testEvalReal() {
-    for (i <- 1 to 5) {
-      val optproblem = Problem("./resources/inst_ta00" + i)
-      val problem = optproblem.getOrElse(throw new RuntimeException("ParserError"))
-
-      val optsolution = Solution("./resources/sol_ta00" + i)
-      val solution = optsolution.getOrElse(throw new RuntimeException("ParserError"))
-
-      val optevalsolution = EvaluatedSolution("./resources/sol_ta00" + i)
-      val evalsolution = optevalsolution.getOrElse(throw new RuntimeException("ParserError"))
-
-      val evalSolution = solution.evaluate(problem)
-      assert(evalSolution.value === evalsolution.value)
-    }
-  }
-
-  ////////////////////////////////////////////////////
   @Test def testNEH() {
     val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
     val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
@@ -106,13 +90,12 @@ class TestProblem extends Assertions {
     println("ISA solution " + isaEvSolution)
     assert(true)
   }
-  ////////////////////////////////////////////////////
-  /*@Test def testEvalSyntetic() {
-    val problem = new Problem(3, 2, Array(Array(1, 3, 5), Array(3, 2, 4)))
-    val solution = new Solution(List(2, 3, 1).toArray)
-    val evalSolution = Problem.evaluate(problem, solution)
-    println("syntetic solution"+evalSolution.value)
+  @Test def testTS() {
+    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
+    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    //Use TSAlgorithm to evaluate inst_ta001
+    val tsEvSolution = TSAlgorithm.evaluate(problem, 7)
+    println("TS solution " + tsEvSolution)
     assert(true)
-  }*/
-
+  }
 }
