@@ -6,12 +6,16 @@ import scala.util.Random
  * @author Nemanja
  */
 object NeighbourhoodSearch {
+  //OPERATIONS
   def SWAPdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
     val result = list.toArray
     val tmp = result(firstPoint)
     result(firstPoint) = result(secondPoint)
     result(secondPoint) = tmp
     result.toList
+  }
+  def AdjSWAPdefineMove(list: List[Int], firstPoint: Int): List[Int] = {
+    SWAPdefineMove(list, firstPoint, firstPoint + 1)
   }
   def INVdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
     val resultPart1 = list.take(firstPoint)
@@ -52,29 +56,49 @@ object NeighbourhoodSearch {
       result
     }
   }
-  //FUNCTIONS THAT RANDOMLY INITIALIZE THE MOVES (POSITIONS)
-  def SWAP(list: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(list.size) //[0,n-1]
+  //RANDOM MOVES GENERATORS
+  def randomZeroToNminusOne(n: Int): Int = {
+    Random.nextInt(n)
+  }
+  def randomZeroToNminusTwo(n: Int): Int = {
+    Random.nextInt(n - 1)
+  }
+  def randomNeighbourPair(n: Int): (Int, Int) = {
+    val firstPoint = randomZeroToNminusOne(n) //[0,n-1]
     var secondPoint = firstPoint
     while (secondPoint == firstPoint) { //second point must be different than first
-      secondPoint = Random.nextInt(list.size)
+      secondPoint = randomZeroToNminusOne(n) //[0,n-1], secondPoint != firstPoint
     }
-    SWAPdefineMove(list, firstPoint, secondPoint)
+    (firstPoint, secondPoint)
+  }
+  def randomSuccessivePoint(firstPoint:Int, n: Int): Int = {
+    firstPoint + 1 + Random.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
+  }
+  def randomSuccessivePair(n: Int): (Int, Int) = {
+    val firstPoint = randomZeroToNminusTwo(n) //[0,n-2]
+    val secondPoint = randomSuccessivePoint(firstPoint, n) //[firstPoint+1,n]
+    (firstPoint, secondPoint)
+  }
+  //FUNCTIONS THAT RANDOMLY INITIALIZE THE MOVES (POSITIONS)
+  def SWAP(list: List[Int]): List[Int] = {
+    val pair = randomNeighbourPair(list.size) //firstPoint: [0,n-1],secondPoint:  [0, n-1], firstPoint!=secondPoint
+    SWAPdefineMove(list, pair._1, pair._2)
+  }
+  def AdjSWAP(list: List[Int]): List[Int] = {
+    val firstPoint = randomZeroToNminusTwo(list.size) //[0,n-2]
+    AdjSWAPdefineMove(list, firstPoint)
   }
   def INV(list: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint) //[firstPoint+1,n]
-    INVdefineMove(list, firstPoint, secondPoint)
+    val pair = randomSuccessivePair(list.size) //firstPoint: [0,n-2],secondPoint:  [firstPoint+1,n]
+    INVdefineMove(list, pair._1, pair._2)
   }
   def BckINS(list: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(list.size - 1)//[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1)//[firstPoint+1,n]
-    BckINSdefineMove(list, firstPoint, secondPoint)
+    val pair = randomSuccessivePair(list.size) //firstPoint: [0,n-2],secondPoint:  [firstPoint+1,n]
+    BckINSdefineMove(list, pair._1, pair._2)
   }
   def FwINS(list: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1) //[firstPoint+1,n]
-    FwINSdefineMove(list, firstPoint, secondPoint)
+    val pair = randomSuccessivePair(list.size) //firstPoint: [0,n-2],secondPoint:  [firstPoint+1,n]
+    FwINSdefineMove(list, pair._1, pair._2)
   }
   
   def SHIFT(list: List[Int]): List[Int] = {
@@ -85,68 +109,52 @@ object NeighbourhoodSearch {
       FwINS(list)
   }
   def INS(list: List[Int]): List[Int] = {
-    val firstPoint = Random.nextInt(list.size) //[0,n-1]
-    var secondPoint = firstPoint
-    while (secondPoint == firstPoint) { //second point must be different than first
-          secondPoint = Random.nextInt(list.size)
-    }
-    INSdefineMove(list, firstPoint, secondPoint)
+    val pair = randomNeighbourPair(list.size) //firstPoint: [0,n-1],secondPoint:  [0, n-1], firstPoint!=secondPoint
+    INSdefineMove(list, pair._1, pair._2)
   }
   //FUNCTIONS THAT RANDOMLY INITIALIZE THE MOVES (POSITIONS), AND 
   //IN ADDITION RETURN WHICH MOVE THEY USED
   def SWAPreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size) //[0,n-1]
-    var secondPoint = firstPoint
-    while (secondPoint == firstPoint) { //second point must be different than first
-          secondPoint = Random.nextInt(list.size)
-    }
-    val pair = (firstPoint, secondPoint)
-    val result = SWAPdefineMove(list, firstPoint, secondPoint)
+    val pair = randomNeighbourPair(list.size) //firstPoint: [0,n-1],secondPoint:  [0, n-1], firstPoint!=secondPoint
+    val result = SWAPdefineMove(list, pair._1, pair._2)
     (result.toList, pair)
   }
-  def INVreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
+  def AdjSWAPreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
     val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint) //[firstPoint+1,n]
-    val pair = (firstPoint, secondPoint)
-    val result = INVdefineMove(list, firstPoint, secondPoint)
+    (AdjSWAPdefineMove(list, firstPoint), (firstPoint, firstPoint + 1))
+  }
+  def INVreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
+    val pair = randomSuccessivePair(list.size) //firstPoint: [0,n-2],secondPoint:  [firstPoint+1,n]
+    val result = INVdefineMove(list, pair._1, pair._2)
     (result, pair)
   }
   def BckINSreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size - 1)//[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1)//[firstPoint+1,n]
-    val pair = (firstPoint, secondPoint)
-    val result =  BckINSdefineMove(list, firstPoint, secondPoint)
+    val pair = randomSuccessivePair(list.size) //firstPoint: [0,n-2],secondPoint:  [firstPoint+1,n]
+    val result =  BckINSdefineMove(list, pair._1, pair._2)
     (result, pair)
   }
   def FwINSreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1) //[firstPoint+1,n]
-    val pair = (firstPoint, secondPoint)
-    val result = FwINSdefineMove(list, firstPoint, secondPoint)
+    val pair = randomSuccessivePair(list.size) //firstPoint: [0,n-2],secondPoint:  [firstPoint+1,n]
+    val result = FwINSdefineMove(list, pair._1, pair._2)
     (result, pair)
   }
   def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
-    val randomNo = Random.nextDouble()
+    val randomNo = Random.nextDouble()  //[0,1]
     if(randomNo < 0.5)
       BckINSreturnMove(list)
     else
       FwINSreturnMove(list)
   }
   def INSreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size) //[0,n-1]
-    var secondPoint = firstPoint
-    while (secondPoint == firstPoint) { //second point must be different than first
-          secondPoint = Random.nextInt(list.size)
-    }
-    val pair = (firstPoint, secondPoint)
-    val el1 = list.drop(firstPoint).take(1)
-    if(firstPoint < secondPoint) {//FwINS
-      val result = FwINSdefineMove(list, firstPoint, secondPoint)
+    val pair = randomNeighbourPair(list.size) //firstPoint: [0,n-1],secondPoint:  [0, n-1], firstPoint!=secondPoint
+    val el1 = list.drop(pair._1).take(1)
+    if(pair._1 < pair._2) {//FwINS
+      val result = FwINSdefineMove(list, pair._1, pair._2)
       (result, pair)
     }
     else {//BckINS, firstPoint > secondPoint
       //in BckINS call we need to reverse points, e.g. (5,1) becomes (1,5)
-      val result = BckINSdefineMove(list, secondPoint, firstPoint)
+      val result = BckINSdefineMove(list, pair._2, pair._1)
       (result, pair)
     }
   }
