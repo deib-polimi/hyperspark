@@ -71,7 +71,10 @@ class Problem  (
       def encapsulate(value:Value,permutation: Array[Int]) = new EvaluatedSolution(value,permutation)
       encapsulate(table(table.size-1).max, jobsPermutation)
   }    
-   
+  
+  def sumJobTimesMatrix(): Int = {
+    jobTimesMatrix.map(ar => ar.reduceLeft[Int](_+_)).reduceLeft[Int](_+_)
+  }
 }
 
 //Problem Factory
@@ -83,6 +86,11 @@ object Problem{
   def evaluate(p: Problem, solution: Solution):EvaluatedSolution = {
     val jobsArray = solution.permutation
     val initEndTimesMatrix = p.jobsInitialTimes()
+    val evaluatedSolution = p.evaluatePartialSolution(jobsArray,p.jobTimesMatrix,initEndTimesMatrix)
+    evaluatedSolution
+  }
+  def evaluate(p: Problem, solution: Solution, initEndTimesMatrix:Array[Array[Int]]):EvaluatedSolution = {
+    val jobsArray = solution.permutation
     val evaluatedSolution = p.evaluatePartialSolution(jobsArray,p.jobTimesMatrix,initEndTimesMatrix)
     evaluatedSolution
   }

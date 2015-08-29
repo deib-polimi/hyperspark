@@ -15,11 +15,8 @@ import it.polimi.hyperh.problem.Problem
 }*/
 
 //Problem Factory
-object NEHAlgorithm {
-  def apply(p: Problem): EvaluatedSolution = {
-    evaluate(p)
-  }
-  def evaluate(p:Problem):EvaluatedSolution = {
+class NEHAlgorithm() extends Algorithm {
+  override def evaluate(p:Problem):EvaluatedSolution = {
       val initEndTimesMatrix = p.jobsInitialTimes()  
       val pairs = p.createJobValuePairs(p.jobs, p.extractEndTimes(initEndTimesMatrix))
       //STEP 1: sort jobs in decreasing order, STEP 2.1.take best two,

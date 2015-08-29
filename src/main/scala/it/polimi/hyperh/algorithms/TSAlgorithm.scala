@@ -9,6 +9,38 @@ import akka.actor._
 /**
  * @author Nemanja
  */
+class TSAlgorithm(val maxTabooListSize: Int) extends Algorithm {
+  /**
+   * A secondary constructor.
+   */
+  def this() {
+    this(7)//default value for maxTabooListSize
+  }
+  def evaluate(p: Problem) = {
+    val permutationList = Random.shuffle(p.jobs.toList)
+    val oldSolution = new Solution(permutationList)
+    var evOldSolution = Problem.evaluate(p, oldSolution)
+    var bestSolution = evOldSolution
+    var move = (0, 1) //dummy initialization
+    var tabooList: List[(Int, Int)] = List()
+    var allMoves = TSAlgorithm.generateAllNeighbourhoodMoves(p.numOfJobs)
+    def notStopCondition() = true
+    while (notStopCondition()) {
+      val allowedMoves = TSAlgorithm.filterTabooMoves(allMoves, tabooList)
+      val pair = TSAlgorithm.getBestSolution(p, evOldSolution, allowedMoves)
+      bestSolution = pair._1
+      move = pair._2
+      if (tabooList.size == maxTabooListSize) {
+        //remove the oldest forbidden move, and add new move at the end
+        tabooList = tabooList.drop(1) ::: List(move)
+      } else
+        tabooList = tabooList ::: List(move)
+      //val pair = NeighbourhoodSearch.INSreturnMove(old)
+
+    }
+    bestSolution
+  } 
+}
 object TSAlgorithm {
   def generateAllNeighbourhoodMoves(numOfJobs: Int): List[(Int, Int)] = {
     //tuples of distinct values, (1,1) is not allowed
@@ -75,27 +107,4 @@ object TSAlgorithm {
     (bestSolution, move)
   }
 
-  def evaluate(p: Problem, maxTabooListSize: Int) = {
-    val permutationList = Random.shuffle(p.jobs.toList)
-    val oldSolution = new Solution(permutationList)
-    var evOldSolution = Problem.evaluate(p, oldSolution)
-    var bestSolution = evOldSolution
-    var move = (0, 1) //dummy initialization
-    var tabooList: List[(Int, Int)] = List()
-    var allMoves = generateAllNeighbourhoodMoves(p.numOfJobs)
-    def notStopCondition() = true
-    while (notStopCondition()) {
-      val allowedMoves = filterTabooMoves(allMoves, tabooList)
-      val pair = getBestSolution(p, evOldSolution, allowedMoves)
-      bestSolution = pair._1
-      move = pair._2
-      if (tabooList.size == maxTabooListSize) {
-        //remove the oldest forbidden move, and add new move at the end
-        tabooList = tabooList.drop(1) ::: List(move)
-      } else
-        tabooList = tabooList ::: List(move)
-      //val pair = NeighbourhoodSearch.INSreturnMove(old)
-
-    }
-  }
 }

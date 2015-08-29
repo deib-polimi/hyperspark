@@ -5,14 +5,79 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.solution.Solution
 
 /**
  * @author Nemanja
  */
-object GAAlgorithm {
-  def apply(p: Problem, popSize: Int, crossRate: Double, mutRate: Double, mutDecreaseFactor: Double, mutResetThreshold: Double): EvaluatedSolution = {
-    evaluate(p, popSize, crossRate, mutRate, mutDecreaseFactor, mutResetThreshold)
+
+class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, val mutDecreaseFactor: Double, val mutResetThreshold: Double) extends Algorithm {
+  /**
+   * A secondary constructor.
+   */
+  def this() {
+    //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
+    this(30, 1.0, 0.8, 0.99, 0.95)
   }
+  override def evaluate(p: Problem): EvaluatedSolution = {
+    val initEndTimesMatrix = p.jobsInitialTimes()
+    //INITIALIZE POPULATION
+    var population = GAAlgorithm.initNEHplusRandom(p, popSize, initEndTimesMatrix)
+    population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
+    //calculate population statistics
+    var triple = GAAlgorithm.calculateStatistics(population)
+    var mean = triple._1
+    var median = triple._2
+    var minimum = triple._3
+    var medianIndex = population.map(x => x.value).indexOf(median)
+    var mutationRate = mutRate
+    var child1 = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
+    var child2 = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
+    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    
+    while (Timeout.notTimeout(expireTimeMillis)) {
+      val randomNo = Random.nextDouble()
+      if (randomNo < crossRate) {                          //CROSSOVER
+        //select parent1 using fitness_rank distribution
+        val parent1 = population(medianIndex+Random.nextInt(popSize-medianIndex))
+        //select parent2 using uniform distribution
+        val parent2 = population(Random.nextInt(popSize))
+        val children = GAAlgorithm.crossoverC1(parent1.solution.toList, parent2.solution.toList)
+        child1 = Problem.evaluate(p, new Solution(children._1), initEndTimesMatrix)
+        child2 = Problem.evaluate(p, new Solution(children._2), initEndTimesMatrix)
+      }
+      if (randomNo < mutRate) {                            //MUTATION
+        val mutation1 = GAAlgorithm.mutationSWAP(child1.solution.toList)
+        val mutation2 = GAAlgorithm.mutationSWAP(child2.solution.toList)
+        child1 = Problem.evaluate(p, new Solution(mutation1), initEndTimesMatrix)
+        child2 = Problem.evaluate(p, new Solution(mutation2), initEndTimesMatrix)
+      }
+      //UPDATE POPULATION
+      //delete sequence from unfit members, whose makespan value is below the median
+      val index1 = Random.nextInt(medianIndex)
+      val index2 = Random.nextInt(medianIndex)
+      //insert new members into population (at the same time deleting old members)
+      population(index1) = child1
+      population(index2) = child2
+      //UPDATE STATISTICS
+      population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
+      triple = GAAlgorithm.calculateStatistics(population)
+      mean = triple._1
+      median = triple._2
+      minimum = triple._3
+      //UPDATE MUTATION RATE
+      mutationRate = mutDecreaseFactor * mutationRate
+      //threshold for mutation rate reseting
+      if (minimum / mean > mutResetThreshold) mutationRate = mutRate
+    } //endwhile
+    //RETURN BEST SOLUTION
+    population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
+    population(popSize-1)//return best solution
+  }
+}
+object GAAlgorithm {
+  
   def initRandom(p: Problem, size: Int, initEndTimesMatrix: Array[Array[Int]]): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
       p.evaluatePartialSolution(Random.shuffle(jobs).toArray, p.jobTimesMatrix, initEndTimesMatrix)
@@ -25,7 +90,8 @@ object GAAlgorithm {
   }
 
   def initNEHplusRandom(p: Problem, size: Int, initEndTimesMatrix: Array[Array[Int]]): Array[EvaluatedSolution] = {
-    val nehEvSolution = NEHAlgorithm.evaluate(p)
+    val nehAlgorithm = new NEHAlgorithm()
+    val nehEvSolution = nehAlgorithm.evaluate(p)
     val population = Array(nehEvSolution) ++ initRandom(p, size, initEndTimesMatrix)
     population
   }
@@ -94,69 +160,12 @@ object GAAlgorithm {
   def mutationINS(parent: List[Int]): List[Int] = {
     NeighbourhoodSearch.BckINS(parent)
   }
-  def calculateStatistics(population:Array[EvaluatedSolution]):(Double,Int,Int) = {
-    val makespans = population.map(_.value)
-    val mean = makespans.sum.asInstanceOf[Double] / population.size
-    val median = makespans.apply(population.size / 2 + 1)
+  def calculateStatistics(sortedPopulation:Array[EvaluatedSolution]):(Double,Int,Int) = {
+    val makespans = sortedPopulation.map(_.value)
+    val mean = makespans.sum.asInstanceOf[Double] / sortedPopulation.size
+    val median = makespans.apply(sortedPopulation.size / 2 + 1)
     val minimum = makespans.reduceLeft(_ min _)
     (mean,median,minimum)
   }
-  //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-  def evaluate(p: Problem, popSize: Int, crossRate: Double, mutRate: Double, mutDecreaseFactor: Double, mutResetThreshold: Double): EvaluatedSolution = {
-    val initEndTimesMatrix = p.jobsInitialTimes()
-    var population = initNEHplusRandom(p, popSize, initEndTimesMatrix)
-    population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-    //calculate population statistics
-    var triple = calculateStatistics(population)
-    var mean = triple._1
-    var median = triple._2
-    var minimum = triple._3
-    var medianIndex = population.map(x => x.value).indexOf(median)
-    var mutationRate = mutRate
-    var child1 = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
-    var child2 = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    
-    while (Timeout.notTimeout(expireTimeMillis)) {
-      val randomNo = Random.nextDouble()
-      if (randomNo < crossRate) {                          //crossover
-        //select parent1 using fitness_rank distribution
-        val parent1 = population(medianIndex+Random.nextInt(popSize-medianIndex))
-        //select parent2 using uniform distribution
-        val parent2 = population(Random.nextInt(popSize))
-        val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
-        child1 = p.evaluatePartialSolution(children._1.toArray, p.jobTimesMatrix, initEndTimesMatrix)
-        child2 = p.evaluatePartialSolution(children._2.toArray, p.jobTimesMatrix, initEndTimesMatrix)
-        /*println("parent1 "+parent1)
-        println("parent2 "+parent2)
-        println("child1 "+child1)
-        println("child2 "+child2)*/
-      }
-      if (randomNo < mutRate) {                            //mutation
-        child1 = p.evaluatePartialSolution(mutationSWAP(child1.solution.toList).toArray, p.jobTimesMatrix, initEndTimesMatrix)
-        child2 = p.evaluatePartialSolution(mutationSWAP(child2.solution.toList).toArray, p.jobTimesMatrix, initEndTimesMatrix)
-      }
-      //delete sequence from unfit members, whose makespan value is below the median
-      val index1 = Random.nextInt(medianIndex)
-      val index2 = Random.nextInt(medianIndex)
-      //insert new members into population (at the same time deleting old members)
-      population(index1) = child1
-      population(index2) = child2
-      //update statistics
-      population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-      triple = calculateStatistics(population)
-      mean = triple._1
-      median = triple._2
-      minimum = triple._3
-      /*println("median "+median)
-      println("minimum "+minimum)*/
-      //update mutation rate
-      mutationRate = mutDecreaseFactor * mutationRate
-      //threshold for mutation rate reseting
-      if (minimum / mean > mutResetThreshold) mutationRate = mutRate
-    } //endwhile
-    population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-    population(popSize-1)//return best solution
-  }
+ 
 }

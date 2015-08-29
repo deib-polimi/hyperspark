@@ -1,25 +1,63 @@
 package it.polimi.hyperh.algorithms
+
 import scala.util.Random
 import Array._
 import it.polimi.hyperh._
 import it.polimi.hyperh.types.Types._
 import it.polimi.hyperh.solution.EvaluatedSolution
 import util.PermutationUtility
-import it.polimi.hyperh.algorithms.NEHAlgorithm._
 import it.polimi.hyperh.problem.Problem
 import util.Timeout
+import it.polimi.hyperh.solution.Solution
 /**
  * @author Nemanja
  */
-/*class IGAlgorithm() extends Serializable {
 
-}*/
 //Problem Factory
-object IGAlgorithm {
-
-  def apply(p:Problem,d:Int,T:Double): EvaluatedSolution = {
-    evaluate(p,d,T)
+class IGAlgorithm(val d:Int,val T:Double) extends Algorithm {
+  /**
+   * A secondary constructor.
+   */
+  def this() {
+    //d: 2, T: 0.2
+    this(2, 0.2)
   }
+  
+  override def evaluate(p:Problem):EvaluatedSolution = {
+    val initEndTimesMatrix = p.jobsInitialTimes()
+    val nehAlgorithm = new NEHAlgorithm()
+    var currentSolution = nehAlgorithm.evaluate(p)
+    currentSolution = IGAlgorithm.localSearch(currentSolution.solution,p,initEndTimesMatrix)//improve it by local search
+    var bestSolution = currentSolution
+    
+    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    
+    while(Timeout.notTimeout(expireTimeMillis)) {
+      val pair = IGAlgorithm.destruction(currentSolution.solution, d)
+      val bestPermutation = IGAlgorithm.construction(pair._1, pair._2,p,initEndTimesMatrix)
+      bestSolution = p.evaluatePartialSolution(bestPermutation,p.jobTimesMatrix,initEndTimesMatrix)
+      val improvedSolution = IGAlgorithm.localSearch(bestPermutation,p,initEndTimesMatrix)
+      //pi - currentSolution,piPrime - bestSolution, piSecond - improvedSolution
+      if(improvedSolution.value < currentSolution.value){//acceptance criterion
+        currentSolution = improvedSolution
+        if(currentSolution.value < bestSolution.value)//check if new best permutation
+          bestSolution = currentSolution
+      } else {
+        def calculateConstant(T: Double):Double = {
+          def sumJobTimes = p.jobTimesMatrix.map(x => x.sum).sum
+          val constant = T * (sumJobTimes / (p.numOfMachines*p.numOfJobs*10))
+          constant
+        }
+        if(Random.nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
+          currentSolution = improvedSolution
+      }
+    }
+    bestSolution
+  }  
+}
+object IGAlgorithm {
+  
   //removes d jobs from permutation list, and produces two lists (left,removed)
   def destruction(permutation: Array[Int],d: Int): (List[Int],List[Int]) = {
     var tmp=permutation.toBuffer//used buffer because of performance, random access and changable size
@@ -40,11 +78,9 @@ object IGAlgorithm {
     for(i <- 0 until removed.size) {
       val genPermutations = PermutationUtility.generateInserts(bestPermutation.toList,removed(i))
         bestPermutation = PermutationUtility.getBestPermutation(genPermutations,p,initEndTimesMatrix).solution
-        //println(bestPermutation)
     }
     bestPermutation
-  }                                               //> construction: (left: List[Int], removed: List[Int])Array[Int]
-  //construction(List(1, 2, 4),List(3, 5))          //> res0: Array[Int] = Array(5, 1, 2, 3, 4)
+  }
   //Iterative improvement based on insertion
   def localSearch(permutation: Array[Int],p:Problem, initEndTimesMatrix:Array[Array[Int]]):EvaluatedSolution = {
     var bestSolution = p.evaluatePartialSolution(permutation,p.jobTimesMatrix,initEndTimesMatrix)
@@ -57,7 +93,8 @@ object IGAlgorithm {
         var tmp=permutation.toBuffer
         val job = tmp(removalOrder(i))
         tmp.remove(removalOrder(i))
-        val localSolution = PermutationUtility.getBestPermutation(PermutationUtility.generateInserts(tmp.toList,job),p,initEndTimesMatrix)
+        val insertsList = PermutationUtility.generateInserts(tmp.toList,job)
+        val localSolution = PermutationUtility.getBestPermutation(insertsList,p,initEndTimesMatrix)
         if(localSolution.value < bestSolution.value) {
           bestSolution = localSolution
           improve=true
@@ -67,35 +104,5 @@ object IGAlgorithm {
     bestSolution
   }       
   
-  def evaluate(p:Problem,d:Int,T:Double):EvaluatedSolution = {
-    val initEndTimesMatrix = p.jobsInitialTimes()
-    var currentSolution = NEHAlgorithm.evaluate(p)
-    currentSolution = localSearch(currentSolution.solution,p,initEndTimesMatrix)//improve it by local search
-    var bestSolution = currentSolution
-    
-    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    
-    while(Timeout.notTimeout(expireTimeMillis)) {
-      val pair = IGAlgorithm.destruction(currentSolution.solution, d)
-      val bestPermutation = construction(pair._1, pair._2,p,initEndTimesMatrix)
-      bestSolution = p.evaluatePartialSolution(bestPermutation,p.jobTimesMatrix,initEndTimesMatrix)
-      val improvedSolution = localSearch(bestPermutation,p,initEndTimesMatrix)
-      //pi - currentSolution,piPrime - bestSolution, piSecond - improvedSolution
-      if(improvedSolution.value < currentSolution.value){//acceptance criterion
-        currentSolution = improvedSolution
-        if(currentSolution.value < bestSolution.value)//check if new best permutation
-          bestSolution = currentSolution
-      } else {
-        def calculateConstant(T: Double):Double = {
-          def sumJobTimes = p.jobTimesMatrix.map(x => x.sum).sum
-          val constant = T * (sumJobTimes / (p.numOfMachines*p.numOfJobs*10))
-          constant
-        }
-        if(Random.nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
-          currentSolution = improvedSolution
-      }
-    }
-    bestSolution
-  }  
+  
 }

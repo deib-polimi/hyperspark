@@ -15,87 +15,60 @@ import org.scalatest.junit.JUnitRunner
 import it.polimi.hyperh.algorithms.SAAlgorithm
 import it.polimi.hyperh.algorithms.ISAAlgorithm
 import it.polimi.hyperh.algorithms.TSAlgorithm
+import util.ConsolePrinter
 
 @Test
 class AlgorithmsTest extends Assertions {
-
-  @Test def testNEH() {
+  @Test def testAlgorithms() {
     val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
     val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
-
-    /*println(problem.numOfJobs)
-    println(problem.numOfMachines)
-    for(i<-0 until problem.jobTimesMatrix.size)
-    println(problem.jobTimesMatrix(i).mkString("Array[", ",", "]"))*/
-
+    
+    println("numOfJobs: "+problem.numOfJobs)
+    println("numOfMachines: "+problem.numOfMachines)
+    ConsolePrinter.print(problem.jobTimesMatrix)
+    
     //Get OPTIMAL SOLUTION from sol_ta001
     val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    println("Optimal solution " + optimalSolution)
+    println("Optimal: " + optimalSolution)
+    
     //Use NEHAlgorithm to evaluate inst_ta001
-    val nehEvSolution = NEHAlgorithm.evaluate(problem)
-    println("NEH solution " + nehEvSolution)
-    assert(true)
-  }
-  @Test def testIG() {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
-
-    /*println(problem.numOfJobs)
-    println(problem.numOfMachines)
-    for(i<-0 until problem.jobTimesMatrix.size)
-    println(problem.jobTimesMatrix(i).mkString("Array[", ",", "]"))*/
-
-    //Get OPTIMAL SOLUTION from sol_ta001
-    //val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    //println("Optimal solution " + optimalSolution)
+    val nehAlgorithm = new NEHAlgorithm()
+    val nehEvSolution = nehAlgorithm.evaluate(problem)
+    println("NEH: " + nehEvSolution)
+    
     //Use IGAlgorithm to evaluate inst_ta001
-    val igEvSolution = IGAlgorithm.evaluate(problem, 2, 0.2)
-    println("IG solution " + igEvSolution)
-    //assert(optimalSolution.value == igEvSolution.value)
-    assert(true)
-  }
-  @Test def testGA() {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
-
-    //Get OPTIMAL SOLUTION from sol_ta001
-    //val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    //println("Optimal solution " + optimalSolution)
-    //Use GAAlgorithm to evaluate inst_ta001
+    //d:2, T:0.2
+    //val algorithm = new IGAlgorithm(2, 0.2)
+    val igAlgorithm = new IGAlgorithm()//initialized with defaults
+    val igEvSolution = igAlgorithm.evaluate(problem)
+    println("IG: " + igEvSolution)
+    
+     //Use GAAlgorithm to evaluate inst_ta001
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    val gaEvSolution = GAAlgorithm.evaluate(problem, 30, 1.0, 0.8, 0.99, 0.95)
+    //val  gaAlgorithm = new GAAlgorithm(30, 1.0, 0.8, 0.99, 0.95)
+    val gaAlgorithm = new GAAlgorithm()//initialized with defaults
+    val gaEvSolution = gaAlgorithm.evaluate(problem)
     println("GA solution " + gaEvSolution)
-    //assert(optimalSolution.value == gaEvSolution.value)
-    assert(true)
-  }
-
-  @Test def testSA() {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
-
-    //Get OPTIMAL SOLUTION from sol_ta001
-    //val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
-    //println("Optimal solution " + optimalSolution)
+    
     //Use SAAlgorithm to evaluate inst_ta001
-    val saEvSolution = SAAlgorithm.evaluate(problem)
+    //SAAlgorithm sets its parameters based on a size of a problem and a delay matrix sum, so it needs problem variable
+    val saAlgorithm = new SAAlgorithm(problem)
+    val saEvSolution = saAlgorithm.evaluate(problem)
     println("SA solution " + saEvSolution)
-    //assert(optimalSolution.value == gaEvSolution.value)
-    assert(true)
-  }
-  @Test def testISA() {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    
     //Use ISAAlgorithm to evaluate inst_ta001
-    val isaEvSolution = ISAAlgorithm.evaluate(problem)
+    val isaAlgorithm = new ISAAlgorithm(problem)
+    val isaEvSolution = isaAlgorithm.evaluate(problem)
     println("ISA solution " + isaEvSolution)
-    assert(true)
-  }
-  @Test def testTS() {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    
     //Use TSAlgorithm to evaluate inst_ta001
-    val tsEvSolution = TSAlgorithm.evaluate(problem, 7)
-    println("TS solution " + tsEvSolution)
+    //val tsAlgorithm = new TSAlgorithm(7)
+    //val tsEvSolution = tsAlgorithm.evaluate(problem)
+    //println("TS solution " + tsEvSolution)
+    
     assert(true)
+    
+    
   }
+
 }
