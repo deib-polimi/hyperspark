@@ -2,6 +2,8 @@ package it.polimi.hyperh
 import scala.util.Random
 import it.polimi.hyperh.algorithms.NEHAlgorithm
 import it.polimi.hyperh.solution.EvaluatedSolution
+import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.algorithms.TSAlgorithm
 
 object testAlgorithms {
 	println("Welcome to the scala worksheet") //> Welcome to the scala worksheet
@@ -17,8 +19,8 @@ object testAlgorithms {
     val p1Reconstructed = p1Filtered.take(firstPoint):::p1Remove:::p1Filtered.drop(firstPoint)
     val p2Reconstructed = p2Filtered.take(firstPoint):::p2Remove:::p2Filtered.drop(firstPoint)
     (p1Reconstructed, p2Reconstructed)
-  }                                               //> crossoverLOX: (parent1: List[Int], parent2: List[Int])(List[Int], List[Int])
-                                                  //| 
+  }                                               //> crossoverLOX: (parent1: List[Int], parent2: List[Int])(List[Int], List[Int]
+                                                  //| )
   //crossoverLOX(List(2,6,4,7,3,5,8,9,1),List(4,5,2,1,8,7,6,9,3))
   //https://books.google.it/books?id=j5_kKgpjMBQC&pg=PA65&lpg=PA65&dq=linear+order+crossover+and+partially+mapped+crossover+same&source=bl&ots=hlkfaRCoe0&sig=_lrXIS_d-Bskx-fskTtR5sckOH0&hl=en&sa=X&ved=0CCcQ6AEwAWoVChMImKGrtYf3xgIVQ8AUCh0IUwDw#v=onepage&q=linear%20order%20crossover%20and%20partially%20mapped%20crossover%20same&f=false
   def crossoverPMX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
@@ -218,7 +220,7 @@ object testAlgorithms {
 			(result, pair)
     }
 	}                                         //> INSreturnMove: (list: List[Int])(List[Int], (Int, Int))
-	INSreturnMove(List(2,6,4,7,3,5,8,9,1))    //> res0: (List[Int], (Int, Int)) = (List(2, 9, 6, 4, 7, 3, 5, 8, 1),(7,1))
+	//INSreturnMove(List(2,6,4,7,3,5,8,9,1))
   def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
   	val randomNo = Random.nextDouble()
   	if(randomNo < 0.5)
@@ -226,8 +228,26 @@ object testAlgorithms {
   	else
   		FwINSreturnMove(list)
   }                                               //> SHIFTreturnMove: (list: List[Int])(List[Int], (Int, Int))
-  SHIFTreturnMove(List(2,6,4,7,3,5,8,9,1))        //> res1: (List[Int], (Int, Int)) = (List(2, 6, 4, 7, 3, 8, 9, 1, 5),(5,8))
+  //SHIFTreturnMove(List(2,6,4,7,3,5,8,9,1))
+  def generateNRandomNeighbourhoodMoves(numOfJobs: Int, N: Int, tabooList: List[(Int, Int)]): List[(Int, Int)] = {
+    var movesList: List[(Int, Int)] = List()
+    var i = 0
+    while (i < N) {
+      val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
+      if(! tabooList.contains(move)) {
+        movesList = movesList ::: List(move)
+        i = i + 1
+      }
+    }
+    movesList
+  }                                               //> generateNRandomNeighbourhoodMoves: (numOfJobs: Int, N: Int, tabooList: Lis
+                                                  //| t[(Int, Int)])List[(Int, Int)]
+  generateNRandomNeighbourhoodMoves(20, 10, List((9,1)))
+                                                  //> res0: List[(Int, Int)] = List((18,7), (0,14), (6,5), (3,19), (11,10), (7,1
+                                                  //| 4), (12,5), (4,15), (0,8), (4,3))
+  List().contains((1,3))                          //> res1: Boolean = false
 	
+
 
  	
 }

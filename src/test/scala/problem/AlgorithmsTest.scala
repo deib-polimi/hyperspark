@@ -25,7 +25,7 @@ class AlgorithmsTest extends Assertions {
     
     println("numOfJobs: "+problem.numOfJobs)
     println("numOfMachines: "+problem.numOfMachines)
-    ConsolePrinter.print(problem.jobTimesMatrix)
+    //ConsolePrinter.print(problem.jobTimesMatrix)
     
     //Get OPTIMAL SOLUTION from sol_ta001
     val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
@@ -62,9 +62,9 @@ class AlgorithmsTest extends Assertions {
     println("ISA solution " + isaEvSolution)
     
     //Use TSAlgorithm to evaluate inst_ta001
-    //val tsAlgorithm = new TSAlgorithm(7)
-    //val tsEvSolution = tsAlgorithm.evaluate(problem)
-    //println("TS solution " + tsEvSolution)
+    val tsAlgorithm = new TSAlgorithm(7)
+    val tsEvSolution = tsAlgorithm.evaluate(problem)
+    println("TS solution " + tsEvSolution)
     
     assert(true)
     

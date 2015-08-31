@@ -2,8 +2,10 @@ package it.polimi.hyperh
 import scala.util.Random
 import it.polimi.hyperh.algorithms.NEHAlgorithm
 import it.polimi.hyperh.solution.EvaluatedSolution
+import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.algorithms.TSAlgorithm
 
-object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(216); 
+object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(314); 
 	println("Welcome to the scala worksheet");$skip(749); 
 	
 	def crossoverLOX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
@@ -213,17 +215,32 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
 			val result = resultPart1 ::: resultPart2 ::: resultPart3
 			(result, pair)
     }
-	};System.out.println("""INSreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(40); val res$0 = 
-	INSreturnMove(List(2,6,4,7,3,5,8,9,1));System.out.println("""res0: (List[Int], (Int, Int)) = """ + $show(res$0));$skip(192); 
+	};System.out.println("""INSreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(234); 
+	//INSreturnMove(List(2,6,4,7,3,5,8,9,1))
   def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
   	val randomNo = Random.nextDouble()
   	if(randomNo < 0.5)
   		BckINSreturnMove(list)
   	else
   		FwINSreturnMove(list)
-  };System.out.println("""SHIFTreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(43); val res$1 = 
-  SHIFTreturnMove(List(2,6,4,7,3,5,8,9,1));System.out.println("""res1: (List[Int], (Int, Int)) = """ + $show(res$1))}
+  };System.out.println("""SHIFTreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(527); 
+  //SHIFTreturnMove(List(2,6,4,7,3,5,8,9,1))
+  def generateNRandomNeighbourhoodMoves(numOfJobs: Int, N: Int, tabooList: List[(Int, Int)]): List[(Int, Int)] = {
+    var movesList: List[(Int, Int)] = List()
+    var i = 0
+    while (i < N) {
+      val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
+      if(! tabooList.contains(move)) {
+        movesList = movesList ::: List(move)
+        i = i + 1
+      }
+    }
+    movesList
+  };System.out.println("""generateNRandomNeighbourhoodMoves: (numOfJobs: Int, N: Int, tabooList: List[(Int, Int)])List[(Int, Int)]""");$skip(57); val res$0 = 
+  generateNRandomNeighbourhoodMoves(20, 10, List((9,1)));System.out.println("""res0: List[(Int, Int)] = """ + $show(res$0));$skip(25); val res$1 = 
+  List().contains((1,3));System.out.println("""res1: Boolean = """ + $show(res$1))}
 	
+
 
  	
 }
