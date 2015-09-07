@@ -16,21 +16,23 @@ import it.polimi.hyperh.algorithms.SAAlgorithm
 import it.polimi.hyperh.algorithms.ISAAlgorithm
 import it.polimi.hyperh.algorithms.TSAlgorithm
 import util.ConsolePrinter
+import it.polimi.hyperh.algorithms.TSABAlgorithm
+import it.polimi.hyperh.algorithms.TSABAlgorithm
 
 @Test
 class AlgorithmsTest extends Assertions {
   @Test def testAlgorithms() {
     val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    val problem = Problem(path + "inst_ta002").getOrElse(throw new RuntimeException("ParserError"))
     
     println("numOfJobs: "+problem.numOfJobs)
     println("numOfMachines: "+problem.numOfMachines)
     //ConsolePrinter.print(problem.jobTimesMatrix)
     
     //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = EvaluatedSolution(path + "sol_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    val optimalSolution = EvaluatedSolution(path + "sol_ta002").getOrElse(throw new RuntimeException("ParserError"))
     println("Optimal: " + optimalSolution)
-    
+    /*
     //Use NEHAlgorithm to evaluate inst_ta001
     val nehAlgorithm = new NEHAlgorithm()
     val nehEvSolution = nehAlgorithm.evaluate(problem)
@@ -60,11 +62,16 @@ class AlgorithmsTest extends Assertions {
     val isaAlgorithm = new ISAAlgorithm(problem)
     val isaEvSolution = isaAlgorithm.evaluate(problem)
     println("ISA solution " + isaEvSolution)
-    
     //Use TSAlgorithm to evaluate inst_ta001
     val tsAlgorithm = new TSAlgorithm(7)
     val tsEvSolution = tsAlgorithm.evaluate(problem)
     println("TS solution " + tsEvSolution)
+    
+    */
+    //Use TSABAlgorithm to evaluate inst_ta001
+    val tsabAlgorithm = new TSABAlgorithm()
+    val tsabEvSolution = tsabAlgorithm.evaluate(problem)
+    println("TSAB solution " + tsabEvSolution)
     
     assert(true)
     

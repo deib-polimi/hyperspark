@@ -4,8 +4,10 @@ import it.polimi.hyperh.algorithms.NEHAlgorithm
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.algorithms.TSAlgorithm
+import it.polimi.hyperh.problem.Problem
+import util.ConsolePrinter
 
-object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(314); 
+object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(381); 
 	println("Welcome to the scala worksheet");$skip(749); 
 	
 	def crossoverLOX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
@@ -223,24 +225,302 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
   		BckINSreturnMove(list)
   	else
   		FwINSreturnMove(list)
-  };System.out.println("""SHIFTreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(527); 
+  };System.out.println("""SHIFTreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(72); 
   //SHIFTreturnMove(List(2,6,4,7,3,5,8,9,1))
-  def generateNRandomNeighbourhoodMoves(numOfJobs: Int, N: Int, tabooList: List[(Int, Int)]): List[(Int, Int)] = {
-    var movesList: List[(Int, Int)] = List()
-    var i = 0
-    while (i < N) {
-      val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
-      if(! tabooList.contains(move)) {
-        movesList = movesList ::: List(move)
-        i = i + 1
-      }
-    }
-    movesList
-  };System.out.println("""generateNRandomNeighbourhoodMoves: (numOfJobs: Int, N: Int, tabooList: List[(Int, Int)])List[(Int, Int)]""");$skip(57); val res$0 = 
-  generateNRandomNeighbourhoodMoves(20, 10, List((9,1)));System.out.println("""res0: List[(Int, Int)] = """ + $show(res$0));$skip(25); val res$1 = 
-  List().contains((1,3));System.out.println("""res1: Boolean = """ + $show(res$1))}
+  
+  val numOfMachines = 6;System.out.println("""numOfMachines  : Int = """ + $show(numOfMachines ));$skip(20); 
+  val numOfJobs = 8;System.out.println("""numOfJobs  : Int = """ + $show(numOfJobs ));$skip(363); 
+  
+ 	def produceArcs(numOfJobs: Int, numOfMachines: Int): List[((Int, Int), (Int, Int))] = {
+ 		var arcs: List[((Int, Int), (Int, Int))] = List()
+ 		for(x <- 1 to numOfMachines; y <- 1 to numOfJobs) {
+ 			if((y+1) <= numOfJobs)
+ 				arcs = arcs ::: List(((x,y),(x,y+1)))
+ 			if((x+1) <= numOfMachines)
+ 				arcs = arcs ::: List(((x,y),(x+1,y)))
+ 		}
+ 		arcs
+ 	};System.out.println("""produceArcs: (numOfJobs: Int, numOfMachines: Int)List[((Int, Int), (Int, Int))]""");$skip(153); 
+ 	def getMovesFrom(node: (Int, Int), arcs: List[((Int, Int), (Int, Int))]): List[((Int, Int), (Int, Int))] = {
+ 		arcs.filter(arc => arc._1 == node)
+ 	};System.out.println("""getMovesFrom: (node: (Int, Int), arcs: List[((Int, Int), (Int, Int))])List[((Int, Int), (Int, Int))]""");$skip(240); 
+ 	//getMovesFrom((3,2), arcs)
+ 	//getMovesFrom((3,3), arcs)
+ 	def getNodeWeight(node: (Int, Int), jobTimesMatrix: Array[Array[Int]], jobsPermutation: Array[Int]): Int = {
+ 		jobTimesMatrix(node._1 - 1)(jobsPermutation(node._2 - 1) - 1)
+ 	};System.out.println("""getNodeWeight: (node: (Int, Int), jobTimesMatrix: Array[Array[Int]], jobsPermutation: Array[Int])Int""");$skip(1573); 
+ 	def allPaths(arcs: List[((Int, Int), (Int, Int))], pending: List[List[((Int, Int))]], fullpaths: List[List[((Int, Int))]]): List[List[(Int, Int)]] = {
+ 		pending.size match {
+ 			case 0 => fullpaths
+ 			case _ => {
+ 				val path = pending.head
+ 				val node = path.head
+ 				val moves = getMovesFrom(node, arcs)
+ 				moves.size match {
+ 					case 1 => {
+ 						val move = moves.head
+ 						val pathNew: List[(Int,Int)] = List(move._2) ::: path
+ 						if(move == (numOfMachines, numOfJobs))
+ 							allPaths(arcs, pending.tail, fullpaths ::: List(pathNew.reverse))
+ 						else
+ 							allPaths(arcs, List(pathNew) ::: pending.tail, fullpaths)
+ 					}
+ 					case 2 => {
+ 						val move1 = moves.head
+ 						val move2 = moves.tail.head
+ 						val pathNew1: List[(Int,Int)] = List(move1._2) ::: path
+ 						val pathNew2: List[(Int,Int)] = List(move2._2) ::: path
+ 						var newFullPaths: List[List[((Int, Int))]] = fullpaths
+ 						var newPending: List[List[((Int, Int))]] = pending.tail
+ 						if(move1 == (numOfMachines, numOfJobs))
+ 							newFullPaths = newFullPaths ::: List(pathNew1.reverse)
+ 						else
+							newPending = List(pathNew1) ::: newPending
+ 						if(move2 == (numOfMachines, numOfJobs))
+ 							newFullPaths = newFullPaths ::: List(pathNew2.reverse)
+ 						else
+							newPending = List(pathNew2) ::: newPending
+							
+						allPaths(arcs, newPending, newFullPaths)
+ 					}
+ 					case 0 => {
+ 						allPaths(arcs, pending.tail, fullpaths ::: List(path.reverse))
+ 					}
+ 				}//moves.size match
+ 				
+ 			}//case _
+ 		}//pending.size match
+ 	};System.out.println("""allPaths: (arcs: List[((Int, Int), (Int, Int))], pending: List[List[(Int, Int)]], fullpaths: List[List[(Int, Int)]])List[List[(Int, Int)]]""");$skip(597); //allPaths
+	def criticalPath(p: Problem, jobsPermutation: Array[Int]) = {
+		def evaluatePath(path: List[(Int,Int)]): Int = {
+			val sum = path.map(node => getNodeWeight(node, p.jobTimesMatrix, jobsPermutation)).foldLeft(0)(_ + _)
+			sum
+		}
+		val arcs = produceArcs(p.numOfJobs,p.numOfMachines)
+		var allpaths = allPaths(arcs, List(List((1,1))), List())
+		var max = 0
+		var bestPath = allpaths.head
+		while(allpaths.size !=0) {
+			val path = allpaths.head
+			val length = evaluatePath(path)
+			if(length > max) {
+				max = length
+				bestPath = path
+			}
+			allpaths = allpaths.tail
+		}
+		(bestPath, max)
+	};System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(1001); 
+	//val problem = new Problem(3,3,Array(Array(1,2,1), Array(1,1,2),Array(2,2,1)))
+	//val pathV = criticalPath(problem, Array(3,1,2))._1
+  
+  
+  def getBlockLimits(path: List[(Int, Int)]): List[(Int, (Int,Int))] = {
+  	var blocks: List[(Int, (Int,Int))] = List()
+  	var i = 1
+  	var same = false
+  	var machine = path(0)._1
+  	var leftPos = path(0)._2
+  	var rightPos = path(0)._2
+  	while(i < path.size) {
+  		while((path(i-1)._1 != path(i)._1) && (i+1 < path.size)) {
+  		
+				i = i + 1
+			}
+  		machine = path(i)._1
+  		leftPos = path(i-1)._2
+  		rightPos = path(i)._2
+			var notExceeded = true
+			while(notExceeded && (path(i-1)._1 == path(i)._1)) {
+				machine = path(i)._1
+				rightPos = path(i)._2
+				i = i + 1
+  			if(i >= path.size)
+  				notExceeded = false
+			}
+			if(rightPos - leftPos > 0) {
+				if(notExceeded)
+	  				rightPos = path(i)._2
+	  			else rightPos = path(path.size-1)._2
+  				blocks = blocks ::: List( (machine,(leftPos,rightPos)) )
+  			}
+  		i = i + 1
+  	}
+  	blocks
+  };System.out.println("""getBlockLimits: (path: List[(Int, Int)])List[(Int, (Int, Int))]""");$skip(114); 
+	val blocks = getBlockLimits(List((1,1),(2,1),(2,2),(3,2),(3,3),(3,4),(3,5),(4,5),(5,5),(5,6),(6,6),(6,7),(6,8)));System.out.println("""blocks  : List[(Int, (Int, Int))] = """ + $show(blocks ));$skip(106); 
+  def getMachines(blocks  : List[(Int, (Int, Int))]): Array[Int] = {
+  	blocks.map(t => t._1).toArray
+  };System.out.println("""getMachines: (blocks: List[(Int, (Int, Int))])Array[Int]""");$skip(32); 
+	val mArr = getMachines(blocks);System.out.println("""mArr  : Array[Int] = """ + $show(mArr ));$skip(167); 
+	def getU(blocks  : List[(Int, (Int, Int))]): Array[Int] = {
+		blocks.filter(p => p._2._1 < p._2._2).map(p => p._2).flatMap(t => List(t._1, t._2)).distinct.toArray
+	};System.out.println("""getU: (blocks: List[(Int, (Int, Int))])Array[Int]""");$skip(25); 
+	val uArr = getU(blocks);System.out.println("""uArr  : Array[Int] = """ + $show(uArr ));$skip(259); 
 	
+	//returns the greatest index on the right inside the block containing jPos
+  def lr(jPos: Int, u: Array[Int]): Int = {
+  	var index = -999999
+  	for(i <- 0 until u.size - 1) {
+  		if(u(i) <= jPos && jPos < u(i + 1))
+  			index = u(i + 1)
+  	}
+  	index
+  };System.out.println("""lr: (jPos: Int, u: Array[Int])Int""");$skip(235); 
+  def ll(jPos: Int, u: Array[Int]): Int = {
+  	var index = -999999
+  	for(i <- 0 until u.size - 1) {
+  		if(u(i) < jPos && jPos <= u(i + 1))
+  			index = u(i)
+  	}
+  	if(jPos < 2 || jPos > u(u.size-1))
+  		index = -999999
+  	index
+  };System.out.println("""ll: (jPos: Int, u: Array[Int])Int""");$skip(16); val res$0 = 
+  
+  ll(5,uArr);System.out.println("""res0: Int = """ + $show(res$0));$skip(14); val res$1 = 
+  lr(5, uArr);System.out.println("""res1: Int = """ + $show(res$1));$skip(266); 
+	
+  def calculateDelta(u: Array[Int], epsilon: Double): Array[Int] = {
+  	val k = u.size - 1
+  	val delta: Array[Int] = Array.ofDim[Int](k + 2)
+  	delta(0) = 0
+  	for(l <- 1 to k)
+  			delta(l) = ((u(l) - u(l - 1)) * epsilon).toInt
+  	delta(k + 1) = 0
+    delta
+  };System.out.println("""calculateDelta: (u: Array[Int], epsilon: Double)Array[Int]""");$skip(538); 
 
-
- 	
+ 	def calculateZRJ(jPos: Int, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+ 		if(jPos < 1 || jPos > uArr(uArr.size-1) - 1)
+ 			List()
+ 		if(mArr(mArr.size - 1) == numOfMachines && (jPos >= (uArr(uArr.size - 2) + 1)))
+ 			List()
+ 		else {
+	  	val delta = calculateDelta(uArr, epsilon)
+	  	val lright = lr(jPos, uArr)
+	  	val deltaNext = delta(uArr.indexOf(lright)+1)
+	  	var sum = lright + deltaNext
+	  	if (sum > numOfJobs)
+	  		sum = numOfJobs
+	  	(for(t <- lright to sum) yield (jPos, t)).toList
+	  }
+  };System.out.println("""calculateZRJ: (jPos: Int, uArr: Array[Int], mArr: Array[Int], epsilon: Double)List[(Int, Int)]""");$skip(830); 
+  /*for(i <- 1 to 8) {
+  	println(i +": "+calculateZRJ(i, uArr, mArr, 0.0))
+  }
+  for(i <- 1 to 8) {
+  	println(i +": "+calculateZRJ(i, uArr, mArr, 1.0))
+  }*/
+  def calculateZLJ(jPos: Int, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  	def w(x: Int) = if(x > 1) 0 else 1
+ 		if(jPos < 2 || jPos > uArr(uArr.size-1)) {
+ 			List()
+ 		}
+ 		else {
+	 		if(mArr(0) == 1 && (jPos <= (uArr(1) - 1))) {
+	 			List()
+	 		} else {
+		  	val delta = calculateDelta(uArr, epsilon)
+		  	val lleft = ll(jPos, uArr)
+		  	val deltaL = delta(uArr.indexOf(lleft))
+		  	val lNext = uArr(uArr.indexOf(lleft) + 1)
+		  	var diff1 = lleft - deltaL
+		  	if (diff1 < 1)
+		  		diff1 = 1
+		  	val diff2 = lleft - w(lNext - lleft)
+		  	(for(t <- diff1 to diff2) yield (jPos, t)).toList.filterNot(p => p._1 == p._2)
+		  }
+	  }
+  };System.out.println("""calculateZLJ: (jPos: Int, uArr: Array[Int], mArr: Array[Int], epsilon: Double)List[(Int, Int)]""");$skip(420); 
+	/*for(i <- 1 to 8) {
+  	println(i +": "+calculateZLJ(i, uArr, mArr, 0.0))
+  }*/
+  /*for(i <- 1 to 8) {
+  	println(i +": "+calculateZLJ(i, uArr, mArr, 1.0))
+  }*/
+	def calculateZR(uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+		var movesRight: List[(Int, Int)] = List()
+		for(j <- 1 to numOfJobs - 1) {
+			movesRight = movesRight ::: calculateZRJ(j, uArr, mArr, epsilon)
+		}
+		movesRight
+	};System.out.println("""calculateZR: (uArr: Array[Int], mArr: Array[Int], epsilon: Double)List[(Int, Int)]""");$skip(252); 
+  
+	def calculateZL(uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+		var movesLeft: List[(Int, Int)] = List()
+		for(j <- 2 to numOfJobs) {
+			movesLeft = movesLeft ::: calculateZLJ(j, uArr, mArr, epsilon)
+		}
+		movesLeft
+	};System.out.println("""calculateZL: (uArr: Array[Int], mArr: Array[Int], epsilon: Double)List[(Int, Int)]""");$skip(166); 
+	def calculateZ(uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+		calculateZR(uArr, mArr, epsilon) ::: calculateZL(uArr, mArr, epsilon)
+	};System.out.println("""calculateZ: (uArr: Array[Int], mArr: Array[Int], epsilon: Double)List[(Int, Int)]""");$skip(66); val res$2 = 
+  //calculateZ(uArr, mArr, 0.0).size
+	calculateZ(uArr, mArr, 1.0);System.out.println("""res2: List[(Int, Int)] = """ + $show(res$2));$skip(356); 
+	def getNodesFrom(node: (Int, Int), numOfMachines: Int, numOfJobs: Int): List[((Int, Int), (Int, Int))] = {
+    var list: List[((Int, Int), (Int, Int))] = List()
+    val x = node._1
+    val y = node._2
+	  if((y+1) <= numOfJobs)
+	    list = list ::: List(((x,y),(x,y+1)))
+	  if((x+1) <= numOfMachines)
+	    list = list ::: List(((x,y),(x+1,y)))
+	  list
+  };System.out.println("""getNodesFrom: (node: (Int, Int), numOfMachines: Int, numOfJobs: Int)List[((Int, Int), (Int, Int))]""");$skip(481); 
+  //getNodesFrom((20,20), 20, 20)
+  def matr(p: Problem, perm: Array[Int]): Array[Array[Int]] = {
+    val R = Array.ofDim[Int](p.numOfMachines, p.numOfJobs)
+    R(0)(0) = p.jobTimesMatrix(0)(0)
+    def rgh(g: Int, h: Int): Int = {
+    	if(g == -1 || h == -1)
+    		0
+    	else
+    		R(g)(h)//0..m-1,0..n-1
+    }
+    for(h <- 0 until p.numOfJobs; g <- 0 until p.numOfMachines) {
+      R(g)(h) = scala.math.max(rgh(g,h-1), rgh(g-1,h)) + p.jobTimesMatrix(g)(perm(h)-1)
+    }
+    R
+	};System.out.println("""matr: (p: it.polimi.hyperh.problem.Problem, perm: Array[Int])Array[Array[Int]]""");$skip(79); 
+	val problem = new Problem(3,3,Array(Array(1,2,1), Array(1,1,2),Array(2,2,1)));System.out.println("""problem  : it.polimi.hyperh.problem.Problem = """ + $show(problem ));$skip(100); 
+  //ConsolePrinter.print(problem.jobTimesMatrix)
+	ConsolePrinter.print(matr(problem, Array(3,1,2)));$skip(482); 
+  def critMatrix(p: Problem, jobsPermutation: Array[Int]): Array[Array[Int]] = {
+    val R = Array.ofDim[Int](p.numOfMachines, p.numOfJobs)
+    R(0)(0) = p.jobTimesMatrix(0)(0)
+    def rgh(g: Int, h: Int): Int = {
+      if(g == -1 || h == -1)
+        0
+      else
+        R(g)(h)//0..m-1,0..n-1
+    }
+    for(h <- 0 until p.numOfJobs; g <- 0 until p.numOfMachines) {
+      R(g)(h) = scala.math.max(rgh(g,h-1), rgh(g-1,h)) + p.jobTimesMatrix(g)(jobsPermutation(h)-1)
+    }
+    R
+  };System.out.println("""critMatrix: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])Array[Array[Int]]""");$skip(690); 
+  def critical(p: Problem, jobsPermutation: Array[Int]) = {
+    val R = critMatrix(p, jobsPermutation)
+    def rgh(g: Int, h: Int): Int = {
+      if(g == 0 || h == 0)
+        0
+      else
+        R(g-1)(h-1)//1..m,1..n
+    }
+    var move = (p.numOfMachines, p.numOfJobs)//start from bottom right corner
+    var path: List[(Int, Int)] = List(move)
+    while(move._1 != 1 || move._2 != 1) {
+    	println(move)
+      var better = move
+      if(rgh(move._1 - 1, move._2) > rgh(move._1, move._2 - 1))
+        better = (move._1 - 1, move._2)
+      else better = (move._1, move._2 - 1)
+      path = List(better) ::: path
+      move = better
+    }
+    (path, rgh(p.numOfMachines, p.numOfJobs))
+  };System.out.println("""critical: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""")}
+ 
 }
