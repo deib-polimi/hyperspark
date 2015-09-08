@@ -28,7 +28,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
   }
   override def evaluate(p: Problem): EvaluatedSolution = {
     val initEndTimesMatrix = p.jobsInitialTimes()
-    def cost(solution: List[Int]) = p.evaluatePartialSolution(solution.toArray, p.jobTimesMatrix, initEndTimesMatrix)
+    def cost(solution: List[Int]) = p.evaluatePartialSolution(solution.toArray)
     def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch.SHIFT(sol) //forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))

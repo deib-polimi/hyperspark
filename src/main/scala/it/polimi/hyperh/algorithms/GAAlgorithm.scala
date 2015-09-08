@@ -44,14 +44,14 @@ class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, 
         //select parent2 using uniform distribution
         val parent2 = population(Random.nextInt(popSize))
         val children = GAAlgorithm.crossoverC1(parent1.solution.toList, parent2.solution.toList)
-        child1 = Problem.evaluate(p, new Solution(children._1), initEndTimesMatrix)
-        child2 = Problem.evaluate(p, new Solution(children._2), initEndTimesMatrix)
+        child1 = Problem.evaluate(p, new Solution(children._1))
+        child2 = Problem.evaluate(p, new Solution(children._2))
       }
       if (randomNo < mutRate) {                            //MUTATION
         val mutation1 = GAAlgorithm.mutationSWAP(child1.solution.toList)
         val mutation2 = GAAlgorithm.mutationSWAP(child2.solution.toList)
-        child1 = Problem.evaluate(p, new Solution(mutation1), initEndTimesMatrix)
-        child2 = Problem.evaluate(p, new Solution(mutation2), initEndTimesMatrix)
+        child1 = Problem.evaluate(p, new Solution(mutation1))
+        child2 = Problem.evaluate(p, new Solution(mutation2))
       }
       //UPDATE POPULATION
       //delete sequence from unfit members, whose makespan value is below the median
@@ -80,7 +80,7 @@ object GAAlgorithm {
   
   def initRandom(p: Problem, size: Int, initEndTimesMatrix: Array[Array[Int]]): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
-      p.evaluatePartialSolution(Random.shuffle(jobs).toArray, p.jobTimesMatrix, initEndTimesMatrix)
+      p.evaluatePartialSolution(Random.shuffle(jobs).toArray)
     }
     val population = Array.ofDim[EvaluatedSolution](size)
     for (i <- 0 until size) {

@@ -23,8 +23,7 @@ class Solution (
       this(list.toArray);
     }
 	def evaluate(p:Problem):EvaluatedSolution = {
-    val initEndTimesMatrix = p.jobsInitialTimes()
-	  new EvaluatedSolution(p.evaluatePartialSolution(permutation, p.jobTimesMatrix, initEndTimesMatrix).value, permutation)
+	  new EvaluatedSolution(p.evaluatePartialSolution(permutation).value, permutation)
   }
     override def toString = {
       val permString = permutation.mkString(", ")

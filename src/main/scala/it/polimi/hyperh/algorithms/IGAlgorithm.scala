@@ -27,7 +27,7 @@ class IGAlgorithm(val d:Int,val T:Double) extends Algorithm {
     val initEndTimesMatrix = p.jobsInitialTimes()
     val nehAlgorithm = new NEHAlgorithm()
     var currentSolution = nehAlgorithm.evaluate(p)
-    currentSolution = IGAlgorithm.localSearch(currentSolution.solution,p,initEndTimesMatrix)//improve it by local search
+    currentSolution = IGAlgorithm.localSearch(currentSolution.solution,p)//improve it by local search
     var bestSolution = currentSolution
     
     val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
@@ -36,8 +36,8 @@ class IGAlgorithm(val d:Int,val T:Double) extends Algorithm {
     while(Timeout.notTimeout(expireTimeMillis)) {
       val pair = IGAlgorithm.destruction(currentSolution.solution, d)
       val bestPermutation = IGAlgorithm.construction(pair._1, pair._2,p,initEndTimesMatrix)
-      bestSolution = p.evaluatePartialSolution(bestPermutation,p.jobTimesMatrix,initEndTimesMatrix)
-      val improvedSolution = IGAlgorithm.localSearch(bestPermutation,p,initEndTimesMatrix)
+      bestSolution = p.evaluatePartialSolution(bestPermutation)
+      val improvedSolution = IGAlgorithm.localSearch(bestPermutation,p)
       //pi - currentSolution,piPrime - bestSolution, piSecond - improvedSolution
       if(improvedSolution.value < currentSolution.value){//acceptance criterion
         currentSolution = improvedSolution
@@ -82,8 +82,8 @@ object IGAlgorithm {
     bestPermutation
   }
   //Iterative improvement based on insertion
-  def localSearch(permutation: Array[Int],p:Problem, initEndTimesMatrix:Array[Array[Int]]):EvaluatedSolution = {
-    var bestSolution = p.evaluatePartialSolution(permutation,p.jobTimesMatrix,initEndTimesMatrix)
+  def localSearch(permutation: Array[Int],p:Problem):EvaluatedSolution = {
+    var bestSolution = p.evaluatePartialSolution(permutation)
     var improve = true
     while(improve == true) {
       improve = false
@@ -94,7 +94,7 @@ object IGAlgorithm {
         val job = tmp(removalOrder(i))
         tmp.remove(removalOrder(i))
         val insertsList = PermutationUtility.generateInserts(tmp.toList,job)
-        val localSolution = PermutationUtility.getBestPermutation(insertsList,p,initEndTimesMatrix)
+        val localSolution = PermutationUtility.getBestPermutation(insertsList,p,p.initEndTimesMatrix)
         if(localSolution.value < bestSolution.value) {
           bestSolution = localSolution
           improve=true

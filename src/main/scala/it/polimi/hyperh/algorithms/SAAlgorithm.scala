@@ -27,7 +27,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
   }
   override def evaluate(p: Problem): EvaluatedSolution = {
     val initEndTimesMatrix = p.jobsInitialTimes()
-    def cost(solution: List[Int]) = Problem.evaluate(p, new Solution(solution), initEndTimesMatrix)
+    def cost(solution: List[Int]) = Problem.evaluate(p, new Solution(solution))
     def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch.SHIFT(sol)//forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828,(-delta/temperature))

@@ -44,7 +44,7 @@ class Worker extends Actor {
   import ParallelWork._
   def receive = {
     case Work(p, solution, initEndTimesMatrix) =>
-      val evSolution = p.evaluatePartialSolution(solution.permutation, p.jobTimesMatrix, initEndTimesMatrix)
+      val evSolution = p.evaluatePartialSolution(solution.permutation)
       sender() ! SingleResult(evSolution)
   }
 }

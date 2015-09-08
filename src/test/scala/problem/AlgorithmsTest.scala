@@ -18,6 +18,7 @@ import it.polimi.hyperh.algorithms.TSAlgorithm
 import util.ConsolePrinter
 import it.polimi.hyperh.algorithms.TSABAlgorithm
 import it.polimi.hyperh.algorithms.TSABAlgorithm
+import it.polimi.hyperh.algorithms.MMASAlgorithm
 
 @Test
 class AlgorithmsTest extends Assertions {
@@ -73,6 +74,10 @@ class AlgorithmsTest extends Assertions {
     val tsabEvSolution = tsabAlgorithm.evaluate(problem)
     println("TSAB solution " + tsabEvSolution)
     
+    //Use MMASAlgorithm to evaluate inst_ta001
+    val mmasAlgorithm = new MMASAlgorithm(problem)
+    val mmasEvSolution = mmasAlgorithm.evaluate(problem)
+    println("MMAS solution " + tsabEvSolution)
     assert(true)
     
     

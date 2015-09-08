@@ -80,7 +80,7 @@ class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neig
     
     while (Timeout.notTimeout(expireTimeMillis)) {
       //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-      val allowedMoves = generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves, tabooList, evBestSolution)
+      val allowedMoves = generateNRandomNeighbourhoodMoves(p.numOfJobs, tabooList, evBestSolution)
       val pair1 = examineN_whole(p, evBestSolution, allowedMoves, expireTimeMillis)
       val pair2 = aspiration(p, evBestSolution, tabooList, expireTimeMillis)
       var evNewSolution = pair1._1
@@ -138,10 +138,10 @@ class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neig
     //tuples of distinct values, (1,1) is not allowed
     (for (x <- 0 until numOfJobs; y <- 0 until numOfJobs) yield (x, y)).toList.filter(p => p._1 != p._2)
   }
-  def generateNRandomNeighbourhoodMoves(numOfJobs: Int, N: Int, tabooList: List[((Int,Int), (Int,Int))], evOldSolution: EvaluatedSolution): List[(Int, Int)] = {
+  def generateNRandomNeighbourhoodMoves(numOfJobs: Int, tabooList: List[((Int,Int), (Int,Int))], evOldSolution: EvaluatedSolution): List[(Int, Int)] = {
     var movesList: List[(Int, Int)] = List()
     var i = 0
-    while (i < N) {
+    while (i < numOfRandomMoves) {
       val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
       if(! isForbidden(tabooList, evOldSolution, move)) {
         movesList = movesList ::: List(move)
@@ -157,7 +157,7 @@ class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neig
     var candidateMoves = allowedMoves
     var move = (0, 1) //dummy initialization
     var betterNotFound = true
-    while (betterNotFound && Timeout.notTimeout(expireTimeMillis)) {
+    while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
       val newSolution = new Solution(perturbed)
       val evNewSolution = Problem.evaluate(p, newSolution)

@@ -33,7 +33,7 @@ object PermutationUtility {
     def getBestPermutation(permutations: List[List[Int]],p:Problem,initEndTimesMatrix:Array[Array[Int]]): EvaluatedSolution = {
       var evaluatedSolutions = List[EvaluatedSolution]()
       for(i <- 0 until permutations.size) {
-        val evaluatedSolution=p.evaluatePartialSolution(permutations(i).toArray,p.jobTimesMatrix,initEndTimesMatrix)
+        val evaluatedSolution=p.evaluatePartialSolution(permutations(i))
         evaluatedSolutions = evaluatedSolutions ::: List(evaluatedSolution)
       }
       val minEvaluatedSolution = evaluatedSolutions.sortBy(_.value).head//endTimes.min

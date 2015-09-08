@@ -34,6 +34,7 @@ class Problem  (
     }
     resultingMatrix
   }
+  val initEndTimesMatrix = jobsInitialTimes()
   //extracts end times from initEndTimesMatrix, e.g. Array(33, 31, 32, 29, 24)
   def extractEndTimes(matrix: Array[Array[Int]]): Array[Int] = {
     matrix(matrix.size-1)
@@ -52,7 +53,7 @@ class Problem  (
     pairs.take(n)
   }
   
-  def evaluatePartialSolution(jobsPermutation: Permutation,jobTimesMatrix:Array[Array[Int]],initEndTimesMatrix:Array[Array[Int]]):EvaluatedSolution = {
+  def evaluatePartialSolution(jobsPermutation: Permutation):EvaluatedSolution = {
      val numOfPartJobs = jobsPermutation.length
      val numOfMachines = jobTimesMatrix.size
       val table = Array.ofDim[Int](numOfMachines, jobsPermutation.length)
@@ -68,7 +69,9 @@ class Problem  (
       def encapsulate(value:Value,permutation: Array[Int]) = new EvaluatedSolution(value,permutation)
       encapsulate(table(table.size-1).max, jobsPermutation)
   }    
-  
+  def evaluatePartialSolution(jobsPermutation: List[Int]): EvaluatedSolution = {
+    evaluatePartialSolution(jobsPermutation.toArray)
+  }
   def sumJobTimesMatrix(): Int = {
     jobTimesMatrix.map(ar => ar.reduceLeft[Int](_+_)).reduceLeft[Int](_+_)
   }
@@ -82,13 +85,7 @@ object Problem{
 	def apply(path:String):Option[Problem] = ProblemParser(Source.fromFile(path).getLines().mkString(" x ") + " x ")
   def evaluate(p: Problem, solution: Solution):EvaluatedSolution = {
     val jobsArray = solution.permutation
-    val initEndTimesMatrix = p.jobsInitialTimes()
-    val evaluatedSolution = p.evaluatePartialSolution(jobsArray,p.jobTimesMatrix,initEndTimesMatrix)
-    evaluatedSolution
-  }
-  def evaluate(p: Problem, solution: Solution, initEndTimesMatrix:Array[Array[Int]]):EvaluatedSolution = {
-    val jobsArray = solution.permutation
-    val evaluatedSolution = p.evaluatePartialSolution(jobsArray,p.jobTimesMatrix,initEndTimesMatrix)
+    val evaluatedSolution = p.evaluatePartialSolution(jobsArray)
     evaluatedSolution
   }
 	

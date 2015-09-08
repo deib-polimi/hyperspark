@@ -1,0 +1,154 @@
+package it.polimi.hyperh.algorithms
+
+import it.polimi.hyperh.problem.Problem
+import it.polimi.hyperh.solution.EvaluatedSolution
+import scala.util.Random
+import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.algorithms.NEHAlgorithm
+import it.polimi.hyperh.algorithms.ACOAlgorithm
+import it.polimi.hyperh.search.NeighbourhoodSearch
+import util.Timeout
+
+/**
+ * @author Nemanja
+ */
+class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extends ACOAlgorithm(p, t0, timeLimit) with Algorithm {
+  /**
+   * A secondary constructor.
+   */
+  def this(p: Problem) {
+    this(p, 0.2, 5, p.numOfMachines*(p.numOfJobs/2.0)*60)//default values
+  }
+  override def initialSolution() = {
+    val nehAlgorithm = new NEHAlgorithm() 
+    var solution = nehAlgorithm.evaluate(p)
+    solution = localSearch(solution, Timeout.setTimeout(timeLimit))
+    updateTmax(solution)
+    updateTmin
+    initializeTrails(Tmax)
+    solution
+  }
+  override def probability(i: Int, j: Int, scheduled: List[Int], notScheduled: List[Int]): Double = {
+    if(scheduled.contains(j))
+      0
+    else{
+      def sumTrails(list: List[Int]): Double = {
+        def sum(list: List[Int], acc: Double): Double = {
+          list match {
+            case List() => acc
+            case _ => sum(list.tail, acc + trail(list.head, j))
+          }
+        }
+        sum(list, 0)
+      }
+      val pij = trail(i, j) / sumTrails(notScheduled)
+      pij
+    }
+  }
+  override def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution = {  
+    var scheduled: List[Int] = List()
+    var jPos = 1
+    var notScheduled = (1 to p.numOfJobs).toList
+    var candidates = bestSolution.solution.toList.take(cand)
+    var otherJobs = notScheduled.filterNot(j => candidates.contains(j))
+    
+    while(jPos <= p.numOfJobs) {
+      var nextJob = -1
+      if(candidates.size != 0) {
+        nextJob = getNextJob(scheduled, candidates, jPos)
+      }
+      else {
+        nextJob = getNextJob(scheduled, otherJobs, jPos)
+      }     
+      scheduled = scheduled ::: List(nextJob)
+      candidates = candidates.filter(job => job != nextJob)
+      otherJobs = otherJobs.filter(job => job != nextJob)
+      notScheduled = notScheduled.filter(job => job != nextJob)
+      jPos = jPos + 1
+    }
+    p.evaluatePartialSolution(scheduled)
+  }
+  def p0: Double = (p.numOfJobs - 4.0)/p.numOfJobs
+  def persistenceRate: Double = 0.75
+  def evaporationRate: Double = 1 - persistenceRate
+  var Tmax = 0.2
+  var Tmin = 0.04
+  def updateTmax(bestSolution: EvaluatedSolution) = { Tmax = 1/(evaporationRate * bestSolution.value) }
+  def updateTmin = { Tmin = Tmax / 5 }
+  
+  def getNextJob(scheduled: List[Int], notScheduled: List[Int], jPos: Int): Int = {
+    //construct pairs of (notScheduledJob, probability)
+    def constructItems(list: List[Int]): List[(Int, Int)] = {
+      var items: List[(Int, Int)] = List()
+      var jobs = list
+      while(jobs.size != 0 ) {
+        val iJob = jobs.head
+        val pij: Int = (probability(iJob, jPos, scheduled, notScheduled)*100).asInstanceOf[Int]
+        items = items ::: List((iJob,pij))
+        jobs = jobs.tail
+      }
+      items.sortBy[Int](_._2)(Ordering.Int.reverse)//increasing
+    }
+    val items = constructItems(notScheduled)
+    def sample(list: List[(Int, Int)]) = {
+      var items = list
+      var totalSum: Int = items.map(item => item._2).reduce(_ + _)
+      var index: Int = Random.nextInt(totalSum+1)
+      var sum = 0
+      var item = items.head
+      while(sum < index) {
+        sum = sum + items.head._2
+        item = items.head
+        items = items.tail
+      }
+      item._1//Return job position
+    }
+    sample(items)
+  }
+  override def localSearch(completeSolution: EvaluatedSolution, expireTimeMillis: Double): EvaluatedSolution = {
+    val tsAlgorithm = new TSAlgorithm()
+    var bestSolution = completeSolution
+    if(p.numOfJobs <= 50) {
+      val moves = tsAlgorithm.generateAllNeighbourhoodMoves(p.numOfJobs)
+      while(Timeout.notTimeout(expireTimeMillis)) {
+        bestSolution = tsAlgorithm.examineN_firstBest(p, bestSolution, moves, expireTimeMillis)._1
+      }
+      bestSolution
+    }
+    else {
+      while(Timeout.notTimeout(expireTimeMillis)) {
+        val moves = tsAlgorithm.generateNRandomNeighbourhoodMoves(p.numOfJobs, List(), bestSolution)
+        bestSolution = tsAlgorithm.examineN_firstBest(p, bestSolution, moves, expireTimeMillis)._1 
+      }
+      bestSolution
+    }
+  }
+  
+  override def updatePheromones(bestSolution: EvaluatedSolution) = {
+    updateTmax(bestSolution)
+    updateTmin
+    def deposit(iJob: Int,jPos: Int): Double = {
+      //println("size "+bestSolution.solution.size+" jpos "+jPos)
+      if(bestSolution.solution(jPos-1) == iJob)
+        1.0/bestSolution.value
+      else
+        0.0
+    }
+    def setT(iJob: Int, jPos: Int, newTij: Double) = {
+      val i = iJob - 1
+      val j = jPos - 1
+      if(newTij < Tmin)
+          T(i)(j) = Tmin
+        else if(newTij > Tmax)
+          T(i)(j) = Tmax
+        else
+          T(i)(j) = newTij
+    }
+    for(i <- 1 to p.numOfJobs)
+      for(j <- 1 to p.numOfJobs) {
+        val newTij = persistenceRate * trail(i,j) + deposit(i,j)
+        setT(i, j, newTij)
+      }
+  }
+  
+}
