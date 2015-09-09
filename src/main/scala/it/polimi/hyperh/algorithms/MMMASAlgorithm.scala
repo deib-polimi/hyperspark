@@ -42,7 +42,7 @@ class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) exten
   override def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution = {  
     var scheduled: List[Int] = List()
     var jPos = 1
-    var notScheduled = (1 to p.numOfJobs).toList//.filterNot(j => scheduled.contains(j))
+    var notScheduled = (1 to p.numOfJobs).toList
     var candidates: List[Int] = List()
     
     while(jPos <= p.numOfJobs) {
@@ -97,21 +97,12 @@ class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) exten
   override def updatePheromones(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution) = {
     updateTmax(bestSolution)
     updateTmin
+    val usedSolution = antSolution
     def deposit(iJob: Int,jPos: Int): Double = {
-      if(antSolution.solution(jPos-1) == iJob)
-        1.0/antSolution.value  //using antSolution instead of bestSolution
+      if(usedSolution.solution(jPos-1) == iJob)
+        1.0/usedSolution.value  //using antSolution instead of bestSolution
       else
         0.0
-    }
-    def setT(iJob: Int, jPos: Int, newTij: Double) = {
-      val i = iJob - 1
-      val j = jPos - 1
-      if(newTij < Tmin)
-          T(i)(j) = Tmin
-        else if(newTij > Tmax)
-          T(i)(j) = Tmax
-        else
-          T(i)(j) = newTij
     }
     for(i <- 1 to p.numOfJobs)
       for(j <- 1 to p.numOfJobs) {

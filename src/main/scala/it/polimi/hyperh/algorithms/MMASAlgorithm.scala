@@ -124,24 +124,25 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
     }
   }
   
+  def setT(iJob: Int, jPos: Int, newTij: Double) = {
+    val i = iJob - 1
+    val j = jPos - 1
+    if(newTij < Tmin)
+        T(i)(j) = Tmin
+      else if(newTij > Tmax)
+        T(i)(j) = Tmax
+      else
+        T(i)(j) = newTij
+  }
   override def updatePheromones(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution) = {
     updateTmax(bestSolution)
     updateTmin
+    val usedSolution = bestSolution
     def deposit(iJob: Int,jPos: Int): Double = {
-      if(bestSolution.solution(jPos-1) == iJob)
-        1.0/bestSolution.value
+      if(usedSolution.solution(jPos-1) == iJob)
+        1.0/usedSolution.value
       else
         0.0
-    }
-    def setT(iJob: Int, jPos: Int, newTij: Double) = {
-      val i = iJob - 1
-      val j = jPos - 1
-      if(newTij < Tmin)
-          T(i)(j) = Tmin
-        else if(newTij > Tmax)
-          T(i)(j) = Tmax
-        else
-          T(i)(j) = newTij
     }
     for(i <- 1 to p.numOfJobs)
       for(j <- 1 to p.numOfJobs) {

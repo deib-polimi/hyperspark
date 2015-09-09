@@ -20,6 +20,7 @@ import it.polimi.hyperh.algorithms.TSABAlgorithm
 import it.polimi.hyperh.algorithms.TSABAlgorithm
 import it.polimi.hyperh.algorithms.MMASAlgorithm
 import it.polimi.hyperh.algorithms.MMMASAlgorithm
+import it.polimi.hyperh.algorithms.PACOAlgorithm
 
 @Test
 class AlgorithmsTest extends Assertions {
@@ -85,6 +86,10 @@ class AlgorithmsTest extends Assertions {
     val mmmasEvSolution = mmmasAlgorithm.evaluate(problem)
     println("MMMAS solution " + mmmasEvSolution)
     
+    //Use PACOAlgorithm to evaluate inst_ta001
+    val pacoAlgorithm = new PACOAlgorithm(problem)
+    val pacoEvSolution = pacoAlgorithm.evaluate(problem)
+    println("PACO solution " + pacoEvSolution)
     
     assert(true)
     

@@ -31,7 +31,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, timeLimit: Double) {
   def chosenUpdateSolution(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution): EvaluatedSolution = bestSolution
   /////////////////////////////////////////////////////
   def evaluate(p: Problem): EvaluatedSolution = {
-    var iter = 0
+    var iter = 1
     var bestSolution = initialize()
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     while(notStopCondition && Timeout.notTimeout(expireTimeMillis)) {
@@ -39,18 +39,10 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, timeLimit: Double) {
       antSolution = localSearch(antSolution, expireTimeMillis)
       if(antSolution.value < bestSolution.value)
         bestSolution = antSolution
-      updatePheromones(antSolution, bestSolution)////pass global best or ant best solution
+      updatePheromones(antSolution, bestSolution)////use global best or ant best solution in impl
       iter = iter + 1
     }
     bestSolution
   }
-  ///////////////////////////////////////////////////
-  /*def eta(i: Int, j: Int) = {
-    val pij = p.jobTimesMatrix(i)(j)
-    var n: Double = 999999999
-    if(pij != 0)
-      n = 1 / pij
-    n
-  }*/
   def probability(i: Int, j: Int, scheduled: List[Int], notScheduled: List[Int]): Double//to insert job i at position j
 }

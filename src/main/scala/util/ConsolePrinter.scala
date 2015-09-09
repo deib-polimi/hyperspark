@@ -4,10 +4,10 @@ package util
  * @author Nemanja
  */
 object ConsolePrinter {
-  def print(array: Array[Int]): Unit = {
+  def print[T](array: Array[T]): Unit = {
     println(array.mkString("Array[", ",", "]"))
   }
-  def print(matrix: Array[Array[Int]]): Unit = {  
+  def print[T](matrix: Array[Array[T]]): Unit = {  
     println("Array[")
     for(i<-0 until matrix.size)
       println(matrix(i).mkString("Array[", ",", "]"))
