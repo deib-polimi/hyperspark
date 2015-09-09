@@ -27,7 +27,8 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, timeLimit: Double) {
   
   def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution 
   def localSearch(completeSolution: EvaluatedSolution, expireTimeMillis: Double): EvaluatedSolution
-  def updatePheromones(bestSolution: EvaluatedSolution)
+  def updatePheromones(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution)
+  def chosenUpdateSolution(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution): EvaluatedSolution = bestSolution
   /////////////////////////////////////////////////////
   def evaluate(p: Problem): EvaluatedSolution = {
     var iter = 0
@@ -38,7 +39,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, timeLimit: Double) {
       antSolution = localSearch(antSolution, expireTimeMillis)
       if(antSolution.value < bestSolution.value)
         bestSolution = antSolution
-      updatePheromones(bestSolution)////pass global best or ant best solution
+      updatePheromones(antSolution, bestSolution)////pass global best or ant best solution
       iter = iter + 1
     }
     bestSolution

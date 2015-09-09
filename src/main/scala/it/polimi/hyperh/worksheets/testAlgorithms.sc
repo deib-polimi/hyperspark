@@ -551,5 +551,28 @@ object testAlgorithms {
     (path, rgh(p.numOfMachines, p.numOfJobs))
   }                                               //> critical: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int
                                                   //| ])(List[(Int, Int)], Int)
+  
+  def INSdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
+    val el1 = list.drop(firstPoint).take(1)
+    if(firstPoint < secondPoint) {//FwINS
+      val el1 = list.drop(firstPoint).take(1)
+      val resultPart1 = list.take(secondPoint+1).filterNot(el1.toSet)
+      val resultPart2 = list.drop(secondPoint+1)
+      val result = resultPart1 ::: el1 ::: resultPart2
+      result
+    }
+    else {//BckINS, firstPoint > secondPoint
+      val bckInsFP = secondPoint
+      val bckInsSP = firstPoint
+      val resultPart1 = list.take(bckInsFP)
+      val resultPart2 = list.drop(bckInsSP).take(1)
+      val resultPart3 = list.drop(bckInsFP).filterNot(resultPart2.toSet)
+      val result = resultPart1 ::: resultPart2 ::: resultPart3
+      result
+    }
+  }                                               //> INSdefineMove: (list: List[Int], firstPoint: Int, secondPoint: Int)List[In
+                                                  //| t]
+
+              
  
 }

@@ -19,6 +19,7 @@ import util.ConsolePrinter
 import it.polimi.hyperh.algorithms.TSABAlgorithm
 import it.polimi.hyperh.algorithms.TSABAlgorithm
 import it.polimi.hyperh.algorithms.MMASAlgorithm
+import it.polimi.hyperh.algorithms.MMMASAlgorithm
 
 @Test
 class AlgorithmsTest extends Assertions {
@@ -33,7 +34,7 @@ class AlgorithmsTest extends Assertions {
     //Get OPTIMAL SOLUTION from sol_ta001
     val optimalSolution = EvaluatedSolution(path + "sol_ta002").getOrElse(throw new RuntimeException("ParserError"))
     println("Optimal: " + optimalSolution)
-    /*
+    
     //Use NEHAlgorithm to evaluate inst_ta001
     val nehAlgorithm = new NEHAlgorithm()
     val nehEvSolution = nehAlgorithm.evaluate(problem)
@@ -68,7 +69,7 @@ class AlgorithmsTest extends Assertions {
     val tsEvSolution = tsAlgorithm.evaluate(problem)
     println("TS solution " + tsEvSolution)
     
-    */
+    
     //Use TSABAlgorithm to evaluate inst_ta001
     val tsabAlgorithm = new TSABAlgorithm()
     val tsabEvSolution = tsabAlgorithm.evaluate(problem)
@@ -77,7 +78,14 @@ class AlgorithmsTest extends Assertions {
     //Use MMASAlgorithm to evaluate inst_ta001
     val mmasAlgorithm = new MMASAlgorithm(problem)
     val mmasEvSolution = mmasAlgorithm.evaluate(problem)
-    println("MMAS solution " + tsabEvSolution)
+    println("MMAS solution " + mmasEvSolution)
+    
+    //Use MMMASAlgorithm to evaluate inst_ta001
+    val mmmasAlgorithm = new MMMASAlgorithm(problem)
+    val mmmasEvSolution = mmmasAlgorithm.evaluate(problem)
+    println("MMMAS solution " + mmmasEvSolution)
+    
+    
     assert(true)
     
     

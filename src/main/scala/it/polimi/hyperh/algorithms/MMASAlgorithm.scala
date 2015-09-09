@@ -22,7 +22,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
   override def initialSolution() = {
     val nehAlgorithm = new NEHAlgorithm() 
     var solution = nehAlgorithm.evaluate(p)
-    solution = localSearch(solution, Timeout.setTimeout(timeLimit))
+    solution = localSearch(solution, Timeout.setTimeout(300))
     updateTmax(solution)
     updateTmin
     initializeTrails(Tmax)
@@ -48,22 +48,22 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
   override def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution = {  
     var scheduled: List[Int] = List()
     var jPos = 1
-    var notScheduled = (1 to p.numOfJobs).toList
-    var candidates = bestSolution.solution.toList.take(cand)
-    var otherJobs = notScheduled.filterNot(j => candidates.contains(j))
+    var candidates: List[Int]  = List()
+    val range = (1 to p.numOfJobs).toList
+    var otherJobs: List[Int]  = range
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      if(candidates.size != 0) {
+      var u = Random.nextDouble()
+      if(u <= p0) {
+        candidates = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).take(cand)
         nextJob = getNextJob(scheduled, candidates, jPos)
       }
       else {
+        otherJobs = range.filterNot(job => scheduled.contains(job))
         nextJob = getNextJob(scheduled, otherJobs, jPos)
       }     
       scheduled = scheduled ::: List(nextJob)
-      candidates = candidates.filter(job => job != nextJob)
-      otherJobs = otherJobs.filter(job => job != nextJob)
-      notScheduled = notScheduled.filter(job => job != nextJob)
       jPos = jPos + 1
     }
     p.evaluatePartialSolution(scheduled)
@@ -124,11 +124,10 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
     }
   }
   
-  override def updatePheromones(bestSolution: EvaluatedSolution) = {
+  override def updatePheromones(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution) = {
     updateTmax(bestSolution)
     updateTmin
     def deposit(iJob: Int,jPos: Int): Double = {
-      //println("size "+bestSolution.solution.size+" jpos "+jPos)
       if(bestSolution.solution(jPos-1) == iJob)
         1.0/bestSolution.value
       else
