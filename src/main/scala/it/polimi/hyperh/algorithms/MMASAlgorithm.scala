@@ -111,14 +111,14 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
     if(p.numOfJobs <= 50) {
       val moves = tsAlgorithm.generateAllNeighbourhoodMoves(p.numOfJobs)
       while(Timeout.notTimeout(expireTimeMillis)) {
-        bestSolution = tsAlgorithm.examineN_firstBest(p, bestSolution, moves, expireTimeMillis)._1
+        bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1
       }
       bestSolution
     }
     else {
       while(Timeout.notTimeout(expireTimeMillis)) {
         val moves = tsAlgorithm.generateNRandomNeighbourhoodMoves(p.numOfJobs, List(), bestSolution)
-        bestSolution = tsAlgorithm.examineN_firstBest(p, bestSolution, moves, expireTimeMillis)._1 
+        bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1 
       }
       bestSolution
     }

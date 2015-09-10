@@ -250,7 +250,51 @@ class TSABAlgorithm(
     }
     representatives
   }
-
+  def updateTabooList(tabooList: List[((Int, Int), (Int, Int))], move: (Int, Int), evOldSolution: EvaluatedSolution): List[((Int, Int), (Int, Int))] = {
+    val a = move._1
+    val b = move._2
+    val P = evOldSolution.solution
+    var t = ((0,0), (1,1))  //(move, jobs), dummy init
+    if(a < b)
+      t = ((a,b), (P(a), P(a+1)))
+    else //b <= a
+      t = ((a,b), (P(a-1), P(a)))
+    if (tabooList.size == maxTabooListSize) {
+        //remove the oldest forbidden move, and add new move at the end
+        tabooList.drop(1) ::: List(t)
+      } else
+        tabooList ::: List(t)
+  }
+  def isForbidden(tabooList: List[((Int, Int),(Int, Int))], evOldSolution: EvaluatedSolution, move: (Int,Int)): Boolean = {
+    var answer = false
+    val P = evOldSolution.solution
+    val a = move._1
+    val b = move._2
+    val forbiddenJobPairs = tabooList.map(t => t._2)
+    if(a < b) {
+      for(j <- (a+1) to b) {
+        val pair = (P(j), P(a))
+        if(forbiddenJobPairs.contains(pair))
+          answer = true
+      }
+    }
+    else {  //b <= a
+      for(j <- b to (a-1)) {
+        val pair = (P(a), P(j))
+        if(forbiddenJobPairs.contains(pair))
+          answer = true
+      }
+    }
+    answer
+  }
+  
+  def filterTabooMoves(allMoves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: EvaluatedSolution): List[(Int, Int)] = {
+    allMoves.filterNot(move => isForbidden(tabooList, evOldSolution, move))
+  }
+  //allow a taboo move to be performed if it improves the best solution
+  def aspiration(p: Problem, bestSolution: EvaluatedSolution, forbiddenMoves: List[(Int,Int)], expireTimeMillis: Double) = {
+    bestImprovement(p, bestSolution, forbiddenMoves, expireTimeMillis)
+  }
   override def evaluate(p: Problem): EvaluatedSolution = {
     val epsilon = getEpsilon(p.numOfJobs, p.numOfMachines)
     var evOldSolution = initialSolution(p)
@@ -282,8 +326,8 @@ class TSABAlgorithm(
       var exit = false
       while (!exit) {
         if (X.size != 0 || forbiddenMoves.size != 0) {
-          val allowedPair = examineN_whole(p, evOldSolution, representatives, expireTimeMillis)
-          val aspirationPair = examineN_whole(p, evOldSolution, forbiddenMoves, expireTimeMillis)
+          val allowedPair = bestImprovement(p, evOldSolution, representatives, expireTimeMillis)
+          val aspirationPair = aspiration(p, evOldSolution, forbiddenMoves, expireTimeMillis)
           evNewSolution = allowedPair._1
           move = allowedPair._2
           if (aspirationPair._1.value < allowedPair._1.value) {

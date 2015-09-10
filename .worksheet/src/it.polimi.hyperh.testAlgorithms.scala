@@ -144,89 +144,7 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
   		BckINS(list)
   	else
   		FwINS(list)
-  };System.out.println("""SHIFT: (list: List[Int])List[Int]""");$skip(533); 
-  //SHIFT(List(2,6,4,7,3,5,8,9,1))
-  def SWAPreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-		val firstPoint = Random.nextInt(list.size) //[0,n-1]
-		var secondPoint = firstPoint
-		while (secondPoint == firstPoint) { //second point must be different than first
-		      secondPoint = Random.nextInt(list.size)
-    }
-    val pair = (firstPoint, secondPoint)
-    val result = list.toArray
-    val tmp = result(firstPoint)
-    result(firstPoint) = result(secondPoint)
-    result(secondPoint) = tmp
-    (result.toList, pair)
-  };System.out.println("""SWAPreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(561); 
-  //SWAPreturnMove(List(2,6,4,7,3,5,8,9,1))
-  def INVreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
-		val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint) //[firstPoint+1,n]
-		val pair = (firstPoint, secondPoint)
-    val resultPart1 = list.take(firstPoint)
-    val resultPart2 = list.drop(firstPoint).take(secondPoint - firstPoint).reverse
-    val resultPart3 = list.drop(secondPoint)
-    val result = resultPart1 ::: resultPart2 ::: resultPart3
-    (result, pair)
-  };System.out.println("""INVreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(560); 
-  //INVreturnMove(List(2,6,4,7,3,5,8,9,1))
-  def BckINSreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-  	val firstPoint = Random.nextInt(list.size - 1)//[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1)//[firstPoint+1,n]
-		val pair = (firstPoint, secondPoint)
-    val resultPart1 = list.take(firstPoint)
-    val resultPart2 = list.drop(secondPoint).take(1)
-    val resultPart3 = list.drop(firstPoint).filterNot(resultPart2.toSet)
-		val result = resultPart1 ::: resultPart2 ::: resultPart3
-		(result, pair)
-  };System.out.println("""BckINSreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(550); 
-  //BckINSreturnMove(List(2,6,4,7,3,5,8,9,1))
-  def FwINSreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1) //[firstPoint+1,n]
-		val pair = (firstPoint, secondPoint)
-    val el1 = list.drop(firstPoint).take(1)
-    val resultPart1 = list.take(secondPoint+1).filterNot(el1.toSet)
-    val resultPart2 = list.drop(secondPoint+1)
-    val result = resultPart1 ::: el1 ::: resultPart2
-    (result, pair)
-  };System.out.println("""FwINSreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(1036); 
-  //FwINSreturnMove(List(2,6,4,7,3,5,8,9,1))
-	def INSreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-		val firstPoint = Random.nextInt(list.size) //[0,n-1]
-		var secondPoint = firstPoint
-		while (secondPoint == firstPoint) { //second point must be different than first
-		      secondPoint = Random.nextInt(list.size)
-    }
-    val pair = (firstPoint, secondPoint)
-    val el1 = list.drop(firstPoint).take(1)
-    if(firstPoint < secondPoint) {//FwINS
-    	val el1 = list.drop(firstPoint).take(1)
-	    val resultPart1 = list.take(secondPoint+1).filterNot(el1.toSet)
-	    val resultPart2 = list.drop(secondPoint+1)
-	    val result = resultPart1 ::: el1 ::: resultPart2
-	    (result, pair)
-    }
-    else {//BckINS
-    	val bckInsFP = secondPoint
-    	val bckInsSP = firstPoint
-	    val resultPart1 = list.take(bckInsFP)
-	    val resultPart2 = list.drop(bckInsSP).take(1)
-	    val resultPart3 = list.drop(bckInsFP).filterNot(resultPart2.toSet)
-			val result = resultPart1 ::: resultPart2 ::: resultPart3
-			(result, pair)
-    }
-	};System.out.println("""INSreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(234); 
-	//INSreturnMove(List(2,6,4,7,3,5,8,9,1))
-  def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
-  	val randomNo = Random.nextDouble()
-  	if(randomNo < 0.5)
-  		BckINSreturnMove(list)
-  	else
-  		FwINSreturnMove(list)
-  };System.out.println("""SHIFTreturnMove: (list: List[Int])(List[Int], (Int, Int))""");$skip(72); 
-  //SHIFTreturnMove(List(2,6,4,7,3,5,8,9,1))
+  };System.out.println("""SHIFT: (list: List[Int])List[Int]""");$skip(27); 
   
   val numOfMachines = 6;System.out.println("""numOfMachines  : Int = """ + $show(numOfMachines ));$skip(20); 
   val numOfJobs = 8;System.out.println("""numOfJobs  : Int = """ + $show(numOfJobs ));$skip(363); 
@@ -248,71 +166,8 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
  	//getMovesFrom((3,3), arcs)
  	def getNodeWeight(node: (Int, Int), jobTimesMatrix: Array[Array[Int]], jobsPermutation: Array[Int]): Int = {
  		jobTimesMatrix(node._1 - 1)(jobsPermutation(node._2 - 1) - 1)
- 	};System.out.println("""getNodeWeight: (node: (Int, Int), jobTimesMatrix: Array[Array[Int]], jobsPermutation: Array[Int])Int""");$skip(1573); 
- 	def allPaths(arcs: List[((Int, Int), (Int, Int))], pending: List[List[((Int, Int))]], fullpaths: List[List[((Int, Int))]]): List[List[(Int, Int)]] = {
- 		pending.size match {
- 			case 0 => fullpaths
- 			case _ => {
- 				val path = pending.head
- 				val node = path.head
- 				val moves = getMovesFrom(node, arcs)
- 				moves.size match {
- 					case 1 => {
- 						val move = moves.head
- 						val pathNew: List[(Int,Int)] = List(move._2) ::: path
- 						if(move == (numOfMachines, numOfJobs))
- 							allPaths(arcs, pending.tail, fullpaths ::: List(pathNew.reverse))
- 						else
- 							allPaths(arcs, List(pathNew) ::: pending.tail, fullpaths)
- 					}
- 					case 2 => {
- 						val move1 = moves.head
- 						val move2 = moves.tail.head
- 						val pathNew1: List[(Int,Int)] = List(move1._2) ::: path
- 						val pathNew2: List[(Int,Int)] = List(move2._2) ::: path
- 						var newFullPaths: List[List[((Int, Int))]] = fullpaths
- 						var newPending: List[List[((Int, Int))]] = pending.tail
- 						if(move1 == (numOfMachines, numOfJobs))
- 							newFullPaths = newFullPaths ::: List(pathNew1.reverse)
- 						else
-							newPending = List(pathNew1) ::: newPending
- 						if(move2 == (numOfMachines, numOfJobs))
- 							newFullPaths = newFullPaths ::: List(pathNew2.reverse)
- 						else
-							newPending = List(pathNew2) ::: newPending
-							
-						allPaths(arcs, newPending, newFullPaths)
- 					}
- 					case 0 => {
- 						allPaths(arcs, pending.tail, fullpaths ::: List(path.reverse))
- 					}
- 				}//moves.size match
- 				
- 			}//case _
- 		}//pending.size match
- 	};System.out.println("""allPaths: (arcs: List[((Int, Int), (Int, Int))], pending: List[List[(Int, Int)]], fullpaths: List[List[(Int, Int)]])List[List[(Int, Int)]]""");$skip(597); //allPaths
-	def criticalPath(p: Problem, jobsPermutation: Array[Int]) = {
-		def evaluatePath(path: List[(Int,Int)]): Int = {
-			val sum = path.map(node => getNodeWeight(node, p.jobTimesMatrix, jobsPermutation)).foldLeft(0)(_ + _)
-			sum
-		}
-		val arcs = produceArcs(p.numOfJobs,p.numOfMachines)
-		var allpaths = allPaths(arcs, List(List((1,1))), List())
-		var max = 0
-		var bestPath = allpaths.head
-		while(allpaths.size !=0) {
-			val path = allpaths.head
-			val length = evaluatePath(path)
-			if(length > max) {
-				max = length
-				bestPath = path
-			}
-			allpaths = allpaths.tail
-		}
-		(bestPath, max)
-	};System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(1001); 
-	//val problem = new Problem(3,3,Array(Array(1,2,1), Array(1,1,2),Array(2,2,1)))
-	//val pathV = criticalPath(problem, Array(3,1,2))._1
+ 	};System.out.println("""getNodeWeight: (node: (Int, Int), jobTimesMatrix: Array[Array[Int]], jobsPermutation: Array[Int])Int""");$skip(869); 
+ 	
   
   
   def getBlockLimits(path: List[(Int, Int)]): List[(Int, (Int,Int))] = {
@@ -468,25 +323,10 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
 	  if((x+1) <= numOfMachines)
 	    list = list ::: List(((x,y),(x+1,y)))
 	  list
-  };System.out.println("""getNodesFrom: (node: (Int, Int), numOfMachines: Int, numOfJobs: Int)List[((Int, Int), (Int, Int))]""");$skip(481); 
-  //getNodesFrom((20,20), 20, 20)
-  def matr(p: Problem, perm: Array[Int]): Array[Array[Int]] = {
-    val R = Array.ofDim[Int](p.numOfMachines, p.numOfJobs)
-    R(0)(0) = p.jobTimesMatrix(0)(0)
-    def rgh(g: Int, h: Int): Int = {
-    	if(g == -1 || h == -1)
-    		0
-    	else
-    		R(g)(h)//0..m-1,0..n-1
-    }
-    for(h <- 0 until p.numOfJobs; g <- 0 until p.numOfMachines) {
-      R(g)(h) = scala.math.max(rgh(g,h-1), rgh(g-1,h)) + p.jobTimesMatrix(g)(perm(h)-1)
-    }
-    R
-	};System.out.println("""matr: (p: it.polimi.hyperh.problem.Problem, perm: Array[Int])Array[Array[Int]]""");$skip(79); 
-	val problem = new Problem(3,3,Array(Array(1,2,1), Array(1,1,2),Array(2,2,1)));System.out.println("""problem  : it.polimi.hyperh.problem.Problem = """ + $show(problem ));$skip(100); 
-  //ConsolePrinter.print(problem.jobTimesMatrix)
-	ConsolePrinter.print(matr(problem, Array(3,1,2)));$skip(482); 
+  };System.out.println("""getNodesFrom: (node: (Int, Int), numOfMachines: Int, numOfJobs: Int)List[((Int, Int), (Int, Int))]""");$skip(83); 
+  
+	val problem = new Problem(3,3,Array(Array(1,2,1), Array(1,1,2),Array(2,2,1)));System.out.println("""problem  : it.polimi.hyperh.problem.Problem = """ + $show(problem ));$skip(486); 
+  
   def critMatrix(p: Problem, jobsPermutation: Array[Int]): Array[Array[Int]] = {
     val R = Array.ofDim[Int](p.numOfMachines, p.numOfJobs)
     R(0)(0) = p.jobTimesMatrix(0)(0)
@@ -500,48 +340,34 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
       R(g)(h) = scala.math.max(rgh(g,h-1), rgh(g-1,h)) + p.jobTimesMatrix(g)(jobsPermutation(h)-1)
     }
     R
-  };System.out.println("""critMatrix: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])Array[Array[Int]]""");$skip(690); 
-  def critical(p: Problem, jobsPermutation: Array[Int]) = {
+  };System.out.println("""critMatrix: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])Array[Array[Int]]""");$skip(748); 
+   def criticalPath(p: Problem, jobsPermutation: Array[Int]) = {
     val R = critMatrix(p, jobsPermutation)
     def rgh(g: Int, h: Int): Int = {
-      if(g == 0 || h == 0)
+      if (g == 0 || h == 0)
         0
       else
-        R(g-1)(h-1)//1..m,1..n
+        R(g - 1)(h - 1) //1..m,1..n
     }
-    var move = (p.numOfMachines, p.numOfJobs)//start from bottom right corner
+    def mymax(move1: (Int, Int), move2: (Int, Int)): (Int, Int) = {
+    	if (rgh(move1._1, move1._2) > rgh(move2._1, move2._2))
+    		move1
+    	else move2
+    }
+    var move = (p.numOfMachines, p.numOfJobs) //start from bottom right corner
     var path: List[(Int, Int)] = List(move)
-    while(move._1 != 1 || move._2 != 1) {
-    	println(move)
-      var better = move
-      if(rgh(move._1 - 1, move._2) > rgh(move._1, move._2 - 1))
-        better = (move._1 - 1, move._2)
-      else better = (move._1, move._2 - 1)
+    while (move._1 != 1 || move._2 != 1) {
+      val better = mymax((move._1 - 1, move._2), (move._1, move._2 - 1))
       path = List(better) ::: path
       move = better
     }
     (path, rgh(p.numOfMachines, p.numOfJobs))
-  };System.out.println("""critical: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(780); 
+  };System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(43); 
+  def qgh(g: Int, h: Int): Int = {
+  	
+  };System.out.println("""qgh: (g: Int, h: Int)Int""")}
   
-  def INSdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
-    val el1 = list.drop(firstPoint).take(1)
-    if(firstPoint < secondPoint) {//FwINS
-      val el1 = list.drop(firstPoint).take(1)
-      val resultPart1 = list.take(secondPoint+1).filterNot(el1.toSet)
-      val resultPart2 = list.drop(secondPoint+1)
-      val result = resultPart1 ::: el1 ::: resultPart2
-      result
-    }
-    else {//BckINS, firstPoint > secondPoint
-      val bckInsFP = secondPoint
-      val bckInsSP = firstPoint
-      val resultPart1 = list.take(bckInsFP)
-      val resultPart2 = list.drop(bckInsSP).take(1)
-      val resultPart3 = list.drop(bckInsFP).filterNot(resultPart2.toSet)
-      val result = resultPart1 ::: resultPart2 ::: resultPart3
-      result
-    }
-  };System.out.println("""INSdefineMove: (list: List[Int], firstPoint: Int, secondPoint: Int)List[Int]""")}
+  
 
               
  
