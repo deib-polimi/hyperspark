@@ -13,8 +13,12 @@ import it.polimi.hyperh.solution.Solution
 
 class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, val mutDecreaseFactor: Double, val mutResetThreshold: Double) extends Algorithm {
   /**
-   * A secondary constructor.
+   * Secondary constructors
    */
+  def this(popSize: Int) {
+    //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
+    this(popSize, 1.0, 0.8, 0.99, 0.95)
+  }
   def this() {
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     this(30, 1.0, 0.8, 0.99, 0.95)
@@ -22,10 +26,10 @@ class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, 
   override def evaluate(p: Problem): EvaluatedSolution = {
     val initEndTimesMatrix = p.jobsInitialTimes()
     //INITIALIZE POPULATION
-    var population = GAAlgorithm.initNEHplusRandom(p, popSize, initEndTimesMatrix)
+    var population = initNEHplusRandom(p, popSize, initEndTimesMatrix)
     population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
     //calculate population statistics
-    var triple = GAAlgorithm.calculateStatistics(population)
+    var triple = calculateStatistics(population)
     var mean = triple._1
     var median = triple._2
     var minimum = triple._3
@@ -37,19 +41,21 @@ class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, 
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     
     while (Timeout.notTimeout(expireTimeMillis)) {
+      //CROSSOVER
       val randomNo = Random.nextDouble()
-      if (randomNo < crossRate) {                          //CROSSOVER
+      if (randomNo < crossRate) {
         //select parent1 using fitness_rank distribution
         val parent1 = population(medianIndex+Random.nextInt(popSize-medianIndex))
         //select parent2 using uniform distribution
         val parent2 = population(Random.nextInt(popSize))
-        val children = GAAlgorithm.crossoverC1(parent1.solution.toList, parent2.solution.toList)
+        val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
         child1 = Problem.evaluate(p, new Solution(children._1))
         child2 = Problem.evaluate(p, new Solution(children._2))
       }
-      if (randomNo < mutRate) {                            //MUTATION
-        val mutation1 = GAAlgorithm.mutationSWAP(child1.solution.toList)
-        val mutation2 = GAAlgorithm.mutationSWAP(child2.solution.toList)
+      //MUTATION
+      if (randomNo < mutRate) {
+        val mutation1 = mutationSWAP(child1.solution.toList)
+        val mutation2 = mutationSWAP(child2.solution.toList)
         child1 = Problem.evaluate(p, new Solution(mutation1))
         child2 = Problem.evaluate(p, new Solution(mutation2))
       }
@@ -62,7 +68,7 @@ class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, 
       population(index2) = child2
       //UPDATE STATISTICS
       population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-      triple = GAAlgorithm.calculateStatistics(population)
+      triple = calculateStatistics(population)
       mean = triple._1
       median = triple._2
       minimum = triple._3
@@ -75,16 +81,14 @@ class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, 
     population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
     population(popSize-1)//return best solution
   }
-}
-object GAAlgorithm {
-  
-  def initRandom(p: Problem, size: Int, initEndTimesMatrix: Array[Array[Int]]): Array[EvaluatedSolution] = {
+  def initRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
-      p.evaluatePartialSolution(Random.shuffle(jobs).toArray)
+      p.evaluatePartialSolution(Random.shuffle(jobs))
     }
     val population = Array.ofDim[EvaluatedSolution](size)
+    val jobsList = p.jobs.toList
     for (i <- 0 until size) {
-      population(i) = randomGenerate(p.jobs.toList)
+      population(i) = randomGenerate(jobsList)
     }
     population
   }
@@ -92,7 +96,7 @@ object GAAlgorithm {
   def initNEHplusRandom(p: Problem, size: Int, initEndTimesMatrix: Array[Array[Int]]): Array[EvaluatedSolution] = {
     val nehAlgorithm = new NEHAlgorithm()
     val nehEvSolution = nehAlgorithm.evaluate(p)
-    val population = Array(nehEvSolution) ++ initRandom(p, size, initEndTimesMatrix)
+    val population = Array(nehEvSolution) ++ initRandom(p, size-1)
     population
   }
 
@@ -167,5 +171,4 @@ object GAAlgorithm {
     val minimum = makespans.reduceLeft(_ min _)
     (mean,median,minimum)
   }
- 
 }

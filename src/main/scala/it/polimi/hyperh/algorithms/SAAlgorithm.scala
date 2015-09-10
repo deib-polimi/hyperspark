@@ -49,19 +49,13 @@ class SAAlgorithm(p: Problem) extends Algorithm {
       val evNewSolution = cost(newSolution)
         
       val delta = evNewSolution.value - evOldSolution.value
-      if(delta <= 0) {
+      //calculate acceptance probability
+      val ap = acceptanceProbability(delta, temperature)
+      val randomNo = Random.nextDouble()
+      if((delta <= 0) || (randomNo <= ap)) {
         oldSolution = newSolution
         evOldSolution = evNewSolution
-      } else {
-        //calculate acceptance probability
-        val ap = acceptanceProbability(delta, temperature)
-        val randomNo = Random.nextDouble()
-        //compare them
-        if(randomNo <= ap) {
-          oldSolution = newSolution
-          evOldSolution = evNewSolution
-        }
-      }
+      } 
       temperature = temperature / (1 + coolingRate*temperature)
     }
     evOldSolution

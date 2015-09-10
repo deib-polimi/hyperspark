@@ -22,6 +22,7 @@ import it.polimi.hyperh.algorithms.MMASAlgorithm
 import it.polimi.hyperh.algorithms.MMMASAlgorithm
 import it.polimi.hyperh.algorithms.PACOAlgorithm
 import util.Performance
+import it.polimi.hyperh.algorithms.HGAAlgorithm
 
 @Test
 class AlgorithmsTest extends Assertions {
@@ -102,6 +103,12 @@ class AlgorithmsTest extends Assertions {
     val pacoEvSolution = pacoAlgorithm.evaluate(problem)
     val pacoRPD = Performance.RPD(pacoEvSolution, optimalSolution)
     println("PACO: " + pacoRPD)
+    
+    //Use HGAAlgorithm to evaluate inst_ta001
+    val hgaAlgorithm = new HGAAlgorithm(problem)
+    val hgaEvSolution = hgaAlgorithm.evaluate(problem)
+    val hgaRPD = Performance.RPD(hgaEvSolution, optimalSolution)
+    println("HGA: " + hgaRPD)
     
     assert(true)
     
