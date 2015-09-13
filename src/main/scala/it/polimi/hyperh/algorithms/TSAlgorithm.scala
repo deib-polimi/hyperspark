@@ -27,7 +27,7 @@ class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neig
     var evBestSolution = initialSolution(p)
     var move = (0, 1) //dummy initialization
     var tabooList: List[Int] = List()
-    var allMoves = generateAllNeighbourhoodMoves(p.numOfJobs)
+    var allMoves = NeighbourhoodSearch.generateAllNeighbourhoodMoves(p.numOfJobs)
     //algorithm time limit
     val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
@@ -52,7 +52,7 @@ class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neig
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     while (Timeout.notTimeout(expireTimeMillis)) {
       //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-      val allMoves = generateNRandomNeighbourhoodMoves(p.numOfJobs)
+      val allMoves = NeighbourhoodSearch.generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
       val pair1 = bestImprovement(p, evBestSolution, allMoves, tabooList, expireTimeMillis)
       var evNewSolution = pair1._1
       move = pair1._2
@@ -79,22 +79,9 @@ class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neig
       } else
         tabooList ::: List(solution.value)
   }
-  def generateAllNeighbourhoodMoves(numOfJobs: Int): List[(Int, Int)] = {
-    //tuples of distinct values, (1,1) is not allowed
-    (for (x <- 0 until numOfJobs; y <- 0 until numOfJobs) yield (x, y)).toList.filter(p => p._1 != p._2)
-  }
+  
   def isForbidden(tabooList: List[Int], makespan: Int) = {
     tabooList.contains(makespan)//forbidden makespan if it is in taboo list
-  }
-  def generateNRandomNeighbourhoodMoves(numOfJobs: Int): List[(Int, Int)] = {
-    var movesList: List[(Int, Int)] = List()
-    var i = 0
-    while (i < numOfRandomMoves) {
-      val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
-      movesList = movesList ::: List(move)
-      i = i + 1  
-    }
-    movesList
   }
 
   //Examine all provided moves and take the first which improves the current solution

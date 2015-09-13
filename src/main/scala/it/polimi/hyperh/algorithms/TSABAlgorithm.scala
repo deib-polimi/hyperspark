@@ -3,11 +3,9 @@ package it.polimi.hyperh.algorithms
 import it.polimi.hyperh.algorithms.TSAlgorithm
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
-import scala.util.Random
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.EvaluatedSolution
 import util.Timeout
-import util.ConsolePrinter
 
 /**
  * @author Nemanja

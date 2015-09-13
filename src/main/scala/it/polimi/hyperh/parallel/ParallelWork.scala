@@ -33,7 +33,7 @@ object ParallelWork extends App {
     val permutationList = Random.shuffle(p.jobs.toList)
     val oldSolution = new Solution(permutationList)
     var evOldSolution = Problem.evaluate(p, oldSolution)
-    calculate(p, evOldSolution, 7, 100)
+    calculate(p, evOldSolution, 7, 300)
   }
   case object Calculate
   case class Work(p: Problem, solution: Solution, initEndTimesMatrix: Array[Array[Int]])

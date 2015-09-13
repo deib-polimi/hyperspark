@@ -109,7 +109,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
     val tsAlgorithm = new TSAlgorithm()
     var bestSolution = completeSolution
     if(p.numOfJobs <= 50) {
-      val moves = tsAlgorithm.generateAllNeighbourhoodMoves(p.numOfJobs)
+      val moves = NeighbourhoodSearch.generateAllNeighbourhoodMoves(p.numOfJobs)
       while(Timeout.notTimeout(expireTimeMillis)) {
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1
       }
@@ -117,7 +117,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
     }
     else {
       while(Timeout.notTimeout(expireTimeMillis)) {
-        val moves = tsAlgorithm.generateNRandomNeighbourhoodMoves(p.numOfJobs)
+        val moves = NeighbourhoodSearch.generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.numOfRandomMoves)
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1 
       }
       bestSolution

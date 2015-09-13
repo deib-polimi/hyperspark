@@ -79,6 +79,21 @@ object NeighbourhoodSearch {
     val secondPoint = randomSuccessivePoint(firstPoint, n) //[firstPoint+1,n]
     (firstPoint, secondPoint)
   }
+  def generateAllNeighbourhoodMoves(numOfJobs: Int): List[(Int, Int)] = {
+    //tuples of distinct values, (1,1) is not allowed
+    (for (x <- 0 until numOfJobs; y <- 0 until numOfJobs) yield (x, y)).toList.filter(p => p._1 != p._2)
+  }
+  
+  def generateNRandomNeighbourhoodMoves(numOfJobs: Int, N: Int): List[(Int, Int)] = {
+    var movesList: List[(Int, Int)] = List()
+    var i = 0
+    while (i < N) {
+      val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
+      movesList = movesList ::: List(move)
+      i = i + 1  
+    }
+    movesList
+  }
   //FUNCTIONS THAT RANDOMLY INITIALIZE THE MOVES (POSITIONS)
   def SWAP(list: List[Int]): List[Int] = {
     val pair = randomNeighbourPair(list.size) //firstPoint: [0,n-1],secondPoint:  [0, n-1], firstPoint!=secondPoint

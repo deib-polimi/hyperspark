@@ -15,7 +15,7 @@ import scala.io.Source
 
 class Solution (
     val permutation:Permutation
-    ){
+    ) extends Serializable {
     /**
      * A secondary constructor.
      */
