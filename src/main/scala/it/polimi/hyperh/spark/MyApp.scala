@@ -20,7 +20,7 @@ object MyApp {
     
     val conf = new SparkConf().setAppName("HyperH").setMaster("local[4]")
     val sc = new SparkContext(conf)
-    
+    //to set positions for insertions using range
     val m = if (args.length > 0) args(0).toInt else 3
     //read the problem
     val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"

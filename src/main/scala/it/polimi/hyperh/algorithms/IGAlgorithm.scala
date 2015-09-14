@@ -77,7 +77,7 @@ object IGAlgorithm {
     //from 0 until numOfRemainingJobs (in NEH this is marked as for k=3 to numOfJobs)
     for(i <- 0 until removed.size) {
       val genPermutations = PermutationUtility.generateInserts(bestPermutation.toList,removed(i))
-        bestPermutation = PermutationUtility.getBestPermutation(genPermutations,p,initEndTimesMatrix).solution
+        bestPermutation = PermutationUtility.getBestPermutation(genPermutations,p).solution
     }
     bestPermutation
   }
@@ -94,7 +94,7 @@ object IGAlgorithm {
         val job = tmp(removalOrder(i))
         tmp.remove(removalOrder(i))
         val insertsList = PermutationUtility.generateInserts(tmp.toList,job)
-        val localSolution = PermutationUtility.getBestPermutation(insertsList,p,p.initEndTimesMatrix)
+        val localSolution = PermutationUtility.getBestPermutation(insertsList,p)
         if(localSolution.value < bestSolution.value) {
           bestSolution = localSolution
           improve=true

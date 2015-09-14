@@ -30,7 +30,7 @@ object PermutationUtility {
   }  
   
   //evaluate all permutations, and return the best evaluated solution as pair (value, permutation)
-    def getBestPermutation(permutations: List[List[Int]],p:Problem,initEndTimesMatrix:Array[Array[Int]]): EvaluatedSolution = {
+    def getBestPermutation(permutations: List[List[Int]],p:Problem): EvaluatedSolution = {
       var evaluatedSolutions = List[EvaluatedSolution]()
       for(i <- 0 until permutations.size) {
         val evaluatedSolution=p.evaluatePartialSolution(permutations(i))

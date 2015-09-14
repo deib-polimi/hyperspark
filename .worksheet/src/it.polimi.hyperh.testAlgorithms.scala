@@ -362,11 +362,11 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
       move = better
     }
     (path, rgh(p.numOfMachines, p.numOfJobs))
-  };System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(43); 
-  def qgh(g: Int, h: Int): Int = {
+  };System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""")}
+  /*def qgh(g: Int, h: Int): Int = {
   	
-  };System.out.println("""qgh: (g: Int, h: Int)Int""")}
-  
+  }*/
+
   
 
               

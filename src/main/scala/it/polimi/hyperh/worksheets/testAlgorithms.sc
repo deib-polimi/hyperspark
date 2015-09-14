@@ -363,10 +363,10 @@ object testAlgorithms {
     }
     (path, rgh(p.numOfMachines, p.numOfJobs))
   }
-  def qgh(g: Int, h: Int): Int = {
+  /*def qgh(g: Int, h: Int): Int = {
   	
-  }
-  
+  }*/
+
   
 
               
