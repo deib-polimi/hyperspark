@@ -10,67 +10,109 @@ import util.Timeout
 /**
  * @author Nemanja
  */
-class TSAlgorithm(val maxTabooListSize: Int, val numOfRandomMoves: Int, val neighbourhoodSearch: (List[Int], Int, Int) => List[Int]) extends Algorithm {
+class TSAlgorithm(
+    val maxTabooListSize: Int, 
+    val numOfRandomMoves: Int, 
+    val neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
+    seed: Option[EvaluatedSolution]
+    ) extends Algorithm {
   /**
    * A secondary constructor.
    */
   def this(maxTabooListSize: Int, numOfRandomMoves: Int) {
-    this(maxTabooListSize, numOfRandomMoves, NeighbourhoodSearch.INSdefineMove)//default values, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(maxTabooListSize, numOfRandomMoves, NeighbourhoodSearch.INSdefineMove, None)//default values, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
   }
   def this(maxTabooListSize: Int) {
-    this(maxTabooListSize, 20, NeighbourhoodSearch.INSdefineMove)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(maxTabooListSize, 20, NeighbourhoodSearch.INSdefineMove, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
   }
   def this() {
-    this(7, 20, NeighbourhoodSearch.INSdefineMove)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(7, 20, NeighbourhoodSearch.INSdefineMove, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
   }
-  def evaluateSmallProblem(p: Problem) = {
-    var evBestSolution = initialSolution(p)
-    var move = (0, 1) //dummy initialization
-    var tabooList: List[Int] = List()
-    var allMoves = NeighbourhoodSearch.generateAllNeighbourhoodMoves(p.numOfJobs)
+  def this(seed: Option[EvaluatedSolution]) {
+    this(7, 20, NeighbourhoodSearch.INSdefineMove, seed)
+  }
+  def initNEHSolution(p: Problem) = {
+    val nehAlgorithm = new NEHAlgorithm()
+    nehAlgorithm.evaluate(p)
+  }
+  def initialSolution(p: Problem): EvaluatedSolution = {
+    seed match {
+      case Some(seed) => seed
+      case None => initNEHSolution(p)
+    }
+  }
+  //with default time limit
+  def evaluateSmallProblem(p: Problem): EvaluatedSolution = {
     //algorithm time limit
     val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    
-    while (Timeout.notTimeout(expireTimeMillis)) {
-      var pair = firstImprovement(p, evBestSolution, allMoves, tabooList, expireTimeMillis)
-      val neighbourSolution = pair._1
-      move = pair._2
-      if(neighbourSolution.value < evBestSolution.value)
-        evBestSolution = neighbourSolution
-      tabooList = updateTabooList(tabooList, neighbourSolution)
-    }
-    evBestSolution
+    evaluateSmallProblem(p, timeLimit)
   }
-  
-  def evaluateBigProblem(p: Problem) = {
-    var evBestSolution = initialSolution(p)
-    var move = (0, 1) //dummy initialization
-    var tabooList: List[Int] = List()
+  def evaluateSmallProblem(p: Problem, timeLimit: Double): EvaluatedSolution = {
+    var evBestSolution = new EvaluatedSolution(999999999, p.jobs)//dummy initalization
+    var allMoves: List[(Int,Int)] = List()//dummy initalization
+    //algorithm time limit
+    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    def loop(bestSolution: EvaluatedSolution, taboo: List[Int], iter: Int): EvaluatedSolution = {
+      if(Timeout.notTimeout(expireTimeMillis)) {
+        if(iter == 1) {
+          evBestSolution = initialSolution(p)
+          allMoves = NeighbourhoodSearch.generateAllNeighbourhoodMoves(p.numOfJobs)
+        } else {
+          evBestSolution = bestSolution
+        }
+        val pair = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
+        val neighbourSolution = pair._1
+        if(neighbourSolution.value < evBestSolution.value)
+          evBestSolution = neighbourSolution
+        val tabooList = updateTabooList(taboo, neighbourSolution)
+        loop(evBestSolution, tabooList, iter + 1)
+      }
+      evBestSolution
+    }
+    loop(evBestSolution, List(), 1)
+  }
+  //with default time limit
+  def evaluateBigProblem(p: Problem): EvaluatedSolution = {
     //algorithm time limit
     val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+    evaluateBigProblem(p, timeLimit)
+  }
+  def evaluateBigProblem(p: Problem, timeLimit: Double): EvaluatedSolution = {
+    var evBestSolution = new EvaluatedSolution(999999999, p.jobs)//dummy initalization
+    //algorithm time limit
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    while (Timeout.notTimeout(expireTimeMillis)) {
-      //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-      val allMoves = NeighbourhoodSearch.generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
-      val pair1 = bestImprovement(p, evBestSolution, allMoves, tabooList, expireTimeMillis)
-      var evNewSolution = pair1._1
-      move = pair1._2
-      if(evNewSolution.value < evBestSolution.value)
-        evBestSolution = evNewSolution
-      tabooList = updateTabooList(tabooList, evNewSolution)
+    def loop(bestSolution: EvaluatedSolution, taboo: List[Int], iter: Int): EvaluatedSolution = {
+      if(Timeout.notTimeout(expireTimeMillis)) {
+        if(iter == 1) {
+          evBestSolution = initialSolution(p)
+        } else {
+          evBestSolution = bestSolution
+        }
+        //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
+        val allMoves = NeighbourhoodSearch.generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
+        val pair1 = bestImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
+        val evNewSolution = pair1._1
+        if(evNewSolution.value < evBestSolution.value)
+          evBestSolution = evNewSolution
+        val tabooList = updateTabooList(taboo, evNewSolution)
+        loop(evBestSolution, tabooList, iter + 1)
+      }
+      else evBestSolution
     }
-    evBestSolution
+    loop(evBestSolution, List(), 1)
   }
   override def evaluate(p: Problem) = {
+    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
     if(p.numOfJobs <= 11)
       evaluateSmallProblem(p)
     else
       evaluateBigProblem(p)
   }
-  def initialSolution(p: Problem) = {
-    val nehAlgorithm = new NEHAlgorithm()
-    nehAlgorithm.evaluate(p)
+  override def evaluate(p:Problem, timeLimit: Double): EvaluatedSolution = {
+    if(p.numOfJobs <= 11)
+      evaluateSmallProblem(p, timeLimit)
+    else
+      evaluateBigProblem(p, timeLimit)
   }
   def updateTabooList(tabooList: List[Int], solution: EvaluatedSolution): List[Int] = {
     if (tabooList.size == maxTabooListSize) {

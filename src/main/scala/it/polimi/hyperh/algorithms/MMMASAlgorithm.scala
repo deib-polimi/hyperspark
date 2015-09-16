@@ -9,12 +9,15 @@ import util.Timeout
 /**
  * @author Nemanja
  */
-class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extends MMASAlgorithm(p,t0,cand,timeLimit) {
+class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSolution]) extends MMASAlgorithm(p,t0,cand,seed) {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+    this(p, 0.2, 5, seedOption)//default values
+  }
   def this(p: Problem) {
-    this(p, 0.2, 5, p.numOfMachines*(p.numOfJobs/2.0)*60)//default values
+    this(p, 0.2, 5, None)//default values
   }
   def sumij(iJob: Int, jPos : Int) = {
     var sum = 0.0

@@ -6,80 +6,120 @@ import scala.util.Random
 import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.Solution
+import util.ConsolePrinter
 
 /**
  * @author Nemanja
  */
 
-class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, val mutDecreaseFactor: Double, val mutResetThreshold: Double) extends Algorithm {
+class GAAlgorithm(
+    val popSize: Int, 
+    val crossRate: Double, 
+    val mutRate: Double, 
+    val mutDecreaseFactor: Double, 
+    val mutResetThreshold: Double,
+    val seed: Option[EvaluatedSolution]
+    ) extends Algorithm {
   /**
    * Secondary constructors
    */
+  def this(popSize: Int, seedOption: Option[EvaluatedSolution]) {
+    //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
+    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption)
+  }
   def this(popSize: Int) {
     //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    this(popSize, 1.0, 0.8, 0.99, 0.95)
+    this(popSize, 1.0, 0.8, 0.99, 0.95, None)
   }
   def this() {
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    this(30, 1.0, 0.8, 0.99, 0.95)
+    this(30, 1.0, 0.8, 0.99, 0.95, None)
+  }
+  def initNEHSolution(p: Problem) = {
+    val nehAlgorithm = new NEHAlgorithm()
+    nehAlgorithm.evaluate(p)
+  }
+  def initialSolution(p: Problem): EvaluatedSolution = {
+    seed match {
+      case Some(seed) => seed
+      case None => initNEHSolution(p)
+    }
   }
   override def evaluate(p: Problem): EvaluatedSolution = {
-    val initEndTimesMatrix = p.jobsInitialTimes()
+    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    evaluate(p, timeLimit)
+  }
+  override def evaluate(p:Problem, timeLimit: Double): EvaluatedSolution = {
     //INITIALIZE POPULATION
-    var population = initNEHplusRandom(p, popSize, initEndTimesMatrix)
-    population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-    //calculate population statistics
-    var triple = calculateStatistics(population)
-    var mean = triple._1
-    var median = triple._2
-    var minimum = triple._3
-    var medianIndex = population.map(x => x.value).indexOf(median)
-    var mutationRate = mutRate
     var child1 = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
     var child2 = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     
-    while (Timeout.notTimeout(expireTimeMillis)) {
-      //CROSSOVER
-      val randomNo = Random.nextDouble()
-      if (randomNo < crossRate) {
-        //select parent1 using fitness_rank distribution
-        val parent1 = population(medianIndex+Random.nextInt(popSize-medianIndex))
-        //select parent2 using uniform distribution
-        val parent2 = population(Random.nextInt(popSize))
-        val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
-        child1 = Problem.evaluate(p, new Solution(children._1))
-        child2 = Problem.evaluate(p, new Solution(children._2))
+    def loop(pop: Array[EvaluatedSolution], stats: (Double, Int, Int), mRate: Double, iter: Int): EvaluatedSolution = {
+      if(Timeout.notTimeout(expireTimeMillis)) {
+          var population = pop
+          var triple = stats
+          var mean = triple._1
+          var median = triple._2
+          var minimum = triple._3
+          var medianIndex = popSize / 2 + 1//population.map(x => x.value).indexOf(median)
+          var mutationRate = mRate
+        if(iter == 1) {
+          //INITIALIZE POPULATION
+          population = initSeedPlusRandom(p, popSize)
+          population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
+          //calculate population statistics
+          triple = calculateStatistics(population)
+          mean = triple._1
+          median = triple._2
+          minimum = triple._3
+          medianIndex = popSize / 2 + 1 //population.map(x => x.value).indexOf(median)
+          mutationRate = mutRate
+        }
+        //CROSSOVER
+        val randomNo = Random.nextDouble()
+        if (randomNo < crossRate) {
+          //select parent1 using fitness_rank distribution
+          val parent1 = population(medianIndex+Random.nextInt(popSize-medianIndex))
+          //select parent2 using uniform distribution
+          val parent2 = population(Random.nextInt(popSize))
+          val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
+          child1 = Problem.evaluate(p, new Solution(children._1))
+          child2 = Problem.evaluate(p, new Solution(children._2))
+        }
+        //MUTATION
+        if (randomNo < mutRate) {
+          val mutation1 = mutationSWAP(child1.solution.toList)
+          val mutation2 = mutationSWAP(child2.solution.toList)
+          child1 = Problem.evaluate(p, new Solution(mutation1))
+          child2 = Problem.evaluate(p, new Solution(mutation2))
+        }
+        //UPDATE POPULATION
+        //delete sequence from unfit members, whose makespan value is below the median
+        val index1 = Random.nextInt(medianIndex)
+        val index2 = Random.nextInt(medianIndex)
+        //insert new members into population (at the same time deleting old members)
+        population(index1) = child1
+        population(index2) = child2
+        //UPDATE STATISTICS
+        population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
+        triple = calculateStatistics(population)
+        mean = triple._1
+        median = triple._2
+        minimum = triple._3
+        //UPDATE MUTATION RATE
+        mutationRate = mutDecreaseFactor * mutationRate
+        //threshold for mutation rate reseting
+        if (minimum / mean > mutResetThreshold) mutationRate = mutRate
+        //REPEAT
+        loop(population, triple, mutationRate, iter + 1)
       }
-      //MUTATION
-      if (randomNo < mutRate) {
-        val mutation1 = mutationSWAP(child1.solution.toList)
-        val mutation2 = mutationSWAP(child2.solution.toList)
-        child1 = Problem.evaluate(p, new Solution(mutation1))
-        child2 = Problem.evaluate(p, new Solution(mutation2))
+      else {
+        //RETURN BEST SOLUTION
+        pop.minBy(_.value)
       }
-      //UPDATE POPULATION
-      //delete sequence from unfit members, whose makespan value is below the median
-      val index1 = Random.nextInt(medianIndex)
-      val index2 = Random.nextInt(medianIndex)
-      //insert new members into population (at the same time deleting old members)
-      population(index1) = child1
-      population(index2) = child2
-      //UPDATE STATISTICS
-      population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-      triple = calculateStatistics(population)
-      mean = triple._1
-      median = triple._2
-      minimum = triple._3
-      //UPDATE MUTATION RATE
-      mutationRate = mutDecreaseFactor * mutationRate
-      //threshold for mutation rate reseting
-      if (minimum / mean > mutResetThreshold) mutationRate = mutRate
-    } //endwhile
-    //RETURN BEST SOLUTION
-    population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
-    population(popSize-1)//return best solution
+    } //end def loop
+    loop(Array(), (1.0, 1, 1), mutRate, 1)
   }
   def initRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
@@ -92,11 +132,9 @@ class GAAlgorithm(val popSize: Int, val crossRate: Double, val mutRate: Double, 
     }
     population
   }
-
-  def initNEHplusRandom(p: Problem, size: Int, initEndTimesMatrix: Array[Array[Int]]): Array[EvaluatedSolution] = {
-    val nehAlgorithm = new NEHAlgorithm()
-    val nehEvSolution = nehAlgorithm.evaluate(p)
-    val population = Array(nehEvSolution) ++ initRandom(p, size-1)
+  def initSeedPlusRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
+    val seedSol = initialSolution(p)//NEH or provided seed in constructor
+    val population = Array(seedSol) ++ initRandom(p, size-1)
     population
   }
 

@@ -16,6 +16,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
   var temperatureLB: Double = 1.0
   var iterations: Double = scala.math.max(3300*scala.math.log(p.numOfJobs)+7500*scala.math.log(p.numOfMachines)-18250, 2000)
   var coolingRate: Double = (temperatureUB-temperatureLB)/((iterations-1)*temperatureUB*temperatureLB)
+  var seed: Option[EvaluatedSolution] = None
   /**
    * A secondary constructor.
    */
@@ -25,39 +26,66 @@ class SAAlgorithm(p: Problem) extends Algorithm {
     temperatureLB = tLB
     coolingRate = cRate
   }
+  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, seedOption: Option[EvaluatedSolution]) {
+    this(p)
+    temperatureUB = tUB
+    temperatureLB = tLB
+    coolingRate = cRate
+    seed = seedOption
+  }
+  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+    this(p)
+    seed = seedOption
+  }
+  def initialSolution(p: Problem): EvaluatedSolution = {
+    seed match {
+      case Some(seed) => seed
+      case None => Problem.evaluate(p, new Solution(Random.shuffle(p.jobs.toList)))
+    }
+  }
   override def evaluate(p: Problem): EvaluatedSolution = {
-    val initEndTimesMatrix = p.jobsInitialTimes()
+    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+    evaluate(p, timeLimit)
+  }
+  override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
     def cost(solution: List[Int]) = Problem.evaluate(p, new Solution(solution))
     def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch.SHIFT(sol)//forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828,(-delta/temperature))
     }
-    
-    var temperature = temperatureUB
-    //generate random solution
-    var oldSolution = Random.shuffle(p.jobs.toList)
-    //calculate its cost
-    var evOldSolution = cost(oldSolution)
-    
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+     
+    var oldSolution = p.jobs.toList//dummy initialization
+    var evOldSolution = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    
-    while ((temperature > temperatureLB) && Timeout.notTimeout(expireTimeMillis)) {
-      //generate random neighbouring solution
-      val newSolution = neighbour(oldSolution)
-      //calculate its cost
-      val evNewSolution = cost(newSolution)
-        
-      val delta = evNewSolution.value - evOldSolution.value
-      //calculate acceptance probability
-      val ap = acceptanceProbability(delta, temperature)
-      val randomNo = Random.nextDouble()
-      if((delta <= 0) || (randomNo <= ap)) {
-        oldSolution = newSolution
-        evOldSolution = evNewSolution
-      } 
-      temperature = temperature / (1 + coolingRate*temperature)
+    def loop(old: EvaluatedSolution, temp: Double, iter: Int): EvaluatedSolution = {
+      if((temp > temperatureLB) && Timeout.notTimeout(expireTimeMillis)) {
+        if(iter == 1) {
+          //initialize solution
+          evOldSolution = initialSolution(p)
+          oldSolution = evOldSolution.solution.toList
+        } else {
+          oldSolution = old.solution.toList
+          evOldSolution = old
+        }
+        var temperature = temp
+        //generate random neighbouring solution
+        val newSolution = neighbour(oldSolution)
+        //calculate its cost
+        val evNewSolution = cost(newSolution)
+          
+        val delta = evNewSolution.value - evOldSolution.value
+        //calculate acceptance probability
+        val ap = acceptanceProbability(delta, temperature)
+        val randomNo = Random.nextDouble()
+        if((delta <= 0) || (randomNo <= ap)) {
+          oldSolution = newSolution
+          evOldSolution = evNewSolution
+        } 
+        temperature = temperature / (1 + coolingRate*temperature)
+        loop(evOldSolution, temperature, iter + 1)
+      }
+      else evOldSolution
     }
-    evOldSolution
+    loop(evOldSolution, temperatureUB, 1)
   }
 }

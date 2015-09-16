@@ -8,4 +8,5 @@ import it.polimi.hyperh.solution.EvaluatedSolution
  */
 trait Algorithm {
   def evaluate(p: Problem): EvaluatedSolution
+  def evaluate(p: Problem, timeLimit: Double): EvaluatedSolution
 }

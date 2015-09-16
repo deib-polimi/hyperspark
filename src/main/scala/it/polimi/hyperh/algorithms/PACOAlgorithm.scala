@@ -9,12 +9,15 @@ import util.ConsolePrinter
 /**
  * @author Nemanja
  */
-class PACOAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extends MMMASAlgorithm(p, t0, cand, timeLimit) {
+class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSolution]) extends MMMASAlgorithm(p, t0, cand, seed) {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+    this(p, 0.2, 5, seedOption)//default values
+  }
   def this(p: Problem) {
-    this(p, 0.2, 5, p.numOfMachines*(p.numOfJobs/2.0)*60)//default values
+    this(p, 0.2, 5, None)//default values
   }
   //remove Tmax and Tmin limits
   override def setT(iJob: Int, jPos: Int, newTij: Double) = {
@@ -134,20 +137,31 @@ class PACOAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extend
     }//while i
     bestSolution
   }
-  override def evaluate(p: Problem): EvaluatedSolution = {
-    var iter = 0
-    var bestSolution = initialize()
+  override def evaluate(p: Problem, timeLimit: Double): EvaluatedSolution = {
+    val bestSol = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    while(notStopCondition && Timeout.notTimeout(expireTimeMillis)) {
-      var antSolution = constructAntSolution(bestSolution)//pass global best or ant best solution
-      antSolution = localSearch(antSolution, expireTimeMillis)
-      if(antSolution.value < bestSolution.value)
-        bestSolution = antSolution
-      updatePheromones(antSolution, bestSolution)////use global best or ant best solution in impl
-      if(iter % 40 == 0)
-        bestSolution = swapScheme(bestSolution, expireTimeMillis)
-      iter = iter + 1
+    def loop(bestSol: EvaluatedSolution, iter: Int): EvaluatedSolution = {
+      if(notStopCondition && Timeout.notTimeout(expireTimeMillis)) {
+        var bestSolution = bestSol
+        if(iter == 0) {
+          bestSolution = initialize()
+        }
+        var antSolution = constructAntSolution(bestSolution)//pass global best or ant best solution
+        antSolution = localSearch(antSolution, Timeout.setTimeout(300))
+        if(antSolution.value < bestSolution.value)
+          bestSolution = antSolution
+        updatePheromones(antSolution, bestSolution)////use global best or ant best solution in impl
+        if(iter % 40 == 0)
+          bestSolution = swapScheme(bestSolution, expireTimeMillis)
+        loop(bestSolution, iter + 1)
+      }
+      else bestSol
     }
-    bestSolution
+    loop(bestSol, 0)
+  }
+  
+  override def evaluate(p: Problem) = {
+    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    evaluate(p, timeLimit)
   }
 }

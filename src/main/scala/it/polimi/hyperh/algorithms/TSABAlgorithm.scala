@@ -15,12 +15,17 @@ class TSABAlgorithm(
     numOfRandomMoves: Int,
     neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
     val maxret: Int,
-    val maxiter: Int) extends TSAlgorithm(maxt, numOfRandomMoves, neighbourhoodSearch) {
+    val maxiter: Int,
+    seed: Option[EvaluatedSolution]
+    ) extends TSAlgorithm(maxt, numOfRandomMoves, neighbourhoodSearch, seed) {
   /**
    * A secondary constructor.
    */
   def this() {
-    this(8, 20, NeighbourhoodSearch.INSdefineMove, 1000, 30000)
+    this(8, 20, NeighbourhoodSearch.INSdefineMove, 1000, 30000, None)
+  }
+  def this(seed: Option[EvaluatedSolution]) {
+    this(8, 20, NeighbourhoodSearch.INSdefineMove, 1000, 30000, seed)
   }
   def getEpsilon(numOfJobs: Int, numOfMachines: Int): Double = {
     val nOverM = numOfJobs / numOfMachines
@@ -293,11 +298,32 @@ class TSABAlgorithm(
   def aspiration(p: Problem, bestSolution: EvaluatedSolution, forbiddenMoves: List[(Int,Int)], expireTimeMillis: Double) = {
     bestImprovement(p, bestSolution, forbiddenMoves, expireTimeMillis)
   }
+  //update representative moves list
+  def updateRepresentatives(representatives: List[(Int, Int)], move: (Int, Int)): List[(Int, Int)] = {
+    representatives.filterNot((m: (Int, Int)) => (m._1 == move._1 && m._2 == move._2))
+  }
+  //separate allowed and forbidden moves
+  def processMoves(moves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: EvaluatedSolution) = {
+    var allowed: List[(Int, Int)] = List()
+    var forbidden: List[(Int, Int)] = List()
+    for (i <- 0 until moves.size) {
+      if (isForbidden(tabooList, evOldSolution, moves(i)))
+        forbidden = forbidden ::: List(moves(i))
+      else
+        allowed = allowed ::: List(moves(i))
+    }
+    (allowed, forbidden)
+  }
   override def evaluate(p: Problem): EvaluatedSolution = {
-    val epsilon = getEpsilon(p.numOfJobs, p.numOfMachines)
-    var evOldSolution = initialSolution(p)
+    //algorithm time limit
+    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+    evaluate(p, timeLimit)
+    
+  }
+  override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
+     val epsilon = getEpsilon(p.numOfJobs, p.numOfMachines)
+    var evOldSolution = new EvaluatedSolution(999999999, p.jobs)
     var evBestSolution = evOldSolution
-    val perm = evOldSolution.permutation
     var tabooOld: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
     var tabooNew: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
     var updTabooList: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
@@ -314,7 +340,6 @@ class TSABAlgorithm(
     var uArr = Array[Int](1, 8)
 
     //algorithm time limit
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
 
     def NSP() = {
@@ -351,6 +376,10 @@ class TSABAlgorithm(
       if (!skip1) {
         iter = iter + 1
         ret = ret + 1
+        if(iter == 1) {
+          evOldSolution = initialSolution(p)
+          evBestSolution = evOldSolution
+        }
         val pathC = criticalPath(p, evOldSolution.solution)._1 //pass the permutation
         val blocks = getBlockLimits(pathC)
         mArr = getMachines(blocks)
@@ -390,20 +419,6 @@ class TSABAlgorithm(
       } else exit = true
     }
     evBestSolution
-  }
-  def updateRepresentatives(representatives: List[(Int, Int)], move: (Int, Int)): List[(Int, Int)] = {
-    representatives.filterNot((m: (Int, Int)) => (m._1 == move._1 && m._2 == move._2))
-  }
-  def processMoves(moves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: EvaluatedSolution) = {
-    var allowed: List[(Int, Int)] = List()
-    var forbidden: List[(Int, Int)] = List()
-    for (i <- 0 until moves.size) {
-      if (isForbidden(tabooList, evOldSolution, moves(i)))
-        forbidden = forbidden ::: List(moves(i))
-      else
-        allowed = allowed ::: List(moves(i))
-    }
-    (allowed, forbidden)
   }
 
 }

@@ -12,16 +12,28 @@ import util.Timeout
 /**
  * @author Nemanja
  */
-class MMASAlgorithm(p: Problem, t0: Double, cand: Int, timeLimit: Double) extends ACOAlgorithm(p, t0, timeLimit) with Algorithm {
+class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSolution]) extends ACOAlgorithm(p, t0, seed) with Algorithm {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+    this(p, 0.2, 5, seedOption)//default values
+  }
   def this(p: Problem) {
-    this(p, 0.2, 5, p.numOfMachines*(p.numOfJobs/2.0)*60)//default values
+    this(p, 0.2, 5, None)//default values
+  }
+  def initNEHSolution(p: Problem) = {
+    val nehAlgorithm = new NEHAlgorithm()
+    nehAlgorithm.evaluate(p)
   }
   override def initialSolution() = {
-    val nehAlgorithm = new NEHAlgorithm() 
-    var solution = nehAlgorithm.evaluate(p)
+    def getSolution(seedOption: Option[EvaluatedSolution]) ={
+      seedOption match {
+        case Some(seedOption) => seedOption
+        case None => initNEHSolution(p)
+      }
+    }
+    var solution = getSolution(seed)
     solution = localSearch(solution, Timeout.setTimeout(300))
     updateTmax(solution)
     updateTmin

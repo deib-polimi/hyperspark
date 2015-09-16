@@ -9,13 +9,23 @@ import it.polimi.hyperh.solution.Solution
 /**
  * @author Nemanja
  */
-class HGAAlgorithm(p: Problem, popSize: Int, prob: Double, coolingRate: Double) extends GAAlgorithm(popSize) {
+class HGAAlgorithm(
+    p: Problem, 
+    popSize: Int, 
+    prob: Double, 
+    coolingRate: Double,
+    seed: Option[EvaluatedSolution]
+    ) extends GAAlgorithm(popSize, seed) {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+    //popSize: 40, prob: 0.1, coolingRate: 0.95
+    this(p, 40, 0.1, 0.95, seedOption)
+  }
   def this(p: Problem) {
     //popSize: 40, prob: 0.1, coolingRate: 0.95
-    this(p, 40, 0.1, 0.95)
+    this(p, 40, 0.1, 0.95, None)
   }
   var temperatureUB:Double = 2000.0 //dummy initialization
 
@@ -24,14 +34,16 @@ class HGAAlgorithm(p: Problem, popSize: Int, prob: Double, coolingRate: Double) 
     scala.math.min(1.0, scala.math.pow(2.71828, (-delta / temperature)))
   }
   override def evaluate(p: Problem): EvaluatedSolution = {
-    val initEndTimesMatrix = p.jobsInitialTimes()
+    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+    evaluate(p, timeLimit)
+  }
+  override def evaluate(p:Problem, timeLimit: Double): EvaluatedSolution = {
     //INITIALIZE POPULATION
-    var population = initNEHplusRandom(p, popSize, initEndTimesMatrix)
+    var population = initSeedPlusRandom(p, popSize)
     var bestSolution = population.minBy(_.value)
     var worstSolution = population.maxBy(_.value)
     val delta = worstSolution.value - bestSolution.value
     temperatureUB = -delta / scala.math.log(prob)
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     
     while (Timeout.notTimeout(expireTimeMillis)) {

@@ -40,11 +40,7 @@ class AlgorithmsTest extends Assertions {
     
     //Use NEHAlgorithm to evaluate inst_ta001
     val nehAlgorithm = new NEHAlgorithm()
-    
-    val start = System.currentTimeMillis()
     val nehEvSolution = nehAlgorithm.evaluate(problem)
-    val end = System.currentTimeMillis() 
-    println("duration "+(end - start))
     val nehRPD = Performance.RPD(nehEvSolution, optimalSolution)
     println("NEH: " + nehRPD)
     
