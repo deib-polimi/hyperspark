@@ -12,24 +12,26 @@ import util.Timeout
 /**
  * @author Nemanja
  */
-class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSolution]) extends ACOAlgorithm(p, t0, seed) with Algorithm {
+class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, seedOption: Option[Solution]) {
     this(p, 0.2, 5, seedOption)//default values
   }
   def this(p: Problem) {
     this(p, 0.2, 5, None)//default values
   }
+  private var seed = seedOption
+  
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
   }
   override def initialSolution() = {
-    def getSolution(seedOption: Option[EvaluatedSolution]) ={
+    def getSolution(seedOption: Option[Solution]) ={
       seedOption match {
-        case Some(seedOption) => seedOption
+        case Some(seedOption) => Problem.evaluate(p, seedOption)
         case None => initNEHSolution(p)
       }
     }

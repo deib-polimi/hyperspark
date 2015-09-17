@@ -1,15 +1,9 @@
-package it.polimi.hyperh.search
-
+package it.polimi.hyperh.worksheets
 import scala.util.Random
-import it.polimi.hyperh.solution.Solution
 
-/**
- * @author Nemanja
- */
-object NeighbourhoodDivider {
-  
-  //DIVISION STRATEGIES
- def slidingWindow(solution: List[Int], windowSize: Int): List[List[Int]] = {
+object testFramework {
+  println("Welcome to the Scala worksheet")
+  def slidingWindow(solution: List[Int], windowSize: Int): List[List[Int]] = {
     var list: List[List[Int]] = List()
     for(i <- 0 to solution.size - windowSize){
       val window = solution.drop(i).take(windowSize)
@@ -22,7 +16,7 @@ object NeighbourhoodDivider {
     }
     list
   }
- def slidingWindow(solution: Array[Int], windowSize: Int): Array[Array[Int]] = {
+  def slidingWindow(solution: Array[Int], windowSize: Int): Array[Array[Int]] = {
     var array: Array[Array[Int]] = Array()
     for(i <- 0 to solution.size - windowSize){
       val window = solution.drop(i).take(windowSize)
@@ -35,23 +29,6 @@ object NeighbourhoodDivider {
     }
     array
   }
-  def slidingWindow(solution: Solution, windowSize: Int): Array[Solution] = {
-    var array: Array[Solution] = Array()
-    val perm = solution.permutation
-    for(i <- 0 to perm.size - windowSize){
-      val window = perm.drop(i).take(windowSize)
-      val allowed = perm.filterNot(window.toSet)
-      val arrayTake = Random.shuffle(allowed.toList).toArray
-      val leftPart = arrayTake.take(i)
-      val rightPart = arrayTake.drop(i)
-      val newSol = leftPart ++ window ++ rightPart
-      array = array ++ Array(new Solution(newSol))
-    }
-    array
-  }
-  
-  
-  
-  
-  
+  slidingWindow(List(1,2,3,4,5,6,7,8,9,10), 3)
+  slidingWindow(Array(1,2,3,4,5,6,7,8,9,10), 3)
 }

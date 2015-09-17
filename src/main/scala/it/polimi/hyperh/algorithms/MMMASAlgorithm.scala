@@ -5,15 +5,16 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
+import it.polimi.hyperh.solution.Solution
 
 /**
  * @author Nemanja
  */
-class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSolution]) extends MMASAlgorithm(p,t0,cand,seed) {
+class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) extends MMASAlgorithm(p,t0,cand,seedOption) {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, seedOption: Option[Solution]) {
     this(p, 0.2, 5, seedOption)//default values
   }
   def this(p: Problem) {

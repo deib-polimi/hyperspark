@@ -5,20 +5,30 @@ import scala.util.Random
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
 import util.ConsolePrinter
+import it.polimi.hyperh.solution.Solution
 
 /**
  * @author Nemanja
  */
-class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSolution]) extends MMMASAlgorithm(p, t0, cand, seed) {
+class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) extends MMMASAlgorithm(p, t0, cand, seedOption) {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, seedOption: Option[Solution]) {
     this(p, 0.2, 5, seedOption)//default values
   }
   def this(p: Problem) {
     this(p, 0.2, 5, None)//default values
   }
+  private var seed = seedOption
+  
+  def initialSolution(p: Problem): EvaluatedSolution = {
+    seed match {
+      case Some(seed) => Problem.evaluate(p, seed)
+      case None => initNEHSolution(p)
+    }
+  }
+  
   //remove Tmax and Tmin limits
   override def setT(iJob: Int, jPos: Int, newTij: Double) = {
     val i = iJob - 1
@@ -45,8 +55,7 @@ class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSol
       }
   }
   override def initialSolution() = {
-    val nehAlgorithm = new NEHAlgorithm() 
-    var solution = nehAlgorithm.evaluate(p)
+    var solution = initialSolution(p)
     solution = localSearch(solution, Timeout.setTimeout(300))
     updateTmax(solution)
     updateTmin
@@ -162,6 +171,11 @@ class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seed: Option[EvaluatedSol
   
   override def evaluate(p: Problem) = {
     val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    evaluate(p, timeLimit)
+  }
+  
+  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+    seed = seedSol
     evaluate(p, timeLimit)
   }
 }

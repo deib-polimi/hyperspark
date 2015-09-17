@@ -5,6 +5,7 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.solution.Solution
 
 /**
  * @author Nemanja
@@ -26,7 +27,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     maxNotChangedMS = mncMS
     maxItPerMS = mitpMS
   }
-  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[Solution]) {
     this(p)
     temperatureUB = tUB
     temperatureLB = tLB
@@ -36,7 +37,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     maxItPerMS = mitpMS
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, seedOption: Option[Solution]) {
     this(p)
     seed = seedOption
   }

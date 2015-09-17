@@ -6,6 +6,7 @@ import it.polimi.hyperh.types.Types._
 import it.polimi.hyperh.solution.EvaluatedSolution
 import util.PermutationUtility
 import it.polimi.hyperh.problem.Problem
+import it.polimi.hyperh.solution.Solution
 
 /**
  * @author Nemanja
@@ -16,14 +17,8 @@ import it.polimi.hyperh.problem.Problem
 
 //Problem Factory
 class NEHAlgorithm() extends Algorithm {
-  override def evaluate(p: Problem): EvaluatedSolution = {
-    val pairs = p.createJobValuePairs(p.jobs, p.extractEndTimes(p.initEndTimesMatrix))
-    //STEP 1: sort jobs in decreasing order, STEP 2.1.take best two,
-    val sortedList = p.sortJobsDecreasing(pairs).map(x => x._1).toList
-    val twoJobs = sortedList.take(2) //> twoJobs  : List[Int] = List(1, 2)
-    val remainingJobs = sortedList.filterNot(twoJobs.toSet).toList //> remainingJobs  : List[Int] = List(3, 4, 5)
-
-    def loop(partialSolution: List[Int], remainingJobs: List[Int]): EvaluatedSolution = {
+  
+  def constructSolution(p:Problem, partialSolution: List[Int], remainingJobs: List[Int]): EvaluatedSolution = {
       //STEP 2.2 get best permutation of two jobs
       var bestPermutation = PermutationUtility.getBestPermutation(PermutationUtility.generatePermutations(partialSolution), p)
       //STEP 3 of NEH algorithm
@@ -34,8 +29,15 @@ class NEHAlgorithm() extends Algorithm {
         //println(bestPermutation)
       }
       bestPermutation
-    }
-    val finalSolution = loop(twoJobs, remainingJobs) //> mySolution  : solution.EvaluatedSolution = EvaluatedSolution(58,[I@2353b3e6| )
+  }
+  override def evaluate(p: Problem): EvaluatedSolution = {
+    val pairs = p.createJobValuePairs(p.jobs, p.extractEndTimes(p.initEndTimesMatrix))
+    //STEP 1: sort jobs in decreasing order, STEP 2.1.take best two,
+    val sortedList = p.sortJobsDecreasing(pairs).map(x => x._1).toList
+    val twoJobs = sortedList.take(2) //> twoJobs  : List[Int] = List(1, 2)
+    val remainingJobs = sortedList.filterNot(twoJobs.toSet).toList //> remainingJobs  : List[Int] = List(3, 4, 5)
+    
+    val finalSolution = constructSolution(p, twoJobs, remainingJobs) //> mySolution  : solution.EvaluatedSolution = EvaluatedSolution(58,[I@2353b3e6| )
     finalSolution
   }
   //useless to have time limit on NEH, because it will not construct complete solution
@@ -43,6 +45,23 @@ class NEHAlgorithm() extends Algorithm {
   //complete solution faster than other algorithms
   override def evaluate(p: Problem, timeLimit: Double): EvaluatedSolution = {
     evaluate(p)
+  }
+  
+  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+    def getSolution(seedOption: Option[Solution]) ={
+      seedOption match {
+        case Some(seedOption) => {
+          val partialSolution = seedOption.permutation.toList
+          val pairs = p.createJobValuePairs(p.jobs, p.extractEndTimes(p.initEndTimesMatrix))
+          val sortedList = p.sortJobsDecreasing(pairs).map(x => x._1).toList
+          val remainingJobs = sortedList.filterNot(partialSolution.toSet).toList
+          val solution = constructSolution(p, partialSolution, remainingJobs)
+          solution
+        }
+        case None => evaluate(p)
+      }
+    }
+    getSolution(seedSol)
   }
 }
 

@@ -14,7 +14,7 @@ import it.polimi.hyperh.solution.Solution
  */
 
 //Problem Factory
-class IGAlgorithm(val d:Int,val T:Double, val seed: Option[EvaluatedSolution]) extends Algorithm {
+class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends Algorithm {
   /**
    * A secondary constructor.
    */
@@ -22,16 +22,18 @@ class IGAlgorithm(val d:Int,val T:Double, val seed: Option[EvaluatedSolution]) e
     //d: 2, T: 0.2
     this(2, 0.2, None)
   }
-  def this(seedOption: Option[EvaluatedSolution]) {
+  def this(seedOption: Option[Solution]) {
     this(2, 0.2, seedOption)
   }
+  private var seed = seedOption
+  
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed
+      case Some(seed) => Problem.evaluate(p, seed)
       case None => initNEHSolution(p)
     }
   }
@@ -75,6 +77,10 @@ class IGAlgorithm(val d:Int,val T:Double, val seed: Option[EvaluatedSolution]) e
       else bestSol
     }
     loop(dummySol, dummySol, 1)
+  }
+  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+    seed = seedSol
+    evaluate(p, timeLimit)
   }
 }
 object IGAlgorithm {

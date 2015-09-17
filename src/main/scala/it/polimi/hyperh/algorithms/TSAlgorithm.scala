@@ -14,7 +14,7 @@ class TSAlgorithm(
     val maxTabooListSize: Int, 
     val numOfRandomMoves: Int, 
     val neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
-    seed: Option[EvaluatedSolution]
+    sd: Option[Solution]
     ) extends Algorithm {
   /**
    * A secondary constructor.
@@ -28,16 +28,18 @@ class TSAlgorithm(
   def this() {
     this(7, 20, NeighbourhoodSearch.INSdefineMove, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
   }
-  def this(seed: Option[EvaluatedSolution]) {
+  def this(seed: Option[Solution]) {
     this(7, 20, NeighbourhoodSearch.INSdefineMove, seed)
   }
+  private var seed = sd
+  
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed
+      case Some(seed) => Problem.evaluate(p, seed)
       case None => initNEHSolution(p)
     }
   }
@@ -113,6 +115,10 @@ class TSAlgorithm(
       evaluateSmallProblem(p, timeLimit)
     else
       evaluateBigProblem(p, timeLimit)
+  }
+  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+    seed = seedSol
+    evaluate(p, timeLimit)
   }
   def updateTabooList(tabooList: List[Int], solution: EvaluatedSolution): List[Int] = {
     if (tabooList.size == maxTabooListSize) {

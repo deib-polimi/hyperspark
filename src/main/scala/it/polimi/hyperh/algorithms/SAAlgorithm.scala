@@ -16,7 +16,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
   var temperatureLB: Double = 1.0
   var iterations: Double = scala.math.max(3300*scala.math.log(p.numOfJobs)+7500*scala.math.log(p.numOfMachines)-18250, 2000)
   var coolingRate: Double = (temperatureUB-temperatureLB)/((iterations-1)*temperatureUB*temperatureLB)
-  var seed: Option[EvaluatedSolution] = None
+  var seed: Option[Solution] = None
   /**
    * A secondary constructor.
    */
@@ -26,20 +26,20 @@ class SAAlgorithm(p: Problem) extends Algorithm {
     temperatureLB = tLB
     coolingRate = cRate
   }
-  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, seedOption: Option[Solution]) {
     this(p)
     temperatureUB = tUB
     temperatureLB = tLB
     coolingRate = cRate
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, seedOption: Option[Solution]) {
     this(p)
     seed = seedOption
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed
+      case Some(seed) => Problem.evaluate(p, seed)
       case None => Problem.evaluate(p, new Solution(Random.shuffle(p.jobs.toList)))
     }
   }
@@ -87,5 +87,10 @@ class SAAlgorithm(p: Problem) extends Algorithm {
       else evOldSolution
     }
     loop(evOldSolution, temperatureUB, 1)
+  }
+  
+  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+    seed = seedSol
+    evaluate(p, timeLimit)
   }
 }

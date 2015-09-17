@@ -18,12 +18,12 @@ class GAAlgorithm(
     val mutRate: Double, 
     val mutDecreaseFactor: Double, 
     val mutResetThreshold: Double,
-    val seed: Option[EvaluatedSolution]
+    val sd: Option[Solution]
     ) extends Algorithm {
   /**
    * Secondary constructors
    */
-  def this(popSize: Int, seedOption: Option[EvaluatedSolution]) {
+  def this(popSize: Int, seedOption: Option[Solution]) {
     //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption)
   }
@@ -35,13 +35,14 @@ class GAAlgorithm(
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     this(30, 1.0, 0.8, 0.99, 0.95, None)
   }
+  private var seed = sd
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed
+      case Some(seed) => Problem.evaluate(p, seed)
       case None => initNEHSolution(p)
     }
   }
@@ -121,6 +122,10 @@ class GAAlgorithm(
     } //end def loop
     loop(Array(), (1.0, 1, 1), mutRate, 1)
   }
+  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+    seed = seedSol
+    evaluate(p, timeLimit)
+  }
   def initRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
       p.evaluatePartialSolution(Random.shuffle(jobs))
@@ -133,7 +138,7 @@ class GAAlgorithm(
     population
   }
   def initSeedPlusRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
-    val seedSol = initialSolution(p)//NEH or provided seed in constructor
+    val seedSol = initialSolution(p)//NEH or provided seed in constructor, or in special evaluate function signature
     val population = Array(seedSol) ++ initRandom(p, size-1)
     population
   }

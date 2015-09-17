@@ -14,12 +14,12 @@ class HGAAlgorithm(
     popSize: Int, 
     prob: Double, 
     coolingRate: Double,
-    seed: Option[EvaluatedSolution]
-    ) extends GAAlgorithm(popSize, seed) {
+    sd: Option[Solution]
+    ) extends GAAlgorithm(popSize, sd) {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[EvaluatedSolution]) {
+  def this(p: Problem, seedOption: Option[Solution]) {
     //popSize: 40, prob: 0.1, coolingRate: 0.95
     this(p, 40, 0.1, 0.95, seedOption)
   }

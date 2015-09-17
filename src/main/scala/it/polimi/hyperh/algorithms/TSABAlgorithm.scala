@@ -16,7 +16,7 @@ class TSABAlgorithm(
     neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
     val maxret: Int,
     val maxiter: Int,
-    seed: Option[EvaluatedSolution]
+    seed: Option[Solution]
     ) extends TSAlgorithm(maxt, numOfRandomMoves, neighbourhoodSearch, seed) {
   /**
    * A secondary constructor.
@@ -24,7 +24,7 @@ class TSABAlgorithm(
   def this() {
     this(8, 20, NeighbourhoodSearch.INSdefineMove, 1000, 30000, None)
   }
-  def this(seed: Option[EvaluatedSolution]) {
+  def this(seed: Option[Solution]) {
     this(8, 20, NeighbourhoodSearch.INSdefineMove, 1000, 30000, seed)
   }
   def getEpsilon(numOfJobs: Int, numOfMachines: Int): Double = {
