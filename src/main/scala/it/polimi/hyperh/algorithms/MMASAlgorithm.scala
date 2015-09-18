@@ -6,7 +6,6 @@ import scala.util.Random
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
-import it.polimi.hyperh.types.TypeChecker
 
 /**
  * @author Nemanja
