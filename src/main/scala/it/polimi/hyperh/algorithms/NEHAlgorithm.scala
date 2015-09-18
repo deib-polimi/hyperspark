@@ -50,14 +50,7 @@ class NEHAlgorithm() extends Algorithm {
   override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
     def getSolution(seedOption: Option[Solution]) ={
       seedOption match {
-        case Some(seedOption) => {
-          val partialSolution = seedOption.permutation.toList
-          val pairs = p.createJobValuePairs(p.jobs, p.extractEndTimes(p.initEndTimesMatrix))
-          val sortedList = p.sortJobsDecreasing(pairs).map(x => x._1).toList
-          val remainingJobs = sortedList.filterNot(partialSolution.toSet).toList
-          val solution = constructSolution(p, partialSolution, remainingJobs)
-          solution
-        }
+        case Some(seedOption) => seedOption.evaluate(p)
         case None => evaluate(p)
       }
     }

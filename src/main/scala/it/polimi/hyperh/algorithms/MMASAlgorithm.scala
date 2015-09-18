@@ -4,10 +4,9 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.algorithms.NEHAlgorithm
-import it.polimi.hyperh.algorithms.ACOAlgorithm
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
+import it.polimi.hyperh.types.TypeChecker
 
 /**
  * @author Nemanja
@@ -30,8 +29,8 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
   }
   override def initialSolution() = {
     def getSolution(seedOption: Option[Solution]) ={
-      seedOption match {
-        case Some(seedOption) => Problem.evaluate(p, seedOption)
+      seedOption match {    
+      case Some(seedOption) => seedOption.evaluate(p)
         case None => initNEHSolution(p)
       }
     }

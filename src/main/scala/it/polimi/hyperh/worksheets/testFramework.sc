@@ -1,34 +1,25 @@
 package it.polimi.hyperh.worksheets
 import scala.util.Random
+import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.solution.EvaluatedSolution
 
 object testFramework {
-  println("Welcome to the Scala worksheet")
-  def slidingWindow(solution: List[Int], windowSize: Int): List[List[Int]] = {
-    var list: List[List[Int]] = List()
-    for(i <- 0 to solution.size - windowSize){
-      val window = solution.drop(i).take(windowSize)
-      val allowed = solution.filterNot(window.toSet)
-      val listTake = Random.shuffle(allowed)
-      val leftPart = listTake.take(i)
-      val rightPart = listTake.drop(i)
-      val newSol = leftPart ::: window ::: rightPart
-      list = list ::: List(newSol)
-    }
-    list
-  }
-  def slidingWindow(solution: Array[Int], windowSize: Int): Array[Array[Int]] = {
-    var array: Array[Array[Int]] = Array()
-    for(i <- 0 to solution.size - windowSize){
-      val window = solution.drop(i).take(windowSize)
-      val allowed = solution.filterNot(window.toSet)
-      val arrayTake = Random.shuffle(allowed.toList).toArray
-      val leftPart = arrayTake.take(i)
-      val rightPart = arrayTake.drop(i)
-      val newSol = leftPart ++ window ++ rightPart
-      array = array ++ Array(newSol)
-    }
-    array
-  }
-  slidingWindow(List(1,2,3,4,5,6,7,8,9,10), 3)
-  slidingWindow(Array(1,2,3,4,5,6,7,8,9,10), 3)
+  println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
+  
+  val evsol = new EvaluatedSolution(9,Array(1,2,4)).asInstanceOf[Solution]
+                                                  //> evsol  : it.polimi.hyperh.solution.Solution = EvaluatedSolution(value:9, sol
+                                                  //| ution:Array(1, 2, 4))
+  val sol = new Solution(Array(1,2,4))            //> sol  : it.polimi.hyperh.solution.Solution = Solution(permutation:Array(1, 2,
+                                                  //|  4))
+
+  evsol.isInstanceOf[EvaluatedSolution]           //> res0: Boolean = true
+  sol.isInstanceOf[EvaluatedSolution]             //> res1: Boolean = false
+  
+  def isSubclass(instance: Solution) = {
+  	instance.isInstanceOf[EvaluatedSolution]
+  }                                               //> isSubclass: (instance: it.polimi.hyperh.solution.Solution)Boolean
+  isSubclass(evsol)                               //> res2: Boolean = true
+  isSubclass(sol)                                 //> res3: Boolean = false
+  if(isSubclass(evsol))
+  	evsol.asInstanceOf[EvaluatedSolution]     //> res4: Any = EvaluatedSolution(value:9, solution:Array(1, 2, 4))
 }

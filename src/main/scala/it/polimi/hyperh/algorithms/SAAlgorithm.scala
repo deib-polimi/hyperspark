@@ -39,7 +39,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => Problem.evaluate(p, seed)
+      case Some(seed) => seed.evaluate(p)
       case None => Problem.evaluate(p, new Solution(Random.shuffle(p.jobs.toList)))
     }
   }

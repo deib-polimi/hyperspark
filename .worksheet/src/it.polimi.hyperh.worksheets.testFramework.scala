@@ -1,34 +1,22 @@
 package it.polimi.hyperh.worksheets
 import scala.util.Random
+import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.solution.EvaluatedSolution
 
-object testFramework {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(128); 
-  println("Welcome to the Scala worksheet");$skip(500); 
-  def slidingWindow(solution: List[Int], windowSize: Int): List[List[Int]] = {
-    var list: List[List[Int]] = List()
-    for(i <- 0 to solution.size - windowSize){
-      val window = solution.drop(i).take(windowSize)
-      val allowed = solution.filterNot(window.toSet)
-      val listTake = Random.shuffle(allowed)
-      val leftPart = listTake.take(i)
-      val rightPart = listTake.drop(i)
-      val newSol = leftPart ::: window ::: rightPart
-      list = list ::: List(newSol)
-    }
-    list
-  };System.out.println("""slidingWindow: (solution: List[Int], windowSize: Int)List[List[Int]]""");$skip(526); 
-  def slidingWindow(solution: Array[Int], windowSize: Int): Array[Array[Int]] = {
-    var array: Array[Array[Int]] = Array()
-    for(i <- 0 to solution.size - windowSize){
-      val window = solution.drop(i).take(windowSize)
-      val allowed = solution.filterNot(window.toSet)
-      val arrayTake = Random.shuffle(allowed.toList).toArray
-      val leftPart = arrayTake.take(i)
-      val rightPart = arrayTake.drop(i)
-      val newSol = leftPart ++ window ++ rightPart
-      array = array ++ Array(newSol)
-    }
-    array
-  };System.out.println("""slidingWindow: (solution: Array[Int], windowSize: Int)Array[Array[Int]]""");$skip(47); val res$0 = 
-  slidingWindow(List(1,2,3,4,5,6,7,8,9,10), 3);System.out.println("""res0: List[List[Int]] = """ + $show(res$0));$skip(48); val res$1 = 
-  slidingWindow(Array(1,2,3,4,5,6,7,8,9,10), 3);System.out.println("""res1: Array[Array[Int]] = """ + $show(res$1))}
+object testFramework {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(221); 
+  println("Welcome to the Scala worksheet");$skip(79); 
+  
+  val evsol = new EvaluatedSolution(9,Array(1,2,4)).asInstanceOf[Solution];System.out.println("""evsol  : it.polimi.hyperh.solution.Solution = """ + $show(evsol ));$skip(39); 
+  val sol = new Solution(Array(1,2,4));System.out.println("""sol  : it.polimi.hyperh.solution.Solution = """ + $show(sol ));$skip(42); val res$0 = 
+
+  evsol.isInstanceOf[EvaluatedSolution];System.out.println("""res0: Boolean = """ + $show(res$0));$skip(38); val res$1 = 
+  sol.isInstanceOf[EvaluatedSolution];System.out.println("""res1: Boolean = """ + $show(res$1));$skip(92); 
+  
+  def isSubclass(instance: Solution) = {
+  	instance.isInstanceOf[EvaluatedSolution]
+  };System.out.println("""isSubclass: (instance: it.polimi.hyperh.solution.Solution)Boolean""");$skip(20); val res$2 = 
+  isSubclass(evsol);System.out.println("""res2: Boolean = """ + $show(res$2));$skip(18); val res$3 = 
+  isSubclass(sol);System.out.println("""res3: Boolean = """ + $show(res$3));$skip(65); val res$4 = 
+  if(isSubclass(evsol))
+  	evsol.asInstanceOf[EvaluatedSolution];System.out.println("""res4: Any = """ + $show(res$4))}
 }

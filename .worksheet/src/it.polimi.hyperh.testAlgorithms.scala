@@ -6,8 +6,9 @@ import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.algorithms.TSAlgorithm
 import it.polimi.hyperh.problem.Problem
 import util.ConsolePrinter
+import it.polimi.hyperh.solution.Solution
 
-object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(381); 
+object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(423); 
 	println("Welcome to the scala worksheet");$skip(749); 
 	
 	def crossoverLOX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {

@@ -8,6 +8,7 @@ import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.algorithms.Algorithm
 import util.Timeout
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 
 /**
  * @author Nemanja
@@ -24,46 +25,35 @@ object Framework {
     val iterations = conf.getNumberOfIterations()
     val totalTimeLimit = iterationTimeLimit * iterations
     
-    val tupple3Array = algorithms zip seeds zip Array.fill(numOfNodes)(iterationTimeLimit)
-    val rdd = sc.parallelize(tupple3Array).cache
+    val dataset = DistributedDataset(numOfNodes, algorithms, seeds, iterationTimeLimit)
+    val rdd = sc.parallelize(dataset).cache
     val solution = hyperLoop(problem, rdd, iterations)
     println(solution)
-    
-    //rdd[(Algorithm, seed, timeLimit)]
-    
   }
-  def hyperMap(problem: Problem, alg: Algorithm, seed: Option[Solution],timeLimit: Double, iter: Int): EvaluatedSolution = {
-    alg.evaluate(problem, seed, timeLimit)
+  def hyperMap(problem: Problem, d: DistributedDatum): EvaluatedSolution = {
+    d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit)
   }
   
   def hyperReduce(sol1: EvaluatedSolution, sol2: EvaluatedSolution): EvaluatedSolution = {
-    if(sol1.value < sol2.value)
-      new EvaluatedSolution(sol1.value, sol1.solution)
-    else
-      new EvaluatedSolution(sol2.value, sol2.solution)
+    List(sol1, sol2).min
   }
-  def hyperLoop(problem: Problem, rdd: RDD[(Algorithm, Option[Solution], Double)], maxIter: Int):EvaluatedSolution = {
+  def hyperLoop(problem: Problem, rdd: RDD[DistributedDatum], maxIter: Int):EvaluatedSolution = {
 
-    def applyIteration(problem: Problem, solution: List[Int], rdd: RDD[(Algorithm, Option[Solution], Double)],iter:Int):EvaluatedSolution = {
-      rdd.map(t=>hyperMap(problem, t._1, t._2, t._3, iter)).reduce(hyperReduce(_,_))
+    def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
+      rdd.map(datum => hyperMap(problem, datum)).reduce(hyperReduce(_,_))
     }
-    def iterloop(rdd: RDD[(Algorithm, Option[Solution], Double)], iter:Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
-      //def convertRdd[U >: T : Solution]
+    def iterloop(rdd: RDD[DistributedDatum], iter:Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
       if(iter <= maxIter) {
         val newIter = iter+1
-        val bestSolutionList = bestSolution.solution.toList
-        val bestIterSolution = applyIteration(problem, bestSolutionList , rdd , newIter)
-        var newBest = bestSolution
-        if(bestIterSolution.value < bestSolution.value)
-          newBest = bestIterSolution
+        val bestIterSolution = applyIteration(problem, rdd)
+        val newBest = List(bestIterSolution, bestSolution).min
         //modify seed
-        val updatedRDD = rdd.map(t => (t._1, Some(newBest), t._3))
-        //updatedRDD.asInstanceOf[RDD[(Algorithm, Option[Solution], Double)]]
-        iterloop(updatedRDD.asInstanceOf[RDD[(Algorithm, Option[Solution], Double)]], newIter, newBest)
+        val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, Some(newBest), d.iterationTimeLimit))
+        iterloop(updatedRDD, newIter, newBest)
       }
       else {
         bestSolution
       }
-    iterloop(rdd, 1, new EvaluatedSolution(999999999, problem.jobs))
+    iterloop(rdd, 1, DummyEvaluatedSolution(problem))
   }
 }

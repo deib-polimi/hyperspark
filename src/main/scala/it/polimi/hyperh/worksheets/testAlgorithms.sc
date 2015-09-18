@@ -6,6 +6,7 @@ import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.algorithms.TSAlgorithm
 import it.polimi.hyperh.problem.Problem
 import util.ConsolePrinter
+import it.polimi.hyperh.solution.Solution
 
 object testAlgorithms {
 	println("Welcome to the scala worksheet")

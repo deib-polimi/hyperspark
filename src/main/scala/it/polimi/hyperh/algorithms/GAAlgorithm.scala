@@ -42,7 +42,7 @@ class GAAlgorithm(
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => Problem.evaluate(p, seed)
+      case Some(seed) => seed.evaluate(p)
       case None => initNEHSolution(p)
     }
   }
