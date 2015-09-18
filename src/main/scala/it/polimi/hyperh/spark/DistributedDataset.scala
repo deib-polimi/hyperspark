@@ -6,7 +6,7 @@ import it.polimi.hyperh.solution.Solution
 /**
  * @author Nemanja
  */
-class DistributedDatum(alg: Algorithm, seedOption: Option[Solution], iterTimeLimit: Double) {
+class DistributedDatum(alg: Algorithm, seedOption: Option[Solution], iterTimeLimit: Double) extends Serializable {
   def algorithm = alg
   def seed = seedOption
   def iterationTimeLimit = iterTimeLimit

@@ -35,9 +35,13 @@ class FrameworkConf() {
   
   def appendAlgorithm(algorithm: Algorithm) = {
     if(algs.size < numOfNodes)
-      algs = algs ++ Array(algorithm)
+      algs :+= algorithm
     else
       println("WARNING: Cannot append more algorithms. The limit is the number of phisical nodes.")
+    this
+  }
+  def setAllAlgorithms(algorithm: Algorithm) = {
+    algs = Array.fill(numOfNodes)(algorithm)
     this
   }
   def clearAlgorithms() = { 
@@ -47,7 +51,7 @@ class FrameworkConf() {
   
   def appendSeed(seed: Option[EvaluatedSolution]) = {
     if(sds.size < numOfNodes)
-      sds = sds ++ Array(seed)
+      sds :+= seed
     else
       println("WARNING: Cannot append more seeds. The limit is the number of phisical nodes.")
     this
@@ -68,8 +72,8 @@ class FrameworkConf() {
   def getSparkMaster(): String = { mUrl }
   def getNumOfNodes(): Int = { numOfNodes }
   
-  def setExecutionTimeLimit(p: Problem) = {
-    tLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+  def setDefaultExecutionTimeLimit() = {
+    tLimit = problem.numOfMachines*(problem.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
     this
   }
   def setIterationTimeLimit(millis: Double) = {
