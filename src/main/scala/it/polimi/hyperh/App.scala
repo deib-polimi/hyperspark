@@ -4,6 +4,7 @@ import it.polimi.hyperh.spark.FrameworkConf
 import it.polimi.hyperh.algorithms.PACOAlgorithm
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.spark.Framework
+import util.Performance
 
 
 /**
@@ -22,6 +23,8 @@ object App {
     .setDefaultSeeds()
     .setDefaultExecutionTimeLimit()
     
-    Framework.run(conf)
+    val solution = Framework.run(conf)
+    println(solution)
+    //Performance.RPD(solution, optVal)
   }
 }

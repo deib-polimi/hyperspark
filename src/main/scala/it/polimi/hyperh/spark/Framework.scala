@@ -28,7 +28,7 @@ object Framework {
     val dataset = DistributedDataset(numOfNodes, algorithms, seeds, iterationTimeLimit)
     val rdd = sc.parallelize(dataset).cache
     val solution = hyperLoop(problem, rdd, iterations)
-    println(solution)
+    solution
   }
   def hyperMap(problem: Problem, d: DistributedDatum): EvaluatedSolution = {
     d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit)

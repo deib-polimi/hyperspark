@@ -1,15 +1,25 @@
 package util
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 
 /**
  * @author Nemanja
  */
 object Timeout {
-  def setTimeout(limit: Double) = { //introduce thread time here
-      val expireTime = System.currentTimeMillis() + limit
-      expireTime
+  
+  private def getThreadTime() = {
+    val threadTimeNanos = ManagementFactory.getThreadMXBean().getThreadCpuTime(Thread.currentThread().getId());
+    val threadTimeMillis = threadTimeNanos / 1000000
+    threadTimeMillis
+  }
+  def setTimeout(limit: Double) = {
+      val threadTimeMillis = getThreadTime()
+      val expireTimeMillis = threadTimeMillis + limit
+      expireTimeMillis
     }
     def notTimeout(expireTimeMillis: Double): Boolean = {
-      if (System.currentTimeMillis() > expireTimeMillis)
+      val threadTimeMillis = getThreadTime()
+      if (threadTimeMillis > expireTimeMillis)
         false
       else true
     }
