@@ -28,8 +28,8 @@ object ParallelWork extends App {
       // start the calculation
       master ! Calculate
     }
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val p = Problem(path + "inst_ta001").getOrElse(throw new RuntimeException("ParserError"))
+    val path = "./resources/"
+    val p = Problem(path + "inst_ta001")
     val permutationList = Random.shuffle(p.jobs.toList)
     val oldSolution = new Solution(permutationList)
     var evOldSolution = Problem.evaluate(p, oldSolution)

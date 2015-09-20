@@ -7,7 +7,10 @@ import it.polimi.hyperh.solution.EvaluatedSolution
  */
 object Performance {
   def RPD(someVal: Int, optVal: Int): Double = {
-    100 * (someVal - optVal) / optVal
+    val diff = someVal - optVal
+    if(diff < 0)
+      println("New best :" + someVal)
+    100 * diff / optVal
   }
   def RPD(Csome: EvaluatedSolution, Copt: EvaluatedSolution): Double = {
     RPD(Csome.value, Copt.value)

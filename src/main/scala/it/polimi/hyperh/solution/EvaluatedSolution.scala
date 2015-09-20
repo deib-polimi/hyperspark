@@ -23,7 +23,7 @@ extends Solution(solution) with Ordered[EvaluatedSolution] {
 }
 
 object EvaluatedSolution{
-  def apply(path:String) = EvaluatedSolutionParser.apply(Source.fromFile(path).getLines().mkString)
+  def apply(path:String) = EvaluatedSolutionParser.apply(Source.fromFile(path).getLines().mkString).getOrElse(throw new RuntimeException("ParserError"))
 }
 object DummyEvaluatedSolution {
   def apply(problem: Problem) = new EvaluatedSolution(999999999, problem.jobs)

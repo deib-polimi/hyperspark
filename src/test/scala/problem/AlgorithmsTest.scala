@@ -27,15 +27,15 @@ import it.polimi.hyperh.algorithms.HGAAlgorithm
 @Test
 class AlgorithmsTest extends Assertions {
   @Test def testAlgorithms() {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta002").getOrElse(throw new RuntimeException("ParserError"))
+    val path = "./resources/"
+    val problem = Problem(path + "inst_ta002")
     
     println("numOfJobs: "+problem.numOfJobs)
     println("numOfMachines: "+problem.numOfMachines)
     //ConsolePrinter.print(problem.jobTimesMatrix)
     
     //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = EvaluatedSolution(path + "sol_ta002").getOrElse(throw new RuntimeException("ParserError"))
+    val optimalSolution = EvaluatedSolution(path + "sol_ta002")
     println("Optimal: " + optimalSolution)
     
     //Use NEHAlgorithm to evaluate inst_ta001

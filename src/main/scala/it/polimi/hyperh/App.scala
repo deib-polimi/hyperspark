@@ -12,8 +12,7 @@ import util.Performance
  */
 object App {
   def main(args : Array[String]) {
-    val path = "D:/Net downloads/Scala/workspace/Thesis/resources/"
-    val problem = Problem(path + "inst_ta002").getOrElse(throw new RuntimeException("ParserError"))
+    val problem = Problem("./resources/inst_ta002")
     val algorithm = new PACOAlgorithm(problem)
     val conf = new FrameworkConf()
     .setSparkMaster("local[4]")

@@ -82,7 +82,7 @@ object Problem{
 	/**
 	 * @arg path - path to a file 
 	 */	
-	def apply(path:String):Option[Problem] = ProblemParser(Source.fromFile(path).getLines().mkString(" x ") + " x ")
+	def apply(path:String):Problem = ProblemParser(Source.fromFile(path).getLines().mkString(" x ") + " x ").getOrElse(throw new RuntimeException("ParserError"))
   def evaluate(p: Problem, solution: Solution):EvaluatedSolution = {
     val jobsArray = solution.permutation
     val evaluatedSolution = p.evaluatePartialSolution(jobsArray)

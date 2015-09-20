@@ -33,5 +33,5 @@ class Solution (
 }
 
 object Solution{
-  def apply(path:String) = SolutionParser.apply(Source.fromFile(path).getLines().mkString)
+  def apply(path:String) = SolutionParser.apply(Source.fromFile(path).getLines().mkString).getOrElse(throw new RuntimeException("ParserError"))
 }
