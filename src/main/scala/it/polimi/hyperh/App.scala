@@ -14,12 +14,12 @@ object App {
   def main(args : Array[String]) {
     val problem = Problem("./resources/inst_ta002")
     val algorithm = new PACOAlgorithm(problem)
+    val numOfAlgorithms = 4
     val conf = new FrameworkConf()
-    .setSparkMaster("local[4]")
+    .setDeploymentLocalNumExecutors(numOfAlgorithms)
     .setProblem(problem)
-    .setNumberOfNodes(4)
-    .setAllAlgorithms(algorithm)
-    .setDefaultSeeds()
+    .setNAlgorithms(algorithm, numOfAlgorithms)
+    .setNDefaultSeeds(numOfAlgorithms)
     .setDefaultExecutionTimeLimit()
     
     val solution = Framework.run(conf)

@@ -15,21 +15,23 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
  */
 object Framework {
   def run(conf: FrameworkConf) = {
-    val sparkConf = new SparkConf().setAppName("HyperH").setMaster(conf.getSparkMaster())
-    val sc = new SparkContext(sparkConf)
-    val numOfNodes = conf.getNumOfNodes()
     val problem = conf.getProblem()
     val algorithms = conf.getAlgorithms()
+    val numOfTasks = algorithms.size
     val seeds = conf.getSeeds()
     val iterationTimeLimit = conf.getIterationTimeLimit()
     val iterations = conf.getNumberOfIterations()
     val totalTimeLimit = iterationTimeLimit * iterations
     
-    val dataset = DistributedDataset(numOfNodes, algorithms, seeds, iterationTimeLimit)
+    val sparkConf = new SparkConf().setAll(conf.getProperties())
+    val sc = new SparkContext(sparkConf)
+    
+    val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
     val rdd = sc.parallelize(dataset).cache
     val solution = hyperLoop(problem, rdd, iterations)
     solution
   }
+
   def hyperMap(problem: Problem, d: DistributedDatum): EvaluatedSolution = {
     d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit)
   }
