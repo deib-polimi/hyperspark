@@ -26,6 +26,9 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG
   def this(seedOption: Option[Solution]) {
     this(2, 0.2, seedOption, RNG())
   }
+  def this(rng: RNG) {
+    this(2, 0.2, None, rng)
+  }
   private var seed = seedOption 
   
   def initNEHSolution(p: Problem) = {

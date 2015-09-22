@@ -22,8 +22,10 @@ class HGAAlgorithm(
    * A secondary constructor.
    */
   def this(p: Problem, seedOption: Option[Solution]) {
-    //popSize: 40, prob: 0.1, coolingRate: 0.95
     this(p, 40, 0.1, 0.95, seedOption, RNG())
+  }
+  def this(p: Problem, rng: RNG) {
+    this(p, 40, 0.1, 0.95, None, rng)
   }
   def this(p: Problem) {
     //popSize: 40, prob: 0.1, coolingRate: 0.95

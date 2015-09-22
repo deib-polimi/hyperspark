@@ -36,6 +36,9 @@ class TSABAlgorithm(
   def this(seed: Option[Solution]) {
     this(seed, RNG())
   }
+  def this(rng: RNG) {
+    this(None, rng)
+  }
   def this() {
     this(None, RNG())
   }
@@ -334,7 +337,7 @@ class TSABAlgorithm(
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
      val epsilon = getEpsilon(p.numOfJobs, p.numOfMachines)
-    var evOldSolution = new EvaluatedSolution(999999999, p.jobs)
+    var evOldSolution = DummyEvaluatedSolution(p)
     var evBestSolution = evOldSolution
     var tabooOld: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
     var tabooNew: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))

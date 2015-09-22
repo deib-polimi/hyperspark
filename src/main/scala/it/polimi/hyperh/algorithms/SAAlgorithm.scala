@@ -34,13 +34,15 @@ class SAAlgorithm(p: Problem, rng: RNG) extends Algorithm {
     coolingRate = cRate
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, RNG())
-    seed = seedOption
-  }
   def this(p: Problem, seedOption: Option[Solution], rng: RNG) {
     this(p, rng)
     seed = seedOption
+  }
+  def this(p: Problem, seedOption: Option[Solution]) {
+    this(p, seedOption, RNG())
+  }
+  def this(p: Problem) {
+    this(p, None, RNG())
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {

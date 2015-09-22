@@ -31,11 +31,14 @@ class TSAlgorithm(
   def this(maxTabooListSize: Int) {
     this(None, RNG())
   }
-  def this() {
-    this(None, RNG())
-  }
   def this(seed: Option[Solution]) {
     this(seed, RNG())
+  }
+  def this(rng: RNG) {
+    this(None, rng)
+  }
+  def this() {
+    this(None, RNG())
   }
   def getNumOfRandomMoves() = { 
     val copy = numOfRandomMoves

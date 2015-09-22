@@ -45,6 +45,9 @@ class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
   def this(p: Problem, seedOption: Option[Solution]) {
     this(p, seedOption, RNG())
   }
+  def this(p: Problem) {
+    this(p, None, RNG())
+  }
   override def evaluate(p: Problem): EvaluatedSolution = {
     //algorithm time limit
     val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds

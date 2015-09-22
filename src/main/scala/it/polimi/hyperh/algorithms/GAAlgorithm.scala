@@ -27,16 +27,16 @@ class GAAlgorithm(
    * Secondary constructors
    */
   def this(popSize: Int, seedOption: Option[Solution], rng: RNG) {
-    //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption, rng)
   }
   def this(popSize: Int, seedOption: Option[Solution]) {
-    //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption, RNG())
   }
   def this(popSize: Int) {
-    //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     this(popSize, 1.0, 0.8, 0.99, 0.95, None, RNG())
+  }
+  def this(rng: RNG) {
+    this(30, 1.0, 0.8, 0.99, 0.95, None, rng)
   }
   def this() {
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
