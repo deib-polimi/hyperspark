@@ -1,11 +1,17 @@
 package it.polimi.hyperh.search
 
 import scala.util.Random
+import util.RNG
 
 /**
  * @author Nemanja
  */
-object NeighbourhoodSearch {
+class NeighbourhoodSearch(val rngSeed: Option[Long]) {
+  def this() = {
+    this(None)
+  }
+  var random: Random = RNG(rngSeed)
+  
   //OPERATIONS
   def SWAPdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
     val result = list.toArray
@@ -58,10 +64,10 @@ object NeighbourhoodSearch {
   }
   //RANDOM MOVES GENERATORS
   def randomZeroToNminusOne(n: Int): Int = {
-    Random.nextInt(n)
+    random.nextInt(n)
   }
   def randomZeroToNminusTwo(n: Int): Int = {
-    Random.nextInt(n - 1)
+    random.nextInt(n - 1)
   }
   def randomNeighbourPair(n: Int): (Int, Int) = {
     val firstPoint = randomZeroToNminusOne(n) //[0,n-1]
@@ -72,7 +78,7 @@ object NeighbourhoodSearch {
     (firstPoint, secondPoint)
   }
   def randomSuccessivePoint(firstPoint:Int, n: Int): Int = {
-    firstPoint + 1 + Random.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
+    firstPoint + 1 + random.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
   }
   def randomSuccessivePair(n: Int): (Int, Int) = {
     val firstPoint = randomZeroToNminusTwo(n) //[0,n-2]
@@ -88,7 +94,7 @@ object NeighbourhoodSearch {
     var movesList: List[(Int, Int)] = List()
     var i = 0
     while (i < N) {
-      val move = NeighbourhoodSearch.randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
+      val move = randomNeighbourPair(numOfJobs) //firstPoint: [0,numOfJobs-1],secondPoint:  [0, numOfJobs-1], firstPoint!=secondPoint
       movesList = movesList ::: List(move)
       i = i + 1  
     }
@@ -117,7 +123,7 @@ object NeighbourhoodSearch {
   }
   
   def SHIFT(list: List[Int]): List[Int] = {
-    val randomNo = Random.nextDouble()
+    val randomNo = random.nextDouble()
     if(randomNo < 0.5)
       BckINS(list)
     else
@@ -135,7 +141,7 @@ object NeighbourhoodSearch {
     (result.toList, pair)
   }
   def AdjSWAPreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = Random.nextInt(list.size - 1) //[0,n-2]
+    val firstPoint = random.nextInt(list.size - 1) //[0,n-2]
     (AdjSWAPdefineMove(list, firstPoint), (firstPoint, firstPoint + 1))
   }
   def INVreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
@@ -154,7 +160,7 @@ object NeighbourhoodSearch {
     (result, pair)
   }
   def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
-    val randomNo = Random.nextDouble()  //[0,1]
+    val randomNo = random.nextDouble()  //[0,1]
     if(randomNo < 0.5)
       BckINSreturnMove(list)
     else
@@ -172,5 +178,13 @@ object NeighbourhoodSearch {
       val result = BckINSdefineMove(list, pair._2, pair._1)
       (result, pair)
     }
+  }
+}
+object NeighbourhoodSearch {
+  def apply(rngSeed: Option[Long]) = {
+    new NeighbourhoodSearch(rngSeed)
+  }
+  def apply() = {
+    new NeighbourhoodSearch()  
   }
 }

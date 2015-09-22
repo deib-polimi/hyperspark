@@ -6,6 +6,7 @@ import scala.util.Random
 import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.Solution
+import util.RNG
 
 /**
  * @author Nemanja
@@ -27,7 +28,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     maxNotChangedMS = mncMS
     maxItPerMS = mitpMS
   }
-  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[Solution]) {
+  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[Solution], rngOption: Option[Long]) {
     this(p)
     temperatureUB = tUB
     temperatureLB = tLB
@@ -36,10 +37,15 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     maxNotChangedMS = mncMS
     maxItPerMS = mitpMS
     seed = seedOption
+    rngSeed = rngOption
   }
-  def this(p: Problem, seedOption: Option[Solution]) {
+  def this(p: Problem, seedOption: Option[Solution], rngOption: Option[Long]) {
     this(p)
     seed = seedOption
+    rngSeed = rngOption
+  }
+  def this(p: Problem, seedOption: Option[Solution]) {
+    this(p, seedOption, None)
   }
   override def evaluate(p: Problem): EvaluatedSolution = {
     //algorithm time limit
@@ -48,7 +54,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
     def cost(solution: List[Int]) = p.evaluatePartialSolution(solution.toArray)
-    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch.SHIFT(sol) //forward or backward shift at random
+    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(rngSeed).SHIFT(sol) //forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))
     } 
@@ -85,7 +91,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
           val delta = evNewSolutionTrack.value - evOldSolutionTrack.value
           //calculate acceptance probability
           val ap = acceptanceProbability(delta, temperature)
-          val randomNo = Random.nextDouble()
+          val randomNo = RNG(rngSeed).nextDouble()
           
           if ((delta <= 0) || (randomNo <= ap)) {
             oldSolutionTrack = newSolutionTrack

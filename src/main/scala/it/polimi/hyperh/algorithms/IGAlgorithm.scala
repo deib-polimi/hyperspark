@@ -9,23 +9,24 @@ import util.PermutationUtility
 import it.polimi.hyperh.problem.Problem
 import util.Timeout
 import it.polimi.hyperh.solution.Solution
+import util.RNG
 /**
  * @author Nemanja
  */
 
 //Problem Factory
-class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends Algorithm {
+class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rngSeed: Option[Long]) extends Algorithm {
   /**
    * A secondary constructor.
    */
   def this() {
     //d: 2, T: 0.2
-    this(2, 0.2, None)
+    this(2, 0.2, None, None)
   }
   def this(seedOption: Option[Solution]) {
-    this(2, 0.2, seedOption)
+    this(2, 0.2, seedOption, None)
   }
-  private var seed = seedOption
+  private var seed = seedOption 
   
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
@@ -50,13 +51,13 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
         var bestSolution = bestSol
         if(iter == 1){
           currentSolution = initialSolution(p)
-          currentSolution = IGAlgorithm.localSearch(currentSolution.solution,p)//improve it by local search
+          currentSolution = localSearch(currentSolution.solution,p)//improve it by local search
           bestSolution = currentSolution
         }
-        val pair = IGAlgorithm.destruction(currentSolution.solution, d)
-        val bestPermutation = IGAlgorithm.construction(pair._1, pair._2,p)
+        val pair = destruction(currentSolution.solution, d)
+        val bestPermutation = construction(pair._1, pair._2,p)
         bestSolution = p.evaluatePartialSolution(bestPermutation)
-        val improvedSolution = IGAlgorithm.localSearch(bestPermutation,p)
+        val improvedSolution = localSearch(bestPermutation,p)
         //pi - currentSolution,piPrime - bestSolution, piSecond - improvedSolution
         if(improvedSolution.value < currentSolution.value){//acceptance criterion
           currentSolution = improvedSolution
@@ -69,7 +70,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
             val constant = T * (sumJobTimes / (p.numOfMachines*p.numOfJobs*10))
             constant
           }
-          if(Random.nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
+          if(RNG(rngSeed).nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
             currentSolution = improvedSolution
         }
         loop(currentSolution, bestSolution, iter+1)
@@ -82,16 +83,13 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
     seed = seedSol
     evaluate(p, timeLimit)
   }
-}
-object IGAlgorithm {
-  
   //removes d jobs from permutation list, and produces two lists (left,removed)
   def destruction(permutation: Array[Int],d: Int): (List[Int],List[Int]) = {
     var tmp=permutation.toBuffer//used buffer because of performance, random access and changable size
     var removed=List[Int]()
     for(i <- 0 until d) {
       val size = tmp.size
-      val removeInd = Random.nextInt(size);//returns int between 0 (inclusive) and the specified value (exclusive)
+      val removeInd = RNG(rngSeed).nextInt(size);//returns int between 0 (inclusive) and the specified value (exclusive)
       val el = tmp.remove(removeInd)
       removed = removed ::: List(el)
     }
@@ -115,7 +113,7 @@ object IGAlgorithm {
     while(improve == true) {
       improve = false
       val indexes = (0 until permutation.size).toList
-      var removalOrder = Random.shuffle(indexes)
+      var removalOrder = RNG(rngSeed).shuffle(indexes)
       for(i <- 0 until removalOrder.size) {
         var tmp=permutation.toBuffer
         val job = tmp(removalOrder(i))
@@ -129,7 +127,5 @@ object IGAlgorithm {
       }
     }
     bestSolution
-  }       
-  
-  
+  }  
 }

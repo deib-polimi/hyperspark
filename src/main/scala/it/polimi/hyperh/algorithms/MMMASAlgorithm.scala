@@ -6,19 +6,24 @@ import scala.util.Random
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
 import it.polimi.hyperh.solution.Solution
+import util.RNG
 
 /**
  * @author Nemanja
  */
-class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) extends MMASAlgorithm(p,t0,cand,seedOption) {
+class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution], rngSeed: Option[Long]) 
+extends MMASAlgorithm(p,t0,cand,seedOption, rngSeed) {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[Solution], rngOption: Option[Long]) {
+    this(p, 0.2, 5, seedOption, rngOption)//default values
+  }
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 0.2, 5, seedOption)//default values
+    this(p, 0.2, 5, seedOption, None)//default values
   }
   def this(p: Problem) {
-    this(p, 0.2, 5, None)//default values
+    this(p, 0.2, 5, None, None)//default values
   }
   def sumij(iJob: Int, jPos : Int) = {
     var sum = 0.0
@@ -51,7 +56,7 @@ class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solut
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      var u = Random.nextDouble()
+      var u = RNG(rngSeed).nextDouble()
       if(u <= p0) {
         candidates = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).take(cand)
         var max = 0.0
@@ -85,7 +90,7 @@ class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solut
           if(seed(j-1) != i) {
             val remInd = seed.indexWhere( _ == i)
             val insInd = j-1
-            val neighbourSol = NeighbourhoodSearch.INSdefineMove(seedList, remInd, insInd)
+            val neighbourSol = NeighbourhoodSearch(rngSeed).INSdefineMove(seedList, remInd, insInd)
             val evNeighbourSol = p.evaluatePartialSolution(neighbourSol)
             if(evNeighbourSol.value < bestSolution.value)
               bestSolution = evNeighbourSol

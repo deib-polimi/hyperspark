@@ -5,13 +5,14 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import util.Timeout
 import scala.util.Random
 import it.polimi.hyperh.solution.Solution
+import util.RNG
 
 /**
  * @author Nemanja
  */
-abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]) extends Algorithm {
+abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution], rngSeed: Option[Long]) extends Algorithm {
   def this(p: Problem, t0: Double) {
-    this(p, t0, None)
+    this(p, t0, None, None)
   }
   private var seed = seedOption
   
@@ -26,7 +27,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
   def initialSolution(): EvaluatedSolution = {
     seed match {
       case Some(seed) => seed.evaluate(p)
-      case None => Problem.evaluate(p, new Solution(Random.shuffle(p.jobs.toList)))
+      case None => Problem.evaluate(p, new Solution(RNG(rngSeed).shuffle(p.jobs.toList)))
     }
   }
   

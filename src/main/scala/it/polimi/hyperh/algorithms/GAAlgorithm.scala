@@ -7,6 +7,7 @@ import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.Solution
 import util.ConsolePrinter
+import util.RNG
 
 /**
  * @author Nemanja
@@ -18,22 +19,27 @@ class GAAlgorithm(
     val mutRate: Double, 
     val mutDecreaseFactor: Double, 
     val mutResetThreshold: Double,
-    val sd: Option[Solution]
+    val sd: Option[Solution], 
+    val rngSeed: Option[Long]
     ) extends Algorithm {
   /**
    * Secondary constructors
    */
+  def this(popSize: Int, seedOption: Option[Solution], rngOption: Option[Long]) {
+    //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
+    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption, rngOption)
+  }
   def this(popSize: Int, seedOption: Option[Solution]) {
     //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption)
+    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption, None)
   }
   def this(popSize: Int) {
     //crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    this(popSize, 1.0, 0.8, 0.99, 0.95, None)
+    this(popSize, 1.0, 0.8, 0.99, 0.95, None, None)
   }
   def this() {
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    this(30, 1.0, 0.8, 0.99, 0.95, None)
+    this(30, 1.0, 0.8, 0.99, 0.95, None, None)
   }
   private var seed = sd
   def initNEHSolution(p: Problem) = {
@@ -78,12 +84,12 @@ class GAAlgorithm(
           mutationRate = mutRate
         }
         //CROSSOVER
-        val randomNo = Random.nextDouble()
+        val randomNo = RNG(rngSeed).nextDouble()
         if (randomNo < crossRate) {
           //select parent1 using fitness_rank distribution
-          val parent1 = population(medianIndex+Random.nextInt(popSize-medianIndex))
+          val parent1 = population(medianIndex+RNG(rngSeed).nextInt(popSize-medianIndex))
           //select parent2 using uniform distribution
-          val parent2 = population(Random.nextInt(popSize))
+          val parent2 = population(RNG(rngSeed).nextInt(popSize))
           val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
           child1 = Problem.evaluate(p, new Solution(children._1))
           child2 = Problem.evaluate(p, new Solution(children._2))
@@ -97,8 +103,8 @@ class GAAlgorithm(
         }
         //UPDATE POPULATION
         //delete sequence from unfit members, whose makespan value is below the median
-        val index1 = Random.nextInt(medianIndex)
-        val index2 = Random.nextInt(medianIndex)
+        val index1 = RNG(rngSeed).nextInt(medianIndex)
+        val index2 = RNG(rngSeed).nextInt(medianIndex)
         //insert new members into population (at the same time deleting old members)
         population(index1) = child1
         population(index2) = child2
@@ -128,7 +134,7 @@ class GAAlgorithm(
   }
   def initRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
-      p.evaluatePartialSolution(Random.shuffle(jobs))
+      p.evaluatePartialSolution(RNG(rngSeed).shuffle(jobs))
     }
     val population = Array.ofDim[EvaluatedSolution](size)
     val jobsList = p.jobs.toList
@@ -145,8 +151,8 @@ class GAAlgorithm(
 
   def crossoverLOX(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
     val size = parent1.size
-    val firstPoint = Random.nextInt(size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(size - firstPoint) //[firstPoint+1,n]
+    val firstPoint = RNG(rngSeed).nextInt(size - 1) //[0,n-2]
+    val secondPoint = firstPoint + 1 + RNG(rngSeed).nextInt(size - firstPoint) //[firstPoint+1,n]
     val p1Remove = parent2.drop(firstPoint).take(secondPoint - firstPoint)
     val p2Remove = parent1.drop(firstPoint).take(secondPoint - firstPoint)
     val p1Filtered = parent1.filterNot(p1Remove.toSet)
@@ -156,8 +162,8 @@ class GAAlgorithm(
     (p1Reconstructed, p2Reconstructed)
   }
   def crossoverPMX(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
-    val firstPoint = Random.nextInt(parent1.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + Random.nextInt(parent1.size - firstPoint) //[firstPoint+1,n]
+    val firstPoint = RNG(rngSeed).nextInt(parent1.size - 1) //[0,n-2]
+    val secondPoint = firstPoint + 1 + RNG(rngSeed).nextInt(parent1.size - firstPoint) //[firstPoint+1,n]
     val child1Part1 = parent1.take(firstPoint)
     val child1Part2 = parent1.drop(firstPoint).take(secondPoint - firstPoint)
     val child1Part3 = parent1.drop(secondPoint)
@@ -179,7 +185,7 @@ class GAAlgorithm(
   }
 
   def crossoverC1(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
-    val crossoverPoint = 1 + Random.nextInt(parent1.size - 2) //[1,n-2]
+    val crossoverPoint = 1 + RNG(rngSeed).nextInt(parent1.size - 2) //[1,n-2]
     val p1Same = parent1.take(crossoverPoint) //crossoverPoint elements remains the same, fill the rest
     val p2Same = parent2.take(crossoverPoint)
     val p1Add = parent2.filterNot(p1Same.toSet)
@@ -198,14 +204,14 @@ class GAAlgorithm(
     (child1.toList, child2.toList)
   }
   def mutationSWAP(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch.SWAP(parent)
+    NeighbourhoodSearch(rngSeed).SWAP(parent)
   }
   def mutationINV(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch.INV(parent)
+    NeighbourhoodSearch(rngSeed).INV(parent)
   }
 
   def mutationINS(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch.BckINS(parent)
+    NeighbourhoodSearch(rngSeed).BckINS(parent)
   }
   def calculateStatistics(sortedPopulation:Array[EvaluatedSolution]):(Double,Int,Int) = {
     val makespans = sortedPopulation.map(_.value)

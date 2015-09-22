@@ -6,19 +6,24 @@ import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
 import util.ConsolePrinter
 import it.polimi.hyperh.solution.Solution
+import util.RNG
 
 /**
  * @author Nemanja
  */
-class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) extends MMMASAlgorithm(p, t0, cand, seedOption) {
+class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution], rngSeed: Option[Long]) 
+extends MMMASAlgorithm(p, t0, cand, seedOption, rngSeed) {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[Solution], rngOption: Option[Long]) {
+    this(p, 0.2, 5, seedOption, rngOption)//default values
+  }
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 0.2, 5, seedOption)//default values
+    this(p, 0.2, 5, seedOption, None)//default values
   }
   def this(p: Problem) {
-    this(p, 0.2, 5, None)//default values
+    this(p, 0.2, 5, None, None)//default values
   }
   private var seed = seedOption
   
@@ -70,7 +75,7 @@ class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      var u = Random.nextDouble()
+      var u = RNG(rngSeed).nextDouble()
       if(u <= 0.4) {
         nextJob = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).head
       }
@@ -135,7 +140,7 @@ class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
         if(seed(j-1) != i) {
           val indI = seed.indexWhere( _ == i)
           val indK = j-1
-          val neighbourSol = NeighbourhoodSearch.SWAPdefineMove(seedList, indI, indK)
+          val neighbourSol = NeighbourhoodSearch(rngSeed).SWAPdefineMove(seedList, indI, indK)
           val evNeighbourSol = p.evaluatePartialSolution(neighbourSol)
           if(evNeighbourSol.value < bestSolution.value)
             bestSolution = evNeighbourSol

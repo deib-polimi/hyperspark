@@ -14,22 +14,26 @@ class TSAlgorithm(
     val maxTabooListSize: Int, 
     val numOfRandomMoves: Int, 
     val neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
-    sd: Option[Solution]
+    sd: Option[Solution],
+    rngSeed: Option[Long]
     ) extends Algorithm {
   /**
    * A secondary constructor.
    */
   def this(maxTabooListSize: Int, numOfRandomMoves: Int) {
-    this(maxTabooListSize, numOfRandomMoves, NeighbourhoodSearch.INSdefineMove, None)//default values, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(maxTabooListSize, numOfRandomMoves, NeighbourhoodSearch(None).INSdefineMove, None, None)//default values, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
   }
   def this(maxTabooListSize: Int) {
-    this(maxTabooListSize, 20, NeighbourhoodSearch.INSdefineMove, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(maxTabooListSize, 20, NeighbourhoodSearch(None).INSdefineMove, None, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
   }
   def this() {
-    this(7, 20, NeighbourhoodSearch.INSdefineMove, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(7, 20, NeighbourhoodSearch(None).INSdefineMove, None, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+  }
+  def this(seed: Option[Solution], rngSeed: Option[Long]) {
+    this(7, 20, NeighbourhoodSearch(rngSeed).INSdefineMove, seed, rngSeed)
   }
   def this(seed: Option[Solution]) {
-    this(7, 20, NeighbourhoodSearch.INSdefineMove, seed)
+    this(7, 20, NeighbourhoodSearch(None).INSdefineMove, seed, None)
   }
   private var seed = sd
   
@@ -58,7 +62,7 @@ class TSAlgorithm(
       if(Timeout.notTimeout(expireTimeMillis)) {
         if(iter == 1) {
           evBestSolution = initialSolution(p)
-          allMoves = NeighbourhoodSearch.generateAllNeighbourhoodMoves(p.numOfJobs)
+          allMoves = NeighbourhoodSearch(rngSeed).generateAllNeighbourhoodMoves(p.numOfJobs)
         } else {
           evBestSolution = bestSolution
         }
@@ -91,7 +95,7 @@ class TSAlgorithm(
           evBestSolution = bestSolution
         }
         //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-        val allMoves = NeighbourhoodSearch.generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
+        val allMoves = NeighbourhoodSearch(rngSeed).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
         val pair1 = bestImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
         val evNewSolution = pair1._1
         if(evNewSolution.value < evBestSolution.value)

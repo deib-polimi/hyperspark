@@ -6,19 +6,24 @@ import scala.util.Random
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import util.Timeout
+import util.RNG
 
 /**
  * @author Nemanja
  */
-class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
+class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution], rngSeed: Option[Long])
+extends ACOAlgorithm(p, t0, seedOption, rngSeed) with Algorithm {
   /**
    * A secondary constructor.
    */
+  def this(p: Problem, seedOption: Option[Solution], rngOption: Option[Long]) {
+    this(p, 0.2, 5, seedOption, rngOption)//default values
+  }
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 0.2, 5, seedOption)//default values
+    this(p, 0.2, 5, seedOption, None)//default values
   }
   def this(p: Problem) {
-    this(p, 0.2, 5, None)//default values
+    this(p, 0.2, 5, None, None)//default values
   }
   private var seed = seedOption
   
@@ -66,7 +71,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      var u = Random.nextDouble()
+      var u = RNG(rngSeed).nextDouble()
       if(u <= p0) {
         candidates = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).take(cand)
         nextJob = getNextJob(scheduled, candidates, jPos)
@@ -105,7 +110,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
     def sample(list: List[(Int, Int)]) = {
       var items = list
       var totalSum: Int = items.map(item => item._2).reduce(_ + _)
-      var index: Int = Random.nextInt(totalSum+1)
+      var index: Int = RNG(rngSeed).nextInt(totalSum+1)
       var sum = 0
       var item = items.head
       while(sum < index) {
@@ -121,7 +126,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
     val tsAlgorithm = new TSAlgorithm()
     var bestSolution = completeSolution
     if(p.numOfJobs <= 50) {
-      val moves = NeighbourhoodSearch.generateAllNeighbourhoodMoves(p.numOfJobs)
+      val moves = NeighbourhoodSearch(rngSeed).generateAllNeighbourhoodMoves(p.numOfJobs)
       while(Timeout.notTimeout(expireTimeMillis)) {
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1
       }
@@ -129,7 +134,7 @@ class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Soluti
     }
     else {
       while(Timeout.notTimeout(expireTimeMillis)) {
-        val moves = NeighbourhoodSearch.generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.numOfRandomMoves)
+        val moves = NeighbourhoodSearch(rngSeed).generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.numOfRandomMoves)
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1 
       }
       bestSolution
