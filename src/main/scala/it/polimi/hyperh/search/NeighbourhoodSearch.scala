@@ -6,11 +6,10 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class NeighbourhoodSearch(val rngSeed: Option[Long]) {
+class NeighbourhoodSearch(rng: RNG) {
   def this() = {
-    this(None)
+    this(RNG())
   }
-  var random: Random = RNG(rngSeed)
   
   //OPERATIONS
   def SWAPdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
@@ -64,10 +63,10 @@ class NeighbourhoodSearch(val rngSeed: Option[Long]) {
   }
   //RANDOM MOVES GENERATORS
   def randomZeroToNminusOne(n: Int): Int = {
-    random.nextInt(n)
+    rng.nextInt(n)
   }
   def randomZeroToNminusTwo(n: Int): Int = {
-    random.nextInt(n - 1)
+    rng.nextInt(n - 1)
   }
   def randomNeighbourPair(n: Int): (Int, Int) = {
     val firstPoint = randomZeroToNminusOne(n) //[0,n-1]
@@ -78,7 +77,7 @@ class NeighbourhoodSearch(val rngSeed: Option[Long]) {
     (firstPoint, secondPoint)
   }
   def randomSuccessivePoint(firstPoint:Int, n: Int): Int = {
-    firstPoint + 1 + random.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
+    firstPoint + 1 + rng.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
   }
   def randomSuccessivePair(n: Int): (Int, Int) = {
     val firstPoint = randomZeroToNminusTwo(n) //[0,n-2]
@@ -123,7 +122,7 @@ class NeighbourhoodSearch(val rngSeed: Option[Long]) {
   }
   
   def SHIFT(list: List[Int]): List[Int] = {
-    val randomNo = random.nextDouble()
+    val randomNo = rng.nextDouble()
     if(randomNo < 0.5)
       BckINS(list)
     else
@@ -141,7 +140,7 @@ class NeighbourhoodSearch(val rngSeed: Option[Long]) {
     (result.toList, pair)
   }
   def AdjSWAPreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = random.nextInt(list.size - 1) //[0,n-2]
+    val firstPoint = rng.nextInt(list.size - 1) //[0,n-2]
     (AdjSWAPdefineMove(list, firstPoint), (firstPoint, firstPoint + 1))
   }
   def INVreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
@@ -160,7 +159,7 @@ class NeighbourhoodSearch(val rngSeed: Option[Long]) {
     (result, pair)
   }
   def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
-    val randomNo = random.nextDouble()  //[0,1]
+    val randomNo = rng.nextDouble()  //[0,1]
     if(randomNo < 0.5)
       BckINSreturnMove(list)
     else
@@ -181,8 +180,8 @@ class NeighbourhoodSearch(val rngSeed: Option[Long]) {
   }
 }
 object NeighbourhoodSearch {
-  def apply(rngSeed: Option[Long]) = {
-    new NeighbourhoodSearch(rngSeed)
+  def apply(rng: RNG) = {
+    new NeighbourhoodSearch(rng)
   }
   def apply() = {
     new NeighbourhoodSearch()  

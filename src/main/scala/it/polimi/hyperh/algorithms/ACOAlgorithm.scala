@@ -6,13 +6,14 @@ import util.Timeout
 import scala.util.Random
 import it.polimi.hyperh.solution.Solution
 import util.RNG
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 
 /**
  * @author Nemanja
  */
-abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution], rngSeed: Option[Long]) extends Algorithm {
+abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution], rng: RNG) extends Algorithm {
   def this(p: Problem, t0: Double) {
-    this(p, t0, None, None)
+    this(p, t0, None, RNG())
   }
   private var seed = seedOption
   
@@ -27,7 +28,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
   def initialSolution(): EvaluatedSolution = {
     seed match {
       case Some(seed) => seed.evaluate(p)
-      case None => Problem.evaluate(p, new Solution(RNG(rngSeed).shuffle(p.jobs.toList)))
+      case None => Problem.evaluate(p, Solution(rng.shuffle(p.jobs.toList)))
     }
   }
   
@@ -45,7 +46,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
   /////////////////////////////////////////////////////
   override def evaluate(p: Problem, timeLimit: Double): EvaluatedSolution = {
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    val bestSol = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
+    val bestSol = DummyEvaluatedSolution(p)
     
     def loop(bestSol: EvaluatedSolution, iter: Int): EvaluatedSolution = {
       if(notStopCondition && Timeout.notTimeout(expireTimeMillis)) {

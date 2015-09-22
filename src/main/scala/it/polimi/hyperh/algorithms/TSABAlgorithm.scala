@@ -5,30 +5,39 @@ import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.EvaluatedSolution
 import util.Timeout
+import util.RNG
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 
 /**
  * @author Nemanja
  */
 class TSABAlgorithm(
-    val maxt: Int,
-    numOfRandomMoves: Int,
-    neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
-    val maxret: Int,
-    val maxiter: Int,
     seed: Option[Solution],
-    rngSeed: Option[Long]
-    ) extends TSAlgorithm(maxt, numOfRandomMoves, neighbourhoodSearch, seed, rngSeed) {
+    rng: RNG
+    ) extends TSAlgorithm(seed, rng) {
   /**
    * A secondary constructor.
    */
-  def this(seed: Option[Solution], rngOption: Option[Long]) {
-    this(8, 20, NeighbourhoodSearch(rngOption).INSdefineMove, 1000, 30000, seed, rngOption)
+  private var maxt: Int = 8
+  private var maxret: Int = 1000
+  private var maxiter: Int = 30000
+  private var numOfRandomMoves: Int = 20
+  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(rng).INSdefineMove
+  
+  def this(maxt: Int,numOfRandomMoves: Int, neighbourhoodSearch: (List[Int], Int, Int) => List[Int],maxret: Int,maxiter: Int, seed: Option[Solution], rng: RNG) {
+    this(seed, rng)
+    this.maxt = maxt
+    this.numOfRandomMoves = numOfRandomMoves
+    this.neighbourhoodSearch = neighbourhoodSearch
+    this.maxret = maxret
+    this.maxiter = maxiter
+    
   }
   def this(seed: Option[Solution]) {
-    this(seed, None)
+    this(seed, RNG())
   }
   def this() {
-    this(None)
+    this(None, RNG())
   }
   def getEpsilon(numOfJobs: Int, numOfMachines: Int): Double = {
     val nOverM = numOfJobs / numOfMachines
@@ -219,11 +228,11 @@ class TSABAlgorithm(
   def findRepresentatives(p: Problem, evOldSolution: EvaluatedSolution, moves: List[(Int, Int)], uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     var representatives: List[(Int, Int)] = List()
     def bestJRepresentative(j: Int, jMoves: List[(Int, Int)]): (Int, Int) = {
-      var bestJRepr = new EvaluatedSolution(999999999, p.jobs) //dummy initialization
+      var bestJRepr = DummyEvaluatedSolution(p)
       var bestJMove = (j - 1, j - 1)
       for (i <- 0 until jMoves.size) {
         val neighbour = neighbourhoodSearch.apply(evOldSolution.solution.toList, jMoves(i)._1, jMoves(i)._2)
-        val evNeighbour = Problem.evaluate(p, new Solution(neighbour))
+        val evNeighbour = Problem.evaluate(p, Solution(neighbour))
         if (evNeighbour.value < bestJRepr.value) {
           bestJRepr = evNeighbour
           bestJMove = jMoves(i)
@@ -265,7 +274,7 @@ class TSABAlgorithm(
       t = ((a,b), (P(a), P(a+1)))
     else //b <= a
       t = ((a,b), (P(a-1), P(a)))
-    if (tabooList.size == maxTabooListSize) {
+    if (tabooList.size == maxt) {
         //remove the oldest forbidden move, and add new move at the end
         tabooList.drop(1) ::: List(t)
       } else

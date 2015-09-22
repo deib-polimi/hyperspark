@@ -16,18 +16,18 @@ class HGAAlgorithm(
     prob: Double, 
     coolingRate: Double,
     sd: Option[Solution],
-    rngSeed: Option[Long]
-    ) extends GAAlgorithm(popSize, sd, rngSeed) {
+    rng: RNG
+    ) extends GAAlgorithm(popSize, sd, rng) {
   /**
    * A secondary constructor.
    */
   def this(p: Problem, seedOption: Option[Solution]) {
     //popSize: 40, prob: 0.1, coolingRate: 0.95
-    this(p, 40, 0.1, 0.95, seedOption, None)
+    this(p, 40, 0.1, 0.95, seedOption, RNG())
   }
   def this(p: Problem) {
     //popSize: 40, prob: 0.1, coolingRate: 0.95
-    this(p, 40, 0.1, 0.95, None, None)
+    this(p, 40, 0.1, 0.95, None, RNG())
   }
   var temperatureUB:Double = 2000.0 //dummy initialization
 
@@ -82,11 +82,11 @@ class HGAAlgorithm(
     //parent1 uses bestSolution
     val parent1 = bestSolution
     //select parent2 using uniform distribution
-    val parent2 = subpopulation(RNG(rngSeed).nextInt(Ps))
+    val parent2 = subpopulation(rng.nextInt(Ps))
     //apply crossover operator
     val children = operator(parent1.solution.toList, parent2.solution.toList)
-    val child1 = Problem.evaluate(p, new Solution(children._1))
-    val child2 = Problem.evaluate(p, new Solution(children._2))
+    val child1 = Problem.evaluate(p, Solution(children._1))
+    val child2 = Problem.evaluate(p, Solution(children._2))
     newPopulation = newPopulation ++ Array(child1) ++ Array(child2)
     newPopulation = newPopulation.sortBy[Int](_.value)(Ordering.Int).take(Ps)
     newPopulation
@@ -114,12 +114,12 @@ class HGAAlgorithm(
           else
             newSolution = mutationINS(evOldPopulation(i).solution.toList)
           //calculate its cost
-          val evNewSolution = Problem.evaluate(p, new Solution(newSolution))
+          val evNewSolution = Problem.evaluate(p, Solution(newSolution))
             
           val delta = evNewSolution.value - evOldPopulation(i).value
           //calculate acceptance probability
           val ap = acceptanceProbability(delta, temperature)
-          val randomNo = RNG(rngSeed).nextDouble()
+          val randomNo = rng.nextDouble()
           
           if ((delta <= 0) || (randomNo <= ap)) {
             evOldPopulation(i) = evNewSolution

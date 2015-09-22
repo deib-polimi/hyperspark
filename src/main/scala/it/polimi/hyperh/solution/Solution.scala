@@ -19,8 +19,8 @@ class Solution (
     /**
      * A secondary constructor.
      */
-    def this(list: List[Int]) {
-      this(list.toArray);
+    def this(permutation: List[Int]) {
+      this(permutation.toArray);
     }
 	def evaluate(p:Problem):EvaluatedSolution = {
     Problem.evaluate(p, this)
@@ -34,4 +34,6 @@ class Solution (
 
 object Solution{
   def apply(path:String) = SolutionParser.apply(Source.fromFile(path).getLines().mkString).getOrElse(throw new RuntimeException("ParserError"))
+  def apply(permutation:Permutation) = new Solution(permutation)
+  def apply(permutation: List[Int]) = new Solution(permutation)
 }

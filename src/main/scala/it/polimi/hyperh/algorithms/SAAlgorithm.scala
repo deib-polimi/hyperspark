@@ -11,44 +11,41 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class SAAlgorithm(p: Problem) extends Algorithm {
+class SAAlgorithm(p: Problem, rng: RNG) extends Algorithm {
 
   var temperatureUB: Double = p.sumJobTimesMatrix() / (5.0*p.numOfJobs*p.numOfMachines)
   var temperatureLB: Double = 1.0
   var iterations: Double = scala.math.max(3300*scala.math.log(p.numOfJobs)+7500*scala.math.log(p.numOfMachines)-18250, 2000)
   var coolingRate: Double = (temperatureUB-temperatureLB)/((iterations-1)*temperatureUB*temperatureLB)
   var seed: Option[Solution] = None
-  var rngSeed: Option[Long] = None
   /**
    * A secondary constructor.
    */
   def this(p: Problem, tUB: Double, tLB: Double, cRate: Double) {
-    this(p)
+    this(p, RNG())
     temperatureUB = tUB
     temperatureLB = tLB
     coolingRate = cRate
   }
-  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, seedOption: Option[Solution], rngOption: Option[Long]) {
-    this(p)
+  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, seedOption: Option[Solution], rng: RNG) {
+    this(p, rng)
     temperatureUB = tUB
     temperatureLB = tLB
     coolingRate = cRate
     seed = seedOption
-    rngSeed = rngOption
   }
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p)
+    this(p, RNG())
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[Solution], rngOption: Option[Long]) {
-    this(p)
+  def this(p: Problem, seedOption: Option[Solution], rng: RNG) {
+    this(p, rng)
     seed = seedOption
-    rngSeed = rngOption
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
       case Some(seed) => seed.evaluate(p)
-      case None => Problem.evaluate(p, new Solution(RNG(rngSeed).shuffle(p.jobs.toList)))
+      case None => Problem.evaluate(p, new Solution(rng.shuffle(p.jobs.toList)))
     }
   }
   override def evaluate(p: Problem): EvaluatedSolution = {
@@ -57,7 +54,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
     def cost(solution: List[Int]) = Problem.evaluate(p, new Solution(solution))
-    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(rngSeed).SHIFT(sol)//forward or backward shift at random
+    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(rng).SHIFT(sol)//forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828,(-delta/temperature))
     }
@@ -84,7 +81,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
         val delta = evNewSolution.value - evOldSolution.value
         //calculate acceptance probability
         val ap = acceptanceProbability(delta, temperature)
-        val randomNo = RNG(rngSeed).nextDouble()
+        val randomNo = rng.nextDouble()
         if((delta <= 0) || (randomNo <= ap)) {
           oldSolution = newSolution
           evOldSolution = evNewSolution

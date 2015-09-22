@@ -7,36 +7,40 @@ import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.EvaluatedSolution
 import akka.actor._
 import util.Timeout
+import util.RNG
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 /**
  * @author Nemanja
  */
 class TSAlgorithm(
-    val maxTabooListSize: Int, 
-    val numOfRandomMoves: Int, 
-    val neighbourhoodSearch: (List[Int], Int, Int) => List[Int],
-    sd: Option[Solution],
-    rngSeed: Option[Long]
+    var seed: Option[Solution],
+    rng: RNG
     ) extends Algorithm {
+  
+  private var maxTabooListSize: Int = 7
+  private var numOfRandomMoves: Int = 20
+  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(rng).INSdefineMove
   /**
    * A secondary constructor.
    */
   def this(maxTabooListSize: Int, numOfRandomMoves: Int) {
-    this(maxTabooListSize, numOfRandomMoves, NeighbourhoodSearch(None).INSdefineMove, None, None)//default values, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(None, RNG())
+    this.maxTabooListSize = maxTabooListSize
+    this.numOfRandomMoves = numOfRandomMoves
   }
   def this(maxTabooListSize: Int) {
-    this(maxTabooListSize, 20, NeighbourhoodSearch(None).INSdefineMove, None, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
+    this(None, RNG())
   }
   def this() {
-    this(7, 20, NeighbourhoodSearch(None).INSdefineMove, None, None)//default values, maxTabooListSize:7, numOfRandomMoves:20, neighbourhoodSearch:NeighbourhoodSearch.INSdefineMove
-  }
-  def this(seed: Option[Solution], rngSeed: Option[Long]) {
-    this(7, 20, NeighbourhoodSearch(rngSeed).INSdefineMove, seed, rngSeed)
+    this(None, RNG())
   }
   def this(seed: Option[Solution]) {
-    this(7, 20, NeighbourhoodSearch(None).INSdefineMove, seed, None)
+    this(seed, RNG())
   }
-  private var seed = sd
-  
+  def getNumOfRandomMoves() = { 
+    val copy = numOfRandomMoves
+    copy
+  }
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
@@ -54,7 +58,7 @@ class TSAlgorithm(
     evaluateSmallProblem(p, timeLimit)
   }
   def evaluateSmallProblem(p: Problem, timeLimit: Double): EvaluatedSolution = {
-    var evBestSolution = new EvaluatedSolution(999999999, p.jobs)//dummy initalization
+    var evBestSolution = DummyEvaluatedSolution(p)
     var allMoves: List[(Int,Int)] = List()//dummy initalization
     //algorithm time limit
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
@@ -62,7 +66,7 @@ class TSAlgorithm(
       if(Timeout.notTimeout(expireTimeMillis)) {
         if(iter == 1) {
           evBestSolution = initialSolution(p)
-          allMoves = NeighbourhoodSearch(rngSeed).generateAllNeighbourhoodMoves(p.numOfJobs)
+          allMoves = NeighbourhoodSearch(rng).generateAllNeighbourhoodMoves(p.numOfJobs)
         } else {
           evBestSolution = bestSolution
         }
@@ -84,7 +88,7 @@ class TSAlgorithm(
     evaluateBigProblem(p, timeLimit)
   }
   def evaluateBigProblem(p: Problem, timeLimit: Double): EvaluatedSolution = {
-    var evBestSolution = new EvaluatedSolution(999999999, p.jobs)//dummy initalization
+    var evBestSolution = DummyEvaluatedSolution(p)
     //algorithm time limit
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     def loop(bestSolution: EvaluatedSolution, taboo: List[Int], iter: Int): EvaluatedSolution = {
@@ -95,7 +99,7 @@ class TSAlgorithm(
           evBestSolution = bestSolution
         }
         //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-        val allMoves = NeighbourhoodSearch(rngSeed).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
+        val allMoves = NeighbourhoodSearch(rng).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
         val pair1 = bestImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
         val evNewSolution = pair1._1
         if(evNewSolution.value < evBestSolution.value)

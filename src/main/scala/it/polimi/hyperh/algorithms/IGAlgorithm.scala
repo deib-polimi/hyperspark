@@ -15,16 +15,16 @@ import util.RNG
  */
 
 //Problem Factory
-class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rngSeed: Option[Long]) extends Algorithm {
+class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG) extends Algorithm {
   /**
    * A secondary constructor.
    */
   def this() {
     //d: 2, T: 0.2
-    this(2, 0.2, None, None)
+    this(2, 0.2, None, RNG())
   }
   def this(seedOption: Option[Solution]) {
-    this(2, 0.2, seedOption, None)
+    this(2, 0.2, seedOption, RNG())
   }
   private var seed = seedOption 
   
@@ -70,7 +70,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rngSeed:
             val constant = T * (sumJobTimes / (p.numOfMachines*p.numOfJobs*10))
             constant
           }
-          if(RNG(rngSeed).nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
+          if(rng.nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
             currentSolution = improvedSolution
         }
         loop(currentSolution, bestSolution, iter+1)
@@ -89,7 +89,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rngSeed:
     var removed=List[Int]()
     for(i <- 0 until d) {
       val size = tmp.size
-      val removeInd = RNG(rngSeed).nextInt(size);//returns int between 0 (inclusive) and the specified value (exclusive)
+      val removeInd = rng.nextInt(size);//returns int between 0 (inclusive) and the specified value (exclusive)
       val el = tmp.remove(removeInd)
       removed = removed ::: List(el)
     }
@@ -113,7 +113,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rngSeed:
     while(improve == true) {
       improve = false
       val indexes = (0 until permutation.size).toList
-      var removalOrder = RNG(rngSeed).shuffle(indexes)
+      var removalOrder = rng.shuffle(indexes)
       for(i <- 0 until removalOrder.size) {
         var tmp=permutation.toBuffer
         val job = tmp(removalOrder(i))
