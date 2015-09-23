@@ -177,7 +177,7 @@ class GAAlgorithm(
       case List() => result
       case head :: tail => mappings.filter(y => y._1 == head).toList match {
         case List()  => applyMapping(tail, mappings, result ::: List(head))
-        case m :: ms => applyMapping(tail, mappings, result ::: List(m._2))
+        case m :: ms => applyMapping(m._2 :: tail, mappings, result)
       }
     }
     val child1 = applyMapping(child1Part1, mappings2, List()) ::: child2Part2 ::: applyMapping(child1Part3, mappings2, List())

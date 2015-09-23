@@ -96,7 +96,7 @@ object testAlgorithms {
  def BckINS(list: List[Int]): List[Int] = {
     val firstPoint = Random.nextInt(list.size - 1)//[0,n-2]
     val secondPoint = firstPoint + 1 + Random.nextInt(list.size - firstPoint - 1)//[firstPoint+1,n]
-		//println(firstPoint+","+secondPoint)
+		println(firstPoint+","+secondPoint)
     val resultPart1 = list.take(firstPoint)
     val resultPart2 = list.drop(secondPoint).take(1)
     val resultPart3 = list.drop(firstPoint).filterNot(resultPart2.toSet)

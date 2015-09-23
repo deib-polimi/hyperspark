@@ -10,10 +10,15 @@ object Performance {
     val diff = someVal - optVal
     if(diff < 0)
       println("New best :" + someVal)
-    100 * diff / optVal
+    BigDecimal(100 * diff / optVal.toDouble).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
   def RPD(Csome: EvaluatedSolution, Copt: EvaluatedSolution): Double = {
-    RPD(Csome.value, Copt.value)
+    val someVal = Csome.value
+    val optVal = Copt.value
+    val diff = someVal - optVal
+    if(diff < 0)
+      println("New best :" + Csome)
+    BigDecimal(100 * diff / optVal.toDouble).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
   def ARPD(RPDs: List[Double]): Double = {
     var sum = 0.0

@@ -63,15 +63,11 @@ class HGAAlgorithm(
       subpopulation3 = crossover(p, subpopulation3, bestSolution, crossoverC1, expireTimeMillis)
       subpopulation4 = crossover(p, subpopulation4, bestSolution, crossoverNABEL, expireTimeMillis)
       //UPDATE POPULATION
-      var metpopulation = subpopulation1 ++ subpopulation2 ++ subpopulation3 ++ subpopulation4
-      val crossBest = metpopulation.minBy(_.value)
-      if(crossBest.value < bestSolution.value)
-        bestSolution = crossBest
+      population = subpopulation1 ++ subpopulation2 ++ subpopulation3 ++ subpopulation4
+      bestSolution = List(population.minBy(_.value), bestSolution).min
       //METROPOLIS MUTATION
-      metpopulation = metropolis(p, metpopulation, expireTimeMillis)
-      val metBest = population.minBy(_.value)
-      if(metBest.value < bestSolution.value)
-        bestSolution = metBest
+      population = metropolis(p, population, expireTimeMillis)
+      bestSolution = List(population.minBy(_.value), bestSolution).min
       
     } //endwhile
     //RETURN BEST SOLUTION
@@ -127,9 +123,7 @@ class HGAAlgorithm(
             evOldPopulation(i) = evNewSolution
           }
           //if we found better solution in the neighbourhood, update localBest
-          if(evNewSolution.value < localBest.value) {
-            localBest = evNewSolution
-          } 
+          localBest = List(evNewSolution, localBest).min
           runs = runs + 1
           //END METROPOLIS SAMPLE ITERATION
         }
