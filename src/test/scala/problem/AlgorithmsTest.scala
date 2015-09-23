@@ -33,7 +33,7 @@ class AlgorithmsTest extends Assertions {
     
     println("numOfJobs: "+problem.numOfJobs)
     println("numOfMachines: "+problem.numOfMachines)
-    //ConsolePrinter.print(problem.jobTimesMatrix)
+   //ConsolePrinter.print(problem.jobTimesMatrix)
     
     //Get OPTIMAL SOLUTION from sol_ta001
     val optimalSolution = EvaluatedSolution(path + "sol_ta002")

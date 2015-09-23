@@ -10,8 +10,8 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 
 @SerialVersionUID(100L)
 class Problem  (
+  val numOfJobs:Int,
 	val numOfMachines:Int,
-	val numOfJobs:Int,
 	val jobTimesMatrix: Array[Array[Int]] 	// delays(i)(j) of j-th job on i-th machine (0<=i<numOfMachines) (0<=j<numOfJobs)
 ) extends Serializable
 {
