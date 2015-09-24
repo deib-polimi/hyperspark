@@ -7,6 +7,7 @@ import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.Solution
 import util.RNG
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 
 /**
  * @author Nemanja
@@ -61,22 +62,19 @@ class SAAlgorithm(p: Problem, rng: RNG) extends Algorithm {
       scala.math.pow(2.71828,(-delta/temperature))
     }
      
-    var oldSolution = p.jobs.toList//dummy initialization
-    var evOldSolution = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
+    var evOldSolution = DummyEvaluatedSolution(p)
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     def loop(old: EvaluatedSolution, temp: Double, iter: Int): EvaluatedSolution = {
       if((temp > temperatureLB) && Timeout.notTimeout(expireTimeMillis)) {
         if(iter == 1) {
           //initialize solution
           evOldSolution = initialSolution(p)
-          oldSolution = evOldSolution.solution.toList
         } else {
-          oldSolution = old.solution.toList
           evOldSolution = old
         }
         var temperature = temp
         //generate random neighbouring solution
-        val newSolution = neighbour(oldSolution)
+        val newSolution = neighbour(evOldSolution.solution.toList)
         //calculate its cost
         val evNewSolution = cost(newSolution)
           
@@ -85,7 +83,6 @@ class SAAlgorithm(p: Problem, rng: RNG) extends Algorithm {
         val ap = acceptanceProbability(delta, temperature)
         val randomNo = rng.nextDouble()
         if((delta <= 0) || (randomNo <= ap)) {
-          oldSolution = newSolution
           evOldSolution = evNewSolution
         } 
         temperature = temperature / (1 + coolingRate*temperature)

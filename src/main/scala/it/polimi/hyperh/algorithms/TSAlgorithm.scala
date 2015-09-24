@@ -74,10 +74,9 @@ class TSAlgorithm(
           evBestSolution = bestSolution
         }
         val pair = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
-        val neighbourSolution = pair._1
-        if(neighbourSolution.value < evBestSolution.value)
-          evBestSolution = neighbourSolution
-        val tabooList = updateTabooList(taboo, neighbourSolution)
+        val evNewSolution = pair._1
+        evBestSolution = List(evNewSolution, evBestSolution).min
+        val tabooList = updateTabooList(taboo, evBestSolution)
         loop(evBestSolution, tabooList, iter + 1)
       }
       evBestSolution
@@ -103,11 +102,10 @@ class TSAlgorithm(
         }
         //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
         val allMoves = NeighbourhoodSearch(rng).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
-        val pair1 = bestImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
+        val pair1 = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
         val evNewSolution = pair1._1
-        if(evNewSolution.value < evBestSolution.value)
-          evBestSolution = evNewSolution
-        val tabooList = updateTabooList(taboo, evNewSolution)
+        evBestSolution = List(evNewSolution, evBestSolution).min
+        val tabooList = updateTabooList(taboo, evBestSolution)
         loop(evBestSolution, tabooList, iter + 1)
       }
       else evBestSolution
@@ -150,9 +148,8 @@ class TSAlgorithm(
     var move = (0, 1) //dummy initialization
     var betterNotFound = true
     while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
-      val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val newSolution = new Solution(perturbed)
-      val evNewSolution = Problem.evaluate(p, newSolution)
+      val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2) 
+      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
       if (evNewSolution.value < bestSolution.value) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -170,8 +167,7 @@ class TSAlgorithm(
     var betterNotFound = true
     while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val newSolution = new Solution(perturbed)
-      val evNewSolution = Problem.evaluate(p, newSolution)
+      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
       if (evNewSolution.value < bestSolution.value && (! isForbidden(tabooList, evNewSolution.value))) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -184,13 +180,12 @@ class TSAlgorithm(
   //Examine all the moves and take the best
   //the neighbourhood must be examined in parallel for big instances
   def bestImprovement(p: Problem, evOldSolution: EvaluatedSolution, allMoves: List[(Int, Int)], expireTimeMillis: Double) = {
-    var bestSolution = new EvaluatedSolution(999999999, p.jobs)
+    var bestSolution = evOldSolution
     var candidateMoves = allMoves
     var move = (0, 1) //dummy initialization
     while (candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val newSolution = new Solution(perturbed)
-      val evNewSolution = Problem.evaluate(p, newSolution)
+      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
       if (evNewSolution.value < bestSolution.value) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -202,13 +197,12 @@ class TSAlgorithm(
   //Examine all the moves (that are not taboo) and take the best
   //the neighbourhood must be examined in parallel for big instances
   def bestImprovement(p: Problem, evOldSolution: EvaluatedSolution, allMoves: List[(Int, Int)], tabooList: List[Int], expireTimeMillis: Double) = {
-    var bestSolution = new EvaluatedSolution(999999999, p.jobs)
+    var bestSolution = evOldSolution
     var candidateMoves = allMoves
     var move = (0, 1) //dummy initialization
     while (candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val newSolution = new Solution(perturbed)
-      val evNewSolution = Problem.evaluate(p, newSolution)
+      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
       if (evNewSolution.value < bestSolution.value && (! isForbidden(tabooList, evNewSolution.value))) {
         bestSolution = evNewSolution
         move = candidateMoves.head

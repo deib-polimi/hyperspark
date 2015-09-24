@@ -7,6 +7,7 @@ import util.Timeout
 import it.polimi.hyperh.search.NeighbourhoodSearch
 import it.polimi.hyperh.solution.Solution
 import util.RNG
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 
 /**
  * @author Nemanja
@@ -54,74 +55,71 @@ class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
     evaluate(p, timeLimit)
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
-    def cost(solution: List[Int]) = p.evaluatePartialSolution(solution.toArray)
+    def cost(list: List[Int]) = Problem.evaluate(p, new Solution(list))
     def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(rng).SHIFT(sol) //forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))
     } 
-    val dummySol = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
+    val dummySol = DummyEvaluatedSolution(p)
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     
-    def loop(evOldSolTrack: EvaluatedSolution, bestSol: EvaluatedSolution, temp: Double, tIt: Int, iNCTemp: Int): EvaluatedSolution = {
-      var evOldSolutionTrack = evOldSolTrack
-      var oldSolutionTrack = evOldSolutionTrack.solution.toList
-      var bestSolution = bestSol
+    def loop(presSol: EvaluatedSolution, bestGlob: EvaluatedSolution, temp: Double, tIt: Int, iNCTemp: Int): EvaluatedSolution = {
+      var presentSol = presSol
+      var bestLocal = presSol
+      var bestGlobal = bestGlob
       var temperature = temp
-      var iNotChangedTemp = iNCTemp
+      var iNotChangedTemp = iNCTemp//p
       var totalIterations = tIt
-      if(totalIterations == 0) {
-        //initialize solution
-        evOldSolutionTrack = initialSolution(p)
-        oldSolutionTrack = evOldSolutionTrack.solution.toList
-        //variable for rembembering best solutions
-        bestSolution = evOldSolutionTrack
-      }
       
       if ((temperature >= temperatureLB) && (iNotChangedTemp < maxNotChangedTemp) && 
           Timeout.notTimeout(expireTimeMillis)) {
+        //INITIALIZE
+        if(totalIterations == 0) {
+          presentSol = initialSolution(p)
+          bestGlobal = presentSol
+          bestLocal = presentSol
+        }
         var iNotChangedMS = 0 //q
         var iterationsMS = 0  //j
         while ((iNotChangedMS < maxNotChangedMS) && (iterationsMS < maxItPerMS) && Timeout.notTimeout(expireTimeMillis)) {
-          iterationsMS = iterationsMS + 1
+          iterationsMS = iterationsMS + 1//step1
           //START METROPOLIS SAMPLE ITERATION
-          //generate random neighbouring solution
-          val newSolutionTrack = neighbour(oldSolutionTrack)
+          //generate random neighbouring solution, step1
+          val neighbourSol = neighbour(presentSol.solution.toList)
           //calculate its cost
-          val evNewSolutionTrack = cost(newSolutionTrack)
+          val evNeighbourSol = cost(neighbourSol)
   
-          val delta = evNewSolutionTrack.value - evOldSolutionTrack.value
+          val delta = evNeighbourSol.value - presentSol.value
           //calculate acceptance probability
           val ap = acceptanceProbability(delta, temperature)
-          val randomNo = rng.nextDouble()
+          val randomNo = rng.nextDouble()//step2
           
           if ((delta <= 0) || (randomNo <= ap)) {
-            oldSolutionTrack = newSolutionTrack
-            evOldSolutionTrack = evNewSolutionTrack
-          }
-          //if we found better solution in the neighbourhood, update the oldSolution
-          if(evNewSolutionTrack.value < evOldSolutionTrack.value) {
-            evOldSolutionTrack = evNewSolutionTrack
-            iNotChangedMS = 0                  //q=0
-          } else {
-            iNotChangedMS = iNotChangedMS + 1  //q=q+1
-          }
+            presentSol = evNeighbourSol//step3 : accept neighbour solution
+            //if we found better solution in the neighbourhood, update the bestLocal
+            if(evNeighbourSol.value < bestLocal.value) {
+              bestLocal = evNeighbourSol
+              iNotChangedMS = 0                  //q=0
+            } else {
+              iNotChangedMS = iNotChangedMS + 1  //q=q+1
+            }
+          }//else go to step1
           //END METROPOLIS SAMPLE ITERATION
-        }
+        }//step5 put in while
         totalIterations = totalIterations + iterationsMS
         //UPDATING SEQUENCE OF PRESENT SOLUTION
         //if metropolis sample found better solution in this temperature iteration, update best solution
-        if(evOldSolutionTrack.value < bestSolution.value) {
-          bestSolution = evOldSolutionTrack
+        if(bestLocal.value < bestGlobal.value) {//step6
+          bestGlobal = bestLocal
           iNotChangedTemp = 0                      //p=0
         } else {
           iNotChangedTemp = iNotChangedTemp + 1    //p=p+1
         }
         temperature = temperature / (1 + coolingRate * temperature)
         //REPEAT
-        loop(evOldSolutionTrack, bestSolution, temperature, totalIterations, iNotChangedTemp)
+        loop(presentSol, bestGlobal, temperature, totalIterations, iNotChangedTemp)
       }
-      //println("ISA total number of iterations: "+totalIterations)
-      else bestSolution
+      else bestGlobal
     }
     loop(dummySol, dummySol, temperatureUB, 0, 0) 
   }
