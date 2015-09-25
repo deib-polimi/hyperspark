@@ -29,7 +29,8 @@ import util.RNG
 class AlgorithmsTest extends Assertions {
   @Test def testAlgorithms() {
     val path = "./resources/"
-    val problem = Problem(path + "inst_ta044.txt")
+    val i = "007"
+    val problem = Problem(path + "inst_ta"+i+".txt")
     
     println("numOfJobs: "+problem.numOfJobs)
     println("numOfMachines: "+problem.numOfMachines)
@@ -38,7 +39,7 @@ class AlgorithmsTest extends Assertions {
     println("Time limit: "+timeLimit/1000.0+"s")
     
     //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = new EvaluatedSolution(3063, problem.jobs)//EvaluatedSolution(path + "sol_ta002")
+    val optimalSolution = EvaluatedSolution(path + "sol_ta"+i+".txt")
     println("Optimal: " + optimalSolution)
     
     //construct external random number generator
