@@ -12,7 +12,7 @@ import util.Performance
  */
 object App {
   def main(args : Array[String]) {
-    val problem = Problem("./resources/inst_ta002")
+    val problem = Problem("./resources/inst_ta002.txt")
     val algorithm = new PACOAlgorithm(problem)
     val numOfAlgorithms = 4
     val conf = new FrameworkConf()

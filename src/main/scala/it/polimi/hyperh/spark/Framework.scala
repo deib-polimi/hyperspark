@@ -14,7 +14,14 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
  * @author Nemanja
  */
 object Framework {
-  def run(conf: FrameworkConf) = {
+  private var sparkContext: Option[SparkContext] = None
+  private var conf: Option[FrameworkConf] = None
+  def setConf(fc: FrameworkConf) = { conf = Some(fc) }
+  def getConf(): FrameworkConf = conf.getOrElse(throw new RuntimeException("FrameworkConf not set"))
+  private def getSparkContext(): SparkContext = sparkContext.getOrElse(throw new RuntimeException("SparkContext error"))
+  var notStarted: Boolean = true
+  def run(conf: FrameworkConf): EvaluatedSolution = {
+    //problem specific settings
     val problem = conf.getProblem()
     val algorithms = conf.getAlgorithms()
     val numOfTasks = algorithms.size
@@ -22,16 +29,48 @@ object Framework {
     val iterationTimeLimit = conf.getIterationTimeLimit()
     val iterations = conf.getNumberOfIterations()
     val totalTimeLimit = iterationTimeLimit * iterations
-    
-    val sparkConf = new SparkConf().setAll(conf.getProperties())
-    val sc = new SparkContext(sparkConf)
-    
     val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
+    //spark specific settings
+    val sparkConf = new SparkConf().setAll(conf.getProperties())
+    if(notStarted){//allow only one instance of SparkContext to run
+      sparkContext = Some(new SparkContext(sparkConf))
+      notStarted = false
+    }
+    val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
     val solution = hyperLoop(problem, rdd, iterations)
     solution
   }
-
+  def multipleRuns(conf: FrameworkConf, runs: Int): Array[EvaluatedSolution] = {
+    //problem specific settings
+    val problem = conf.getProblem()
+    val algorithms = conf.getAlgorithms()
+    val numOfTasks = algorithms.size
+    val seeds = conf.getSeeds()
+    val iterationTimeLimit = conf.getIterationTimeLimit()
+    val iterations = conf.getNumberOfIterations()
+    val totalTimeLimit = iterationTimeLimit * iterations
+    val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
+    //spark specific settings
+    val sparkConf = new SparkConf().setAll(conf.getProperties())
+    if(notStarted){//allow only one instance of SparkContext to run
+      sparkContext = Some(new SparkContext(sparkConf))
+      notStarted = false
+    }
+    val sc = getSparkContext()
+    val rdd = sc.parallelize(dataset).cache
+    var solutions: Array[EvaluatedSolution] = Array()
+     for(i <- 1 to runs) {
+       val solution = hyperLoop(problem, rdd, iterations)
+       solutions :+= solution
+     }
+    solutions
+  }
+  def stop() = {
+    val sc = getSparkContext()
+    sc.stop()
+    sparkContext = None
+  }
   def hyperMap(problem: Problem, d: DistributedDatum): EvaluatedSolution = {
     d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit)
   }
