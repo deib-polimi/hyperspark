@@ -38,7 +38,7 @@ object Framework {
     }
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
-    val solution = hyperLoop(problem, rdd, iterations)
+    val solution = hyperLoop(problem, rdd, iterations, 1)
     solution
   }
   def multipleRuns(conf: FrameworkConf, runs: Int): Array[EvaluatedSolution] = {
@@ -61,7 +61,7 @@ object Framework {
     val rdd = sc.parallelize(dataset).cache
     var solutions: Array[EvaluatedSolution] = Array()
      for(i <- 1 to runs) {
-       val solution = hyperLoop(problem, rdd, iterations)
+       val solution = hyperLoop(problem, rdd, iterations, i)
        solutions :+= solution
      }
     solutions
@@ -71,17 +71,17 @@ object Framework {
     sc.stop()
     sparkContext = None
   }
-  def hyperMap(problem: Problem, d: DistributedDatum): EvaluatedSolution = {
-    d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit)
+  def hyperMap(problem: Problem, d: DistributedDatum, runNo: Int): EvaluatedSolution = {
+    d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit, runNo)
   }
   
   def hyperReduce(sol1: EvaluatedSolution, sol2: EvaluatedSolution): EvaluatedSolution = {
     List(sol1, sol2).min
   }
-  def hyperLoop(problem: Problem, rdd: RDD[DistributedDatum], maxIter: Int):EvaluatedSolution = {
+  def hyperLoop(problem: Problem, rdd: RDD[DistributedDatum], maxIter: Int, runNo: Int):EvaluatedSolution = {
 
     def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
-      rdd.map(datum => hyperMap(problem, datum)).reduce(hyperReduce(_,_))
+      rdd.map(datum => hyperMap(problem, datum, runNo)).reduce(hyperReduce(_,_))
     }
     def iterloop(rdd: RDD[DistributedDatum], iter:Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
       if(iter <= maxIter) {

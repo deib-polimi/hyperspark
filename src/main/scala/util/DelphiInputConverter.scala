@@ -46,7 +46,7 @@ object DelphiInputConverter {
       val p = DelphiProblemParser(Source.fromFile(inpath).getLines().mkString(" x ") + " x ").getOrElse(throw new RuntimeException("ParserError"))
       val filecontent = p.numOfJobs+" "+p.numOfMachines + "\n" + getMString(p.jobTimesMatrix)
       val outpath = outdir + filename("inst_ta",i)
-      Path(outpath).createFile().writeAll(filecontent)
+      FileManager.write(outpath, filecontent)
    }
    for(i<-1 to 120)
      processInstance(i)

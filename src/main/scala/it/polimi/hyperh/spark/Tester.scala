@@ -12,36 +12,40 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
 import it.polimi.hyperh.algorithms.IGAlgorithm
 import util.RNG
 import util.Performance
+import util.FileManager
 /**
  * @author Nemanja
  */
 object Tester {
-  def filename(prefix: String, i: Int) = {
+  def filename(prefix: String, i: Int, sufix: String) = {
       val str = i.toString
       str.size match {
-        case 1 => prefix+"00"+str+".txt"
-        case 2 => prefix+"0"+str+".txt"
-        case _ => prefix+str+".txt"
+        case 1 => prefix+"00"+str+sufix
+        case 2 => prefix+"0"+str+sufix
+        case _ => prefix+str+sufix
       }
     }
   def main(args : Array[String]) {
-    val pInd = 1
     val runs = 10
-    val problem = Problem("./resources/"+filename("inst_ta",pInd))
-    val bestSolution = EvaluatedSolution("./resources/"+filename("sol_ta",pInd))
     val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
-    val conf = new FrameworkConf()
-    .setDeploymentLocalNumExecutors(numOfAlgorithms)
-    .setProblem(problem)
-    .setNAlgorithms(algorithm, numOfAlgorithms)
-    .setNDefaultSeeds(numOfAlgorithms)
-    .setDefaultExecutionTimeLimit()
+    //var results: Array[String] = Array()
+    for(i <- 1 to 120) {
+      val problem = Problem("./resources/"+filename("inst_ta",i,".txt"))
+      val conf = new FrameworkConf()
+      .setDeploymentLocalNumExecutors(numOfAlgorithms)
+      .setProblem(problem)
+      .setNAlgorithms(algorithm, numOfAlgorithms)
+      .setNDefaultSeeds(numOfAlgorithms)
+      .setDefaultExecutionTimeLimit()
+      //results = results ++ Array(testInstance(i, runs, conf))
+      FileManager.write("./resources/a_result_"+i+".txt", testInstance(i, runs, conf))
+    }
+    //FileManager.write("./resources/a-results.txt", results.mkString)
     
-    testInstance(pInd, runs, conf)
   }
   def testInstance(i: Int, runs: Int, conf: FrameworkConf) = {
-    val bestSolution = EvaluatedSolution("./resources/"+filename("sol_ta",i))
+    val bestSolution = EvaluatedSolution("./resources/"+filename("sol_ta",i,".txt"))
     var rpds: List[Double] = List()
     val solutions = Framework.multipleRuns(conf, runs)
     for(i <- 0 until solutions.size){
@@ -51,7 +55,8 @@ object Tester {
     val arpd = Performance.ARPD(rpds)
     val algorithmName = conf.getAlgorithms().apply(0).name//take first alg name
     val numOfExecutors = conf.getAlgorithms().size
-    println(filename("inst_ta",i)+" "+numOfExecutors+"x "+algorithmName+" ARPD: "+arpd)
+    val resString = filename("inst_ta",i,"")+" "+numOfExecutors+"x "+algorithmName+" ARPD: "+arpd+"\n"
+    resString
   }
   
 
