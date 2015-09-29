@@ -20,36 +20,29 @@ class GAAlgorithm(
     val mutRate: Double, 
     val mutDecreaseFactor: Double, 
     val mutResetThreshold: Double,
-    val sd: Option[Solution], 
-    rng: RNG
+    val seedOption: Option[Solution]
     ) extends Algorithm {
   /**
    * Secondary constructors
    */
-  def this(popSize: Int, seedOption: Option[Solution], rng: RNG) {
-    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption, rng)
-  }
   def this(popSize: Int, seedOption: Option[Solution]) {
-    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption, RNG())
+    this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption)
   }
   def this(popSize: Int) {
-    this(popSize, 1.0, 0.8, 0.99, 0.95, None, RNG())
-  }
-  def this(rng: RNG) {
-    this(30, 1.0, 0.8, 0.99, 0.95, None, rng)
+    this(popSize, 1.0, 0.8, 0.99, 0.95, None)
   }
   def this() {
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
-    this(30, 1.0, 0.8, 0.99, 0.95, None, RNG())
+    this(30, 1.0, 0.8, 0.99, 0.95, None)
   }
-  private var seed = sd
+  seed = seedOption
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p)
       case None => initNEHSolution(p)
     }
   }
@@ -85,12 +78,12 @@ class GAAlgorithm(
           mutationRate = mutRate
         }
         //CROSSOVER
-        val randomNo = rng.nextDouble()
+        val randomNo = random.nextDouble()
         if (randomNo < crossRate) {
           //select parent1 using fitness_rank distribution
-          val parent1 = population(medianIndex+rng.nextInt(popSize-medianIndex))
+          val parent1 = population(medianIndex+random.nextInt(popSize-medianIndex))
           //select parent2 using uniform distribution
-          val parent2 = population(rng.nextInt(popSize))
+          val parent2 = population(random.nextInt(popSize))
           val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
           child1 = Problem.evaluate(p, Solution(children._1))
           child2 = Problem.evaluate(p, Solution(children._2))
@@ -104,8 +97,8 @@ class GAAlgorithm(
         }
         //UPDATE POPULATION
         //delete sequence from unfit members, whose makespan value is below the median
-        val index1 = rng.nextInt(medianIndex)
-        val index2 = rng.nextInt(medianIndex)
+        val index1 = random.nextInt(medianIndex)
+        val index2 = random.nextInt(medianIndex)
         //insert new members into population (at the same time deleting old members)
         population(index1) = child1
         population(index2) = child2
@@ -129,13 +122,10 @@ class GAAlgorithm(
     } //end def loop
     loop(Array(), (1.0, 1, 1), mutRate, 1)
   }
-  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
-    seed = seedSol
-    evaluate(p, timeLimit)
-  }
+
   def initRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
     def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
-      Problem.evaluate(p, Solution(rng.shuffle(jobs)))
+      Problem.evaluate(p, Solution(random.shuffle(jobs)))
     }
     val population = Array.ofDim[EvaluatedSolution](size)
     val jobsList = p.jobs.toList
@@ -152,8 +142,8 @@ class GAAlgorithm(
 
   def crossoverLOX(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
     val size = parent1.size
-    val firstPoint = rng.nextInt(size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + rng.nextInt(size - firstPoint) //[firstPoint+1,n]
+    val firstPoint = random.nextInt(size - 1) //[0,n-2]
+    val secondPoint = firstPoint + 1 + random.nextInt(size - firstPoint) //[firstPoint+1,n]
     val p1Remove = parent2.drop(firstPoint).take(secondPoint - firstPoint)
     val p2Remove = parent1.drop(firstPoint).take(secondPoint - firstPoint)
     val p1Filtered = parent1.filterNot(p1Remove.toSet)
@@ -163,8 +153,8 @@ class GAAlgorithm(
     (p1Reconstructed, p2Reconstructed)
   }
   def crossoverPMX(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
-    val firstPoint = rng.nextInt(parent1.size - 1) //[0,n-2]
-    val secondPoint = firstPoint + 1 + rng.nextInt(parent1.size - firstPoint) //[firstPoint+1,n]
+    val firstPoint = random.nextInt(parent1.size - 1) //[0,n-2]
+    val secondPoint = firstPoint + 1 + random.nextInt(parent1.size - firstPoint) //[firstPoint+1,n]
     val child1Part1 = parent1.take(firstPoint)
     val child1Part2 = parent1.drop(firstPoint).take(secondPoint - firstPoint)
     val child1Part3 = parent1.drop(secondPoint)
@@ -186,7 +176,7 @@ class GAAlgorithm(
   }
 
   def crossoverC1(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
-    val crossoverPoint = 1 + rng.nextInt(parent1.size - 2) //[1,n-2]
+    val crossoverPoint = 1 + random.nextInt(parent1.size - 2) //[1,n-2]
     val p1Same = parent1.take(crossoverPoint) //crossoverPoint elements remains the same, fill the rest
     val p2Same = parent2.take(crossoverPoint)
     val p1Add = parent2.filterNot(p1Same.toSet)
@@ -205,14 +195,14 @@ class GAAlgorithm(
     (child1.toList, child2.toList)
   }
   def mutationSWAP(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch(rng).SWAP(parent)
+    NeighbourhoodSearch(random).SWAP(parent)
   }
   def mutationINV(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch(rng).INV(parent)
+    NeighbourhoodSearch(random).INV(parent)
   }
 
   def mutationINS(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch(rng).BckINS(parent)
+    NeighbourhoodSearch(random).BckINS(parent)
   }
   def calculateStatistics(sortedPopulation:Array[EvaluatedSolution]):(Double,Int,Int) = {
     val makespans = sortedPopulation.map(_.value)

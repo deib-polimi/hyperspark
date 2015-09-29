@@ -11,22 +11,16 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution], rng: RNG) 
-extends MMASAlgorithm(p,t0,cand,seedOption, rng) {
+class MMMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) 
+extends MMASAlgorithm(p,t0,cand,seedOption) {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[Solution], rng: RNG) {
-    this(p, 0.2, 5, seedOption, rng)//default values
-  }
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 0.2, 5, seedOption, RNG())//default values
-  }
-  def this(p: Problem, rng: RNG) {
-    this(p, 0.2, 5, None, rng)//default values
+    this(p, 0.2, 5, seedOption)//default values
   }
   def this(p: Problem) {
-    this(p, 0.2, 5, None, RNG())//default values
+    this(p, 0.2, 5, None)//default values
   }
   def sumij(iJob: Int, jPos : Int) = {
     var sum = 0.0
@@ -59,7 +53,7 @@ extends MMASAlgorithm(p,t0,cand,seedOption, rng) {
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      var u = rng.nextDouble()
+      var u = random.nextDouble()
       if(u <= p0) {
         candidates = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).take(cand)
         var max = 0.0
@@ -93,7 +87,7 @@ extends MMASAlgorithm(p,t0,cand,seedOption, rng) {
           if(seed(j-1) != i) {
             val remInd = seed.indexWhere( _ == i)
             val insInd = j-1
-            val neighbourSol = NeighbourhoodSearch(rng).INSdefineMove(seedList, remInd, insInd)
+            val neighbourSol = NeighbourhoodSearch(random).INSdefineMove(seedList, remInd, insInd)
             val evNeighbourSol = p.evaluatePartialSolution(neighbourSol)
             if(evNeighbourSol.value < bestSolution.value)
               bestSolution = evNeighbourSol

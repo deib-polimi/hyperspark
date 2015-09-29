@@ -11,28 +11,24 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution], rng: RNG) 
-extends MMMASAlgorithm(p, t0, cand, seedOption, rng) {
+class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) 
+extends MMMASAlgorithm(p, t0, cand, seedOption) {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[Solution], rng: RNG) {
-    this(p, 0.2, 5, seedOption, rng)
-  }
+
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 0.2, 5, seedOption, RNG())
+    this(p, 0.2, 5, seedOption)
   }
-  def this(p: Problem, rng: RNG) {
-    this(p, 0.2, 5, None, rng)
-  }
+
   def this(p: Problem) {
-    this(p, 0.2, 5, None, RNG())//default values
+    this(p, 0.2, 5, None)//default values
   }
-  private var seed = seedOption
+  seed = seedOption
   
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p)
       case None => initNEHSolution(p)
     }
   }
@@ -78,7 +74,7 @@ extends MMMASAlgorithm(p, t0, cand, seedOption, rng) {
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      var u = rng.nextDouble()
+      var u = random.nextDouble()
       if(u <= 0.4) {
         nextJob = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).head
       }
@@ -143,7 +139,7 @@ extends MMMASAlgorithm(p, t0, cand, seedOption, rng) {
         if(seed(j-1) != i) {
           val indI = seed.indexWhere( _ == i)
           val indK = j-1
-          val neighbourSol = NeighbourhoodSearch(rng).SWAPdefineMove(seedList, indI, indK)
+          val neighbourSol = NeighbourhoodSearch(random).SWAPdefineMove(seedList, indI, indK)
           val evNeighbourSol = p.evaluatePartialSolution(neighbourSol)
           if(evNeighbourSol.value < bestSolution.value)
             bestSolution = evNeighbourSol

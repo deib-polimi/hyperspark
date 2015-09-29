@@ -12,16 +12,16 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
 /**
  * @author Nemanja
  */
-class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
+class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
   
-  var maxNotChangedTemp = 70  //pmax
-  var maxNotChangedMS = 250  //qmax
-  var maxItPerMS = 999999999    
+  protected var maxNotChangedTemp = 70  //pmax
+  protected var maxNotChangedMS = 250  //qmax
+  protected var maxItPerMS = 999999999    
   /**
    * A secondary constructor.
    */
   def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int) {
-    this(p, RNG())
+    this(p)
     temperatureUB = tUB
     temperatureLB = tLB
     coolingRate = cRate
@@ -30,7 +30,7 @@ class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
     maxItPerMS = mitpMS
   }
   def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[Solution], rng: RNG) {
-    this(p, rng)
+    this(p)
     temperatureUB = tUB
     temperatureLB = tLB
     coolingRate = cRate
@@ -39,16 +39,11 @@ class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
     maxItPerMS = mitpMS
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[Solution], rng: RNG) {
-    this(p, rng)
+  def this(p: Problem, seedOption: Option[Solution]) {
+    this(p)
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, seedOption, RNG())
-  }
-  def this(p: Problem) {
-    this(p, None, RNG())
-  }
+
   override def evaluate(p: Problem): EvaluatedSolution = {
     //algorithm time limit
     val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
@@ -56,7 +51,7 @@ class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
     def cost(list: List[Int]) = Problem.evaluate(p, new Solution(list))
-    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(rng).SHIFT(sol) //forward or backward shift at random
+    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(random).SHIFT(sol) //forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))
     } 
@@ -92,7 +87,7 @@ class ISAAlgorithm(p: Problem, rng: RNG) extends SAAlgorithm(p, rng) {
           val delta = evNeighbourSol.value - presentSol.value
           //calculate acceptance probability
           val ap = acceptanceProbability(delta, temperature)
-          val randomNo = rng.nextDouble()//step2
+          val randomNo = random.nextDouble()//step2
           
           if ((delta <= 0) || (randomNo <= ap)) {
             presentSol = evNeighbourSol//step3 : accept neighbour solution

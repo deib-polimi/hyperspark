@@ -10,26 +10,24 @@ import it.polimi.hyperh.problem.Problem
 import util.Timeout
 import it.polimi.hyperh.solution.Solution
 import util.RNG
+import it.polimi.hyperh.solution.DummyEvaluatedSolution
 /**
  * @author Nemanja
  */
 
 //Problem Factory
-class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG) extends Algorithm {
+class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends Algorithm {
   /**
    * A secondary constructor.
    */
   def this() {
     //d: 2, T: 0.2
-    this(2, 0.2, None, RNG())
+    this(2, 0.2, None)
   }
   def this(seedOption: Option[Solution]) {
-    this(2, 0.2, seedOption, RNG())
+    this(2, 0.2, seedOption)
   }
-  def this(rng: RNG) {
-    this(2, 0.2, None, rng)
-  }
-  private var seed = seedOption 
+  seed = seedOption 
   
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
@@ -46,7 +44,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG
     evaluate(p, timeLimit)
   }  
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
-    val dummySol = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
+    val dummySol = DummyEvaluatedSolution(p)
     val expireTimeMillis = Timeout.setTimeout(timeLimit)
     def loop(currentSol: EvaluatedSolution, bestSol: EvaluatedSolution, iter: Int): EvaluatedSolution = {
       if(Timeout.notTimeout(expireTimeMillis)) {
@@ -73,7 +71,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG
             val constant = T * (sumJobTimes / (p.numOfMachines*p.numOfJobs*10))
             constant
           }
-          if(rng.nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
+          if(random.nextDouble() <= Math.exp(-(improvedSolution.value-currentSolution.value)/calculateConstant(T)))
             currentSolution = improvedSolution
         }
         loop(currentSolution, bestSolution, iter+1)
@@ -92,7 +90,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG
     var removed=List[Int]()
     for(i <- 0 until d) {
       val size = tmp.size
-      val removeInd = rng.nextInt(size);//returns int between 0 (inclusive) and the specified value (exclusive)
+      val removeInd = random.nextInt(size);//returns int between 0 (inclusive) and the specified value (exclusive)
       val el = tmp.remove(removeInd)
       removed = removed ::: List(el)
     }
@@ -116,7 +114,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution], rng: RNG
     while(improve == true) {
       improve = false
       val indexes = (0 until permutation.size).toList
-      var removalOrder = rng.shuffle(indexes)
+      var removalOrder = random.shuffle(indexes)
       for(i <- 0 until removalOrder.size) {
         var tmp=permutation.toBuffer
         val job = tmp(removalOrder(i))

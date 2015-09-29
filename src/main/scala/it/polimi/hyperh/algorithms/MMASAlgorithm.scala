@@ -11,37 +11,31 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution], rng: RNG)
-extends ACOAlgorithm(p, t0, seedOption, rng) with Algorithm {
+class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution])
+extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[Solution], rng: RNG) {
-    this(p, 0.2, 5, seedOption, rng)//default values
-  }
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 0.2, 5, seedOption, RNG())//default values
-  }
-  def this(p: Problem, rng: RNG) {
-    this(p, 0.2, 5, None, rng)//default values
+    this(p, 0.2, 5, seedOption)//default values
   }
   def this(p: Problem) {
-    this(p, 0.2, 5, None, RNG())//default values
+    this(p, 0.2, 5, None)//default values
   }
-  private var seed = seedOption
+  //private var seed = seedOption
   
   def initNEHSolution(p: Problem) = {
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p)
   }
   override def initialSolution() = {
-    def getSolution(seedOption: Option[Solution]) ={
-      seedOption match {    
-      case Some(seedOption) => seedOption.evaluate(p)
+    def getSolution() ={
+      seed match {    
+      case Some(seedValue) => seedValue.evaluate(p)
         case None => initNEHSolution(p)
       }
     }
-    var solution = getSolution(seed)
+    var solution = getSolution()
     solution = localSearch(solution, Timeout.setTimeout(300))
     updateTmax(solution)
     updateTmin
@@ -74,7 +68,7 @@ extends ACOAlgorithm(p, t0, seedOption, rng) with Algorithm {
     
     while(jPos <= p.numOfJobs) {
       var nextJob = -1
-      var u = rng.nextDouble()
+      var u = random.nextDouble()
       if(u <= p0) {
         candidates = bestSolution.solution.toList.filterNot(job => scheduled.contains(job)).take(cand)
         nextJob = getNextJob(scheduled, candidates, jPos)
@@ -113,7 +107,7 @@ extends ACOAlgorithm(p, t0, seedOption, rng) with Algorithm {
     def sample(list: List[(Int, Int)]) = {
       var items = list
       var totalSum: Int = items.map(item => item._2).reduce(_ + _)
-      var index: Int = rng.nextInt(totalSum+1)
+      var index: Int = random.nextInt(totalSum+1)
       var sum = 0
       var item = items.head
       while(sum < index) {
@@ -129,7 +123,7 @@ extends ACOAlgorithm(p, t0, seedOption, rng) with Algorithm {
     val tsAlgorithm = new TSAlgorithm()
     var bestSolution = completeSolution
     if(p.numOfJobs <= 50) {
-      val moves = NeighbourhoodSearch(rng).generateAllNeighbourhoodMoves(p.numOfJobs)
+      val moves = NeighbourhoodSearch(random).generateAllNeighbourhoodMoves(p.numOfJobs)
       while(Timeout.notTimeout(expireTimeMillis)) {
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1
       }
@@ -137,7 +131,7 @@ extends ACOAlgorithm(p, t0, seedOption, rng) with Algorithm {
     }
     else {
       while(Timeout.notTimeout(expireTimeMillis)) {
-        val moves = NeighbourhoodSearch(rng).generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.getNumOfRandomMoves())
+        val moves = NeighbourhoodSearch(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.getNumOfRandomMoves())
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1 
       }
       bestSolution

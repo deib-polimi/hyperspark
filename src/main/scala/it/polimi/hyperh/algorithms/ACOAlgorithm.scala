@@ -11,14 +11,15 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
 /**
  * @author Nemanja
  */
-abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution], rng: RNG) extends Algorithm {
+abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]) extends Algorithm {
   def this(p: Problem, t0: Double) {
-    this(p, t0, None, RNG())
+    this(p, t0, None)
   }
-  private var seed = seedOption
   
   var T = Array.ofDim[Double](p.numOfJobs, p.numOfJobs)  //desire of setting job i at jth position in solution, i and j have solution.size range
   def trail(i: Int, j: Int): Double = T(i-1)(j-1)
+  seed = seedOption
+  def notStopCondition: Boolean = true
   
   def initializeTrails(t0: Double) = {
     for(i <- 0 until p.numOfJobs)
@@ -28,7 +29,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
   def initialSolution(): EvaluatedSolution = {
     seed match {
       case Some(seed) => seed.evaluate(p)
-      case None => Problem.evaluate(p, Solution(rng.shuffle(p.jobs.toList)))
+      case None => Problem.evaluate(p, Solution(random.shuffle(p.jobs.toList)))
     }
   }
   
@@ -36,7 +37,6 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
     initializeTrails(t0)
     initialSolution()
   }
-  def notStopCondition: Boolean = true
   
   def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution 
   def localSearch(completeSolution: EvaluatedSolution, expireTimeMillis: Double): EvaluatedSolution
@@ -67,10 +67,6 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
   }
   override def evaluate(p: Problem) = {
     val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
-    evaluate(p, timeLimit)
-  }
-  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
-    seed = seedSol
     evaluate(p, timeLimit)
   }
 }

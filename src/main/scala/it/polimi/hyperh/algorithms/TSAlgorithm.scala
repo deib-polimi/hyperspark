@@ -13,32 +13,28 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
  * @author Nemanja
  */
 class TSAlgorithm(
-    var seed: Option[Solution],
-    rng: RNG
+    seedOption: Option[Solution]
     ) extends Algorithm {
   
   private var maxTabooListSize: Int = 7
   private var numOfRandomMoves: Int = 20
-  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(rng).INSdefineMove
+  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(random).INSdefineMove
+  seed = seedOption
   /**
    * A secondary constructor.
    */
   def this(maxTabooListSize: Int, numOfRandomMoves: Int) {
-    this(None, RNG())
+    this(None)
     this.maxTabooListSize = maxTabooListSize
     this.numOfRandomMoves = numOfRandomMoves
   }
   def this(maxTabooListSize: Int) {
-    this(None, RNG())
+    this(None)
+    this.maxTabooListSize = maxTabooListSize
   }
-  def this(seed: Option[Solution]) {
-    this(seed, RNG())
-  }
-  def this(rng: RNG) {
-    this(None, rng)
-  }
+
   def this() {
-    this(None, RNG())
+    this(None)
   }
   def getNumOfRandomMoves() = { 
     val copy = numOfRandomMoves
@@ -50,7 +46,7 @@ class TSAlgorithm(
   }
   def initialSolution(p: Problem): EvaluatedSolution = {
     seed match {
-      case Some(seed) => seed.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p)
       case None => initNEHSolution(p)
     }
   }
@@ -69,7 +65,7 @@ class TSAlgorithm(
       if(Timeout.notTimeout(expireTimeMillis)) {
         if(iter == 1) {
           evBestSolution = initialSolution(p)
-          allMoves = NeighbourhoodSearch(rng).generateAllNeighbourhoodMoves(p.numOfJobs)
+          allMoves = NeighbourhoodSearch(random).generateAllNeighbourhoodMoves(p.numOfJobs)
         } else {
           evBestSolution = bestSolution
         }
@@ -101,7 +97,7 @@ class TSAlgorithm(
           evBestSolution = bestSolution
         }
         //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-        val allMoves = NeighbourhoodSearch(rng).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
+        val allMoves = NeighbourhoodSearch(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
         val pair1 = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
         val evNewSolution = pair1._1
         evBestSolution = List(evNewSolution, evBestSolution).min

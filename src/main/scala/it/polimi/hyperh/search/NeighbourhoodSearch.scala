@@ -6,11 +6,10 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class NeighbourhoodSearch(rng: RNG) {
+class NeighbourhoodSearch(random: Random) {
   def this() = {
-    this(RNG())
+    this(new Random(1))
   }
-  
   //OPERATIONS
   def SWAPdefineMove(list: List[Int], firstPoint: Int, secondPoint: Int): List[Int] = {
     val result = list.toArray
@@ -63,10 +62,10 @@ class NeighbourhoodSearch(rng: RNG) {
   }
   //RANDOM MOVES GENERATORS
   def randomZeroToNminusOne(n: Int): Int = {
-    rng.nextInt(n)
+    random.nextInt(n)
   }
   def randomZeroToNminusTwo(n: Int): Int = {
-    rng.nextInt(n - 1)
+    random.nextInt(n - 1)
   }
   def randomNeighbourPair(n: Int): (Int, Int) = {
     val firstPoint = randomZeroToNminusOne(n) //[0,n-1]
@@ -77,7 +76,7 @@ class NeighbourhoodSearch(rng: RNG) {
     (firstPoint, secondPoint)
   }
   def randomSuccessivePoint(firstPoint:Int, n: Int): Int = {
-    firstPoint + 1 + rng.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
+    firstPoint + 1 + random.nextInt(n - firstPoint - 1) //[firstPoint+1,n]
   }
   def randomSuccessivePair(n: Int): (Int, Int) = {
     val firstPoint = randomZeroToNminusTwo(n) //[0,n-2]
@@ -122,7 +121,7 @@ class NeighbourhoodSearch(rng: RNG) {
   }
   
   def SHIFT(list: List[Int]): List[Int] = {
-    val randomNo = rng.nextDouble()
+    val randomNo = random.nextDouble()
     if(randomNo < 0.5)
       BckINS(list)
     else
@@ -140,7 +139,7 @@ class NeighbourhoodSearch(rng: RNG) {
     (result.toList, pair)
   }
   def AdjSWAPreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
-    val firstPoint = rng.nextInt(list.size - 1) //[0,n-2]
+    val firstPoint = random.nextInt(list.size - 1) //[0,n-2]
     (AdjSWAPdefineMove(list, firstPoint), (firstPoint, firstPoint + 1))
   }
   def INVreturnMove(list: List[Int]): (List[Int], (Int, Int)) = {
@@ -159,7 +158,7 @@ class NeighbourhoodSearch(rng: RNG) {
     (result, pair)
   }
   def SHIFTreturnMove(list: List[Int]): (List[Int], (Int,Int)) = {
-    val randomNo = rng.nextDouble()  //[0,1]
+    val randomNo = random.nextDouble()  //[0,1]
     if(randomNo < 0.5)
       BckINSreturnMove(list)
     else
@@ -180,8 +179,8 @@ class NeighbourhoodSearch(rng: RNG) {
   }
 }
 object NeighbourhoodSearch {
-  def apply(rng: RNG) = {
-    new NeighbourhoodSearch(rng)
+  def apply(random: Random) = {
+    new NeighbourhoodSearch(random)
   }
   def apply() = {
     new NeighbourhoodSearch()  

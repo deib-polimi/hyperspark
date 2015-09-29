@@ -29,8 +29,7 @@ object Tester {
     val runs = 10
     val problem = Problem("./resources/"+filename("inst_ta",pInd))
     val bestSolution = EvaluatedSolution("./resources/"+filename("sol_ta",pInd))
-    val rng = RNG()
-    val algorithm = new IGAlgorithm(rng)
+    val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
     val conf = new FrameworkConf()
     .setDeploymentLocalNumExecutors(numOfAlgorithms)

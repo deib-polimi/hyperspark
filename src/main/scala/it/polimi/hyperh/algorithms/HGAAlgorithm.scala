@@ -15,24 +15,20 @@ class HGAAlgorithm(
     popSize: Int, 
     prob: Double, 
     coolingRate: Double,
-    sd: Option[Solution],
-    rng: RNG
-    ) extends GAAlgorithm(popSize, sd, rng) {
+    seedOption: Option[Solution]
+    ) extends GAAlgorithm(popSize, seedOption) {
   /**
    * A secondary constructor.
    */
   def this(p: Problem, seedOption: Option[Solution]) {
-    this(p, 40, 0.1, 0.95, seedOption, RNG())
-  }
-  def this(p: Problem, rng: RNG) {
-    this(p, 40, 0.1, 0.95, None, rng)
+    this(p, 40, 0.1, 0.95, seedOption)
   }
   def this(p: Problem) {
     //popSize: 40, prob: 0.1, coolingRate: 0.95
-    this(p, 40, 0.1, 0.95, None, RNG())
+    this(p, 40, 0.1, 0.95, None)
   }
   var temperatureUB:Double = 2000.0 //dummy initialization
-
+  seed = seedOption
   
   def acceptanceProbability(delta: Int, temperature: Double): Double = {
     scala.math.min(1.0, scala.math.pow(2.71828, (-delta / temperature)))
@@ -80,7 +76,7 @@ class HGAAlgorithm(
     //parent1 uses bestSolution
     val parent1 = bestSolution
     //select parent2 using uniform distribution
-    val parent2 = subpopulation(rng.nextInt(Ps))
+    val parent2 = subpopulation(this.random.nextInt(Ps))
     //apply crossover operator
     val children = operator(parent1.solution.toList, parent2.solution.toList)
     val child1 = Problem.evaluate(p, Solution(children._1))
@@ -117,7 +113,7 @@ class HGAAlgorithm(
           val delta = evNewSolution.value - evOldPopulation(i).value
           //calculate acceptance probability
           val ap = acceptanceProbability(delta, temperature)
-          val randomNo = rng.nextDouble()
+          val randomNo = random.nextDouble()
           
           if ((delta <= 0) || (randomNo <= ap)) {
             evOldPopulation(i) = evNewSolution

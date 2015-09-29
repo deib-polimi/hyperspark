@@ -12,9 +12,8 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
  * @author Nemanja
  */
 class TSABAlgorithm(
-    seed: Option[Solution],
-    rng: RNG
-    ) extends TSAlgorithm(seed, rng) {
+    sd: Option[Solution]
+    ) extends TSAlgorithm(sd) {
   /**
    * A secondary constructor.
    */
@@ -22,10 +21,10 @@ class TSABAlgorithm(
   private var maxret: Int = 1000
   private var maxiter: Int = 30000
   private var numOfRandomMoves: Int = 20
-  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(rng).INSdefineMove
+  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(random).INSdefineMove
   
   def this(maxt: Int,numOfRandomMoves: Int, neighbourhoodSearch: (List[Int], Int, Int) => List[Int],maxret: Int,maxiter: Int, seed: Option[Solution], rng: RNG) {
-    this(seed, rng)
+    this(seed)
     this.maxt = maxt
     this.numOfRandomMoves = numOfRandomMoves
     this.neighbourhoodSearch = neighbourhoodSearch
@@ -33,14 +32,8 @@ class TSABAlgorithm(
     this.maxiter = maxiter
     
   }
-  def this(seed: Option[Solution]) {
-    this(seed, RNG())
-  }
-  def this(rng: RNG) {
-    this(None, rng)
-  }
   def this() {
-    this(None, RNG())
+    this(None)
   }
   def getEpsilon(numOfJobs: Int, numOfMachines: Int): Double = {
     val nOverM = numOfJobs / numOfMachines
