@@ -33,17 +33,17 @@ The general idea is to use "Big Calculations" paradigm for running algorithms wr
 
 ### Algorithms implemented ###
 
-- NEH, Nawaz, Enscore and Ham (NEHAlgorithm)
-- Iterated Greedy (IGAlgorithm)
-- Genetic Algorithm, Reeves 1995 (GAAlgorithm)
-- Hybrid Genetic Algorithm, Zheng 2003 (HGAAlgorithm)
-- Simulated Annealing, Osman's addaption for PFSP 1989 (SAAlgorithm)
-- Improved Simulated Annealing, Xu and Oja (ISAAlgorithm)
-- Taboo Search, Taillard 1989 (TSAlgorithm)
-- Taboo Search with backjump tracking, Novicki and Smutnicki 1994 (TSABAlgorithm)
-- Max Min Ant System, Stutzle (MMASAlgorithm)
-- m-MMAS, Rajendran and Ziegler 2002 (MMMASAlgorithm)
-- PACO, Rajendran and Ziegler 2002 (PACOAlgorithm)
+- **NEH**, Nawaz, Enscore and Ham (NEHAlgorithm)
+- **Iterated Greedy** (IGAlgorithm)
+- **Genetic Algorithm**, Reeves 1995 (GAAlgorithm)
+- **Hybrid Genetic Algorithm**, Zheng 2003 (HGAAlgorithm)
+- **Simulated Annealing**, Osman's addaption for PFSP 1989 (SAAlgorithm)
+- **Improved Simulated Annealing**, Xu and Oja (ISAAlgorithm)
+- **Taboo Search**, Taillard 1989 (TSAlgorithm)
+- **Taboo Search with backjump tracking**, Novicki and Smutnicki 1994 (TSABAlgorithm)
+- **Max Min Ant System**, Stutzle (MMASAlgorithm)
+- **m-MMAS**, Rajendran and Ziegler 2002 (MMMASAlgorithm)
+- **PACO**, Rajendran and Ziegler 2002 (PACOAlgorithm)
 
 ### Contact info ###
 
