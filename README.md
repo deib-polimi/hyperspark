@@ -28,7 +28,7 @@ The general idea is to use "Big Calculations" paradigm for running algorithms wr
 - Implement evaluate(s: Solution) inside Problem class.
 - Extend the "Algorithm" trait and implement evaluate function signatures inside your custom algorithm class.
 - Write your application that uses HyperSpark framework. For a start, create a Scala object with main function. Inside the main write a FrameworkConf and provide it a problem, an algorithm, a parallelism multiplier, seeding solutions and the time limit for one parallel run. See *it.polimi.hyperh.App.scala* example.
-- Use Framework.run(conf: FrameworkConf) or Framework.multipleRuns(conf: FrameworkConf, runs: Int) to get solution(s). There is an advanced option of using the best solution found of one parallel run as a seeding solution in the next iteration of a parallel run. This option currently under mantainance.
+- Use Framework.run(conf: FrameworkConf) or Framework.multipleRuns(conf: FrameworkConf, runs: Int) to get solution(s). There is an advanced option of using the best solution found of one parallel run as a seeding solution in the next iteration of a parallel run. This option is currently under mantainance.
 - Inside Framework.class there are two methods: hyperMap(...) - which runs the algorithm.evaluate over the problem, and hyperReduce(...) - which for now takes the solution with minimum value. In the near future these options will be separated in the custom classes, so they can be easily extended and modified.
 
 ### Algorithms implemented ###
