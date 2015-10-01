@@ -19,7 +19,11 @@ object Framework {
   def setConf(fc: FrameworkConf) = { conf = Some(fc) }
   def getConf(): FrameworkConf = conf.getOrElse(throw new RuntimeException("FrameworkConf not set"))
   private def getSparkContext(): SparkContext = sparkContext.getOrElse(throw new RuntimeException("SparkContext error"))
-  var notStarted: Boolean = true
+  private var notStarted: Boolean = true
+  private var handler: MapReduceHandler = new MapReduceHandler()
+  def setMapReduceHandler(h: MapReduceHandler) = { handler = h }
+  def getMapReduceHandler(): MapReduceHandler = handler
+  
   def run(conf: FrameworkConf): EvaluatedSolution = {
     //problem specific settings
     val problem = conf.getProblem()
@@ -71,17 +75,11 @@ object Framework {
     sc.stop()
     sparkContext = None
   }
-  def hyperMap(problem: Problem, d: DistributedDatum, runNo: Int): EvaluatedSolution = {
-    d.algorithm.evaluate(problem, d.seed, d.iterationTimeLimit, runNo)
-  }
   
-  def hyperReduce(sol1: EvaluatedSolution, sol2: EvaluatedSolution): EvaluatedSolution = {
-    List(sol1, sol2).min
-  }
   def hyperLoop(problem: Problem, rdd: RDD[DistributedDatum], maxIter: Int, runNo: Int):EvaluatedSolution = {
 
     def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
-      rdd.map(datum => hyperMap(problem, datum, runNo)).reduce(hyperReduce(_,_))
+      rdd.map(datum => handler.hyperMap(problem, datum, runNo)).reduce(handler.hyperReduce(_,_))
     }
     def iterloop(rdd: RDD[DistributedDatum], iter:Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
       if(iter <= maxIter) {
