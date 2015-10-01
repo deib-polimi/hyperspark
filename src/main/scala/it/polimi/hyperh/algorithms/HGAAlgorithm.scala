@@ -79,8 +79,8 @@ class HGAAlgorithm(
     val parent2 = subpopulation(this.random.nextInt(Ps))
     //apply crossover operator
     val children = operator(parent1.solution.toList, parent2.solution.toList)
-    val child1 = Problem.evaluate(p, Solution(children._1))
-    val child2 = Problem.evaluate(p, Solution(children._2))
+    val child1 = p.evaluate(Solution(children._1))
+    val child2 = p.evaluate(Solution(children._2))
     newPopulation = newPopulation ++ Array(child1) ++ Array(child2)
     newPopulation = newPopulation.sortBy[Int](_.value)(Ordering.Int).take(Ps)
     newPopulation
@@ -108,7 +108,7 @@ class HGAAlgorithm(
           else
             newSolution = mutationINS(evOldPopulation(i).solution.toList)
           //calculate its cost
-          val evNewSolution = Problem.evaluate(p, Solution(newSolution))
+          val evNewSolution = p.evaluate(Solution(newSolution))
             
           val delta = evNewSolution.value - evOldPopulation(i).value
           //calculate acceptance probability

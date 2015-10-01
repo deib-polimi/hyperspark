@@ -23,7 +23,7 @@ class Solution (
       this(permutation.toArray);
     }
 	def evaluate(p:Problem):EvaluatedSolution = {
-    Problem.evaluate(p, this)
+    p.evaluate(this)
   }
     override def toString = {
       val permString = permutation.mkString(", ")

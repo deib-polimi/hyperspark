@@ -75,6 +75,9 @@ class Problem  (
   def sumJobTimesMatrix(): Int = {
     jobTimesMatrix.map(ar => ar.reduceLeft[Int](_+_)).reduceLeft[Int](_+_)
   }
+  def evaluate(s: Solution): EvaluatedSolution = {
+    evaluatePartialSolution(s.permutation.toList)
+  }
 }
 
 //Problem Factory
@@ -83,10 +86,10 @@ object Problem{
 	 * @arg path - path to a file 
 	 */	
 	def apply(path:String):Problem = ProblemParser(Source.fromFile(path).getLines().mkString(" x ") + " x ").getOrElse(throw new RuntimeException("ParserError"))
-  def evaluate(p: Problem, solution: Solution):EvaluatedSolution = {
+  /*def evaluate(p: Problem, solution: Solution):EvaluatedSolution = {
     val jobsArray = solution.permutation
     val evaluatedSolution = p.evaluatePartialSolution(jobsArray)
     evaluatedSolution
-  }
+  }*/
 	
 }

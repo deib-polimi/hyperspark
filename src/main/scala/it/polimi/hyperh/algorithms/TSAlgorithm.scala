@@ -145,7 +145,7 @@ class TSAlgorithm(
     var betterNotFound = true
     while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2) 
-      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
+      val evNewSolution = p.evaluate(Solution(perturbed))
       if (evNewSolution.value < bestSolution.value) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -163,7 +163,7 @@ class TSAlgorithm(
     var betterNotFound = true
     while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
+      val evNewSolution = p.evaluate(Solution(perturbed))
       if (evNewSolution.value < bestSolution.value && (! isForbidden(tabooList, evNewSolution.value))) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -181,7 +181,7 @@ class TSAlgorithm(
     var move = (0, 1) //dummy initialization
     while (candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
+      val evNewSolution = p.evaluate(Solution(perturbed))
       if (evNewSolution.value < bestSolution.value) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -198,7 +198,7 @@ class TSAlgorithm(
     var move = (0, 1) //dummy initialization
     while (candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val evNewSolution = Problem.evaluate(p, new Solution(perturbed))
+      val evNewSolution = p.evaluate(Solution(perturbed))
       if (evNewSolution.value < bestSolution.value && (! isForbidden(tabooList, evNewSolution.value))) {
         bestSolution = evNewSolution
         move = candidateMoves.head

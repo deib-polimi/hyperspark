@@ -29,7 +29,7 @@ abstract class ACOAlgorithm(p: Problem, t0: Double, seedOption: Option[Solution]
   def initialSolution(): EvaluatedSolution = {
     seed match {
       case Some(seed) => seed.evaluate(p)
-      case None => Problem.evaluate(p, Solution(random.shuffle(p.jobs.toList)))
+      case None => p.evaluate(Solution(random.shuffle(p.jobs.toList)))
     }
   }
   

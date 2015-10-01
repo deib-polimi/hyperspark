@@ -228,7 +228,7 @@ class TSABAlgorithm(
       var bestJMove = (j - 1, j - 1)
       for (i <- 0 until jMoves.size) {
         val neighbour = neighbourhoodSearch.apply(evOldSolution.solution.toList, jMoves(i)._1, jMoves(i)._2)
-        val evNeighbour = Problem.evaluate(p, Solution(neighbour))
+        val evNeighbour = p.evaluate(Solution(neighbour))
         if (evNeighbour.value < bestJRepr.value) {
           bestJRepr = evNeighbour
           bestJMove = jMoves(i)

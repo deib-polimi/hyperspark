@@ -50,7 +50,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     evaluate(p, timeLimit)
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
-    def cost(list: List[Int]) = Problem.evaluate(p, new Solution(list))
+    def cost(list: List[Int]) = p.evaluate(Solution(list))
     def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(random).SHIFT(sol) //forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))
