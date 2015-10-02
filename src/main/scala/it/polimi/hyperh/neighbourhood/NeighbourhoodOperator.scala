@@ -1,4 +1,4 @@
-package it.polimi.hyperh.search
+package it.polimi.hyperh.neighbourhood
 
 import scala.util.Random
 import util.RNG

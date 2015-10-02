@@ -2,7 +2,7 @@ package it.polimi.hyperh.algorithms
 
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.search.NeighbourhoodOperator
+import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.solution.EvaluatedSolution
 import util.Timeout
 import util.RNG

@@ -4,7 +4,7 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.search.NeighbourhoodOperator
+import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import util.Timeout
 import util.RNG
 
