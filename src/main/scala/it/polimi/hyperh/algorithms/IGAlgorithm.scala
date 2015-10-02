@@ -57,7 +57,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
         }
         val pair = destruction(currentSolution.solution, d)
         val bestPermutation = construction(pair._1, pair._2,p)
-        bestSolution = p.evaluatePartialSolution(bestPermutation)
+        bestSolution = p.evaluate(Solution(bestPermutation))
         val improvedSolution = localSearch(bestPermutation,p)
         //pi - currentSolution,piPrime - bestSolution, piSecond - improvedSolution
         if(improvedSolution.value < currentSolution.value){//acceptance criterion
@@ -109,7 +109,7 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
   }
   //Iterative improvement based on insertion
   def localSearch(permutation: Array[Int],p:Problem):EvaluatedSolution = {
-    var bestSolution = p.evaluatePartialSolution(permutation)
+    var bestSolution = p.evaluate(Solution(permutation))
     var improve = true
     while(improve == true) {
       improve = false

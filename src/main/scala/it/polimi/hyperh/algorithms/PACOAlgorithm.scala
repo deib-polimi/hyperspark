@@ -2,7 +2,7 @@ package it.polimi.hyperh.algorithms
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.search.NeighbourhoodOperator
 import util.Timeout
 import util.ConsolePrinter
 import it.polimi.hyperh.solution.Solution
@@ -139,7 +139,7 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
         if(seed(j-1) != i) {
           val indI = seed.indexWhere( _ == i)
           val indK = j-1
-          val neighbourSol = NeighbourhoodSearch(random).SWAPdefineMove(seedList, indI, indK)
+          val neighbourSol = NeighbourhoodOperator(random).SWAPdefineMove(seedList, indI, indK)
           val evNeighbourSol = p.evaluatePartialSolution(neighbourSol)
           if(evNeighbourSol.value < bestSolution.value)
             bestSolution = evNeighbourSol

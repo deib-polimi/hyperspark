@@ -2,7 +2,7 @@ package it.polimi.hyperh.algorithms
 
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.search.NeighbourhoodOperator
 import it.polimi.hyperh.solution.EvaluatedSolution
 import util.Timeout
 import util.RNG
@@ -21,7 +21,7 @@ class TSABAlgorithm(
   private var maxret: Int = 1000
   private var maxiter: Int = 30000
   private var numOfRandomMoves: Int = 20
-  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(random).INSdefineMove
+  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodOperator(random).INSdefineMove
   
   def this(maxt: Int,numOfRandomMoves: Int, neighbourhoodSearch: (List[Int], Int, Int) => List[Int],maxret: Int,maxiter: Int, seed: Option[Solution], rng: RNG) {
     this(seed)

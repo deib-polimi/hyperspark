@@ -41,6 +41,7 @@ object Framework {
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
     handler = conf.getMapReduceHandler()
+    //run the hyperLoop
     val solution = hyperLoop(problem, rdd, iterations, 1)
     solution
   }
@@ -51,7 +52,7 @@ object Framework {
     val numOfTasks = algorithms.size
     val seeds = conf.getSeeds()
     val iterationTimeLimit = conf.getIterationTimeLimit()
-    val iterations = conf.getNumberOfIterations()
+    val iterations = conf.getNumberOfIterations()//coop. iterations to be performed in one run
     val totalTimeLimit = iterationTimeLimit * iterations
     val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
     //spark specific settings
@@ -63,9 +64,10 @@ object Framework {
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
     handler = conf.getMapReduceHandler()
+    //run the hyperLoop
     var solutions: Array[EvaluatedSolution] = Array()
-     for(i <- 1 to runs) {
-       val solution = hyperLoop(problem, rdd, iterations, i)
+     for(runNo <- 1 to runs) {
+       val solution = hyperLoop(problem, rdd, iterations, runNo)
        solutions :+= solution
      }
     solutions
@@ -81,14 +83,16 @@ object Framework {
     def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
       rdd.map(datum => handler.hyperMap(problem, datum, runNo)).reduce(handler.hyperReduce(_,_))
     }
-    def iterloop(rdd: RDD[DistributedDatum], iter:Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
-      if(iter <= maxIter) {
-        val newIter = iter+1
+    def iterloop(rdd: RDD[DistributedDatum], iteration: Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
+      if(iteration <= maxIter) {
         val bestIterSolution = applyIteration(problem, rdd)
         val newBest = List(bestIterSolution, bestSolution).min
-        //modify seed
-        val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, Some(newBest), d.iterationTimeLimit))
-        iterloop(updatedRDD, newIter, newBest)
+        if(iteration == maxIter)//if it is last iteration don't update the rdd
+          newBest
+        else {//modify the seed
+          val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, Some(newBest), d.iterationTimeLimit))
+          iterloop(updatedRDD, iteration+1, newBest)
+        }
       }
       else {
         bestSolution

@@ -4,7 +4,7 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import util.Timeout
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.search.NeighbourhoodOperator
 import it.polimi.hyperh.solution.Solution
 import util.RNG
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
@@ -52,7 +52,7 @@ class SAAlgorithm(p: Problem) extends Algorithm {
   }
   override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
     def cost(solution: List[Int]) = p.evaluate(Solution(solution))
-    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodSearch(random).SHIFT(sol)//forward or backward shift at random
+    def neighbour(sol: List[Int]): List[Int] = NeighbourhoodOperator(random).SHIFT(sol)//forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828,(-delta/temperature))
     }

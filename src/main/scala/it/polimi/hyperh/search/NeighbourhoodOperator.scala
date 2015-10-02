@@ -6,7 +6,7 @@ import util.RNG
 /**
  * @author Nemanja
  */
-class NeighbourhoodSearch(random: Random) {
+class NeighbourhoodOperator(random: Random) {
   def this() = {
     this(new Random(1))
   }
@@ -178,11 +178,11 @@ class NeighbourhoodSearch(random: Random) {
     }
   }
 }
-object NeighbourhoodSearch {
+object NeighbourhoodOperator {
   def apply(random: Random) = {
-    new NeighbourhoodSearch(random)
+    new NeighbourhoodOperator(random)
   }
   def apply() = {
-    new NeighbourhoodSearch()  
+    new NeighbourhoodOperator()  
   }
 }

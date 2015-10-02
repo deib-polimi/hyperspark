@@ -4,7 +4,7 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.search.NeighbourhoodOperator
 import util.Timeout
 import util.RNG
 
@@ -123,7 +123,7 @@ extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
     val tsAlgorithm = new TSAlgorithm()
     var bestSolution = completeSolution
     if(p.numOfJobs <= 50) {
-      val moves = NeighbourhoodSearch(random).generateAllNeighbourhoodMoves(p.numOfJobs)
+      val moves = NeighbourhoodOperator(random).generateAllNeighbourhoodMoves(p.numOfJobs)
       while(Timeout.notTimeout(expireTimeMillis)) {
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1
       }
@@ -131,7 +131,7 @@ extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
     }
     else {
       while(Timeout.notTimeout(expireTimeMillis)) {
-        val moves = NeighbourhoodSearch(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.getNumOfRandomMoves())
+        val moves = NeighbourhoodOperator(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.getNumOfRandomMoves())
         bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1 
       }
       bestSolution

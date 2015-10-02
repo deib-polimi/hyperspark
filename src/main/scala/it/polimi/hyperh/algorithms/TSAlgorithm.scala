@@ -3,7 +3,7 @@ package it.polimi.hyperh.algorithms
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
 import scala.util.Random
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.search.NeighbourhoodOperator
 import it.polimi.hyperh.solution.EvaluatedSolution
 import akka.actor._
 import util.Timeout
@@ -18,7 +18,7 @@ class TSAlgorithm(
   
   private var maxTabooListSize: Int = 7
   private var numOfRandomMoves: Int = 20
-  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodSearch(random).INSdefineMove
+  private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodOperator(random).INSdefineMove
   seed = seedOption
   /**
    * A secondary constructor.
@@ -65,7 +65,7 @@ class TSAlgorithm(
       if(Timeout.notTimeout(expireTimeMillis)) {
         if(iter == 1) {
           evBestSolution = initialSolution(p)
-          allMoves = NeighbourhoodSearch(random).generateAllNeighbourhoodMoves(p.numOfJobs)
+          allMoves = NeighbourhoodOperator(random).generateAllNeighbourhoodMoves(p.numOfJobs)
         } else {
           evBestSolution = bestSolution
         }
@@ -97,7 +97,7 @@ class TSAlgorithm(
           evBestSolution = bestSolution
         }
         //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
-        val allMoves = NeighbourhoodSearch(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
+        val allMoves = NeighbourhoodOperator(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
         val pair1 = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
         val evNewSolution = pair1._1
         evBestSolution = List(evNewSolution, evBestSolution).min

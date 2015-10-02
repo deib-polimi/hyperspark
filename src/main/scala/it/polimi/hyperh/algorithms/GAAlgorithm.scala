@@ -4,7 +4,7 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
 import util.Timeout
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.search.NeighbourhoodOperator
 import it.polimi.hyperh.solution.Solution
 import util.ConsolePrinter
 import util.RNG
@@ -195,14 +195,14 @@ class GAAlgorithm(
     (child1.toList, child2.toList)
   }
   def mutationSWAP(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch(random).SWAP(parent)
+    NeighbourhoodOperator(random).SWAP(parent)
   }
   def mutationINV(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch(random).INV(parent)
+    NeighbourhoodOperator(random).INV(parent)
   }
 
   def mutationINS(parent: List[Int]): List[Int] = {
-    NeighbourhoodSearch(random).BckINS(parent)
+    NeighbourhoodOperator(random).BckINS(parent)
   }
   def calculateStatistics(sortedPopulation:Array[EvaluatedSolution]):(Double,Int,Int) = {
     val makespans = sortedPopulation.map(_.value)
