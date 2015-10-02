@@ -13,7 +13,7 @@ class FrameworkConf() {
   private var tLimit: Double = 3000
   private var iter: Int = 1
   private var properties: List[(String,String)] = loadDefaults()
-
+  private var handler: MapReduceHandler = new MapReduceHandler()
   
   def setProblem(p: Problem) = {
     problem = p
@@ -125,13 +125,17 @@ class FrameworkConf() {
         )
   }
   def enableDynamicResourceAllocation() = {
-    if(getSparkMaster().contains("yarn"))
+    if(getSparkMaster().contains("yarn")) {
+      setProperty("spark.shuffle.service.enabled","true")
       setProperty("spark.dynamicAllocation.enabled", "true")
+    }
     else {
       println("WARN FrameworkConf : Dynamic Resource Allocation is supported only in Yarn deployment mode.")
       this
     }
   }
+  def setMapReduceHandler(h: MapReduceHandler) = { handler = h }
+  def getMapReduceHandler(): MapReduceHandler = handler
 }
 /*object DefaultYarnConf() {
   def apply(algorithms: Array[Algorithm], seeds: Option[Solution], )

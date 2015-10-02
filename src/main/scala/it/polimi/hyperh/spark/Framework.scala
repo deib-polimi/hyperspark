@@ -21,8 +21,6 @@ object Framework {
   private def getSparkContext(): SparkContext = sparkContext.getOrElse(throw new RuntimeException("SparkContext error"))
   private var notStarted: Boolean = true
   private var handler: MapReduceHandler = new MapReduceHandler()
-  def setMapReduceHandler(h: MapReduceHandler) = { handler = h }
-  def getMapReduceHandler(): MapReduceHandler = handler
   
   def run(conf: FrameworkConf): EvaluatedSolution = {
     //problem specific settings
@@ -42,6 +40,7 @@ object Framework {
     }
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
+    handler = conf.getMapReduceHandler()
     val solution = hyperLoop(problem, rdd, iterations, 1)
     solution
   }
@@ -63,6 +62,7 @@ object Framework {
     }
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
+    handler = conf.getMapReduceHandler()
     var solutions: Array[EvaluatedSolution] = Array()
      for(i <- 1 to runs) {
        val solution = hyperLoop(problem, rdd, iterations, i)
