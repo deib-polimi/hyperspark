@@ -1,16 +1,15 @@
-package it.polimi.hyperh
+package it.polimi.hyperh.apps
 
 import it.polimi.hyperh.spark.FrameworkConf
 import it.polimi.hyperh.algorithms.PACOAlgorithm
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.spark.Framework
-import util.Performance
 
 
 /**
  * @author Nemanja
  */
-object App {
+object LocalApp {
   def main(args : Array[String]) {
     val problem = Problem("./resources/inst_ta002.txt")
     val algorithm = new PACOAlgorithm(problem)
