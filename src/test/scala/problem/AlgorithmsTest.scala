@@ -23,7 +23,6 @@ import it.polimi.hyperh.algorithms.MMMASAlgorithm
 import it.polimi.hyperh.algorithms.PACOAlgorithm
 import util.Performance
 import it.polimi.hyperh.algorithms.HGAAlgorithm
-import util.RNG
 
 @Test
 class AlgorithmsTest extends Assertions {

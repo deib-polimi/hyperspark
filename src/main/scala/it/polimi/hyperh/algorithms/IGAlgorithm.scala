@@ -9,7 +9,6 @@ import util.PermutationUtility
 import it.polimi.hyperh.problem.Problem
 import util.Timeout
 import it.polimi.hyperh.solution.Solution
-import util.RNG
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
 /**
  * @author Nemanja

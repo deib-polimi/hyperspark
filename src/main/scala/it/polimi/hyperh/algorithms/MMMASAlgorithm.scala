@@ -6,7 +6,6 @@ import scala.util.Random
 import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import util.Timeout
 import it.polimi.hyperh.solution.Solution
-import util.RNG
 
 /**
  * @author Nemanja

@@ -18,7 +18,7 @@ object LocalApp {
     .setDeploymentLocalNumExecutors(numOfAlgorithms)
     .setProblem(problem)
     .setNAlgorithms(algorithm, numOfAlgorithms)
-    .setNDefaultSeeds(numOfAlgorithms)
+    .setNDefaultInitialSeeds(numOfAlgorithms)
     .setDefaultExecutionTimeLimit()
     
     val solution = Framework.run(conf)

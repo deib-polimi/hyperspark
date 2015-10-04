@@ -5,7 +5,6 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import util.Timeout
 import scala.util.Random
 import it.polimi.hyperh.solution.Solution
-import util.RNG
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
 
 /**

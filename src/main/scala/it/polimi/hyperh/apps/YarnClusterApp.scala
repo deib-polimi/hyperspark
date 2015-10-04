@@ -33,7 +33,7 @@ object YarnClusterApp {
       .setProperty("spark.dynamicAllocation.minExecutors", numOfAlgorithms.toString())
       .setProblem(problem)
       .setNAlgorithms(algorithm, numOfAlgorithms)
-      .setNDefaultSeeds(numOfAlgorithms)
+      .setNDefaultInitialSeeds(numOfAlgorithms)
       .setDefaultExecutionTimeLimit()
       //results = results ++ Array(testInstance(i, runs, conf))
       FileManager.write("./resources/a_result_"+i+".txt", testInstance(i, runs, conf))

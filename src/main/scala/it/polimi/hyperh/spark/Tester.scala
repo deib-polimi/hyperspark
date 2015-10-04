@@ -10,7 +10,6 @@ import it.polimi.hyperh.algorithms.Algorithm
 import util.Timeout
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
 import it.polimi.hyperh.algorithms.IGAlgorithm
-import util.RNG
 import util.Performance
 import util.FileManager
 /**
@@ -36,7 +35,7 @@ object Tester {
       .setDeploymentLocalNumExecutors(numOfAlgorithms)
       .setProblem(problem)
       .setNAlgorithms(algorithm, numOfAlgorithms)
-      .setNDefaultSeeds(numOfAlgorithms)
+      .setNDefaultInitialSeeds(numOfAlgorithms)
       .setDefaultExecutionTimeLimit()
       //results = results ++ Array(testInstance(i, runs, conf))
       FileManager.write("./resources/a_result_"+i+".txt", testInstance(i, runs, conf))

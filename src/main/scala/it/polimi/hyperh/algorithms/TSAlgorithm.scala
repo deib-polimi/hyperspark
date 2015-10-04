@@ -7,7 +7,6 @@ import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.solution.EvaluatedSolution
 import akka.actor._
 import util.Timeout
-import util.RNG
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
 /**
  * @author Nemanja

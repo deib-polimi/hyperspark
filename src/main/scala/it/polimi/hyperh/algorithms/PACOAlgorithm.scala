@@ -1,4 +1,5 @@
 package it.polimi.hyperh.algorithms
+
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import scala.util.Random
@@ -6,7 +7,6 @@ import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import util.Timeout
 import util.ConsolePrinter
 import it.polimi.hyperh.solution.Solution
-import util.RNG
 
 /**
  * @author Nemanja

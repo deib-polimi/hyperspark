@@ -9,6 +9,8 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.algorithms.Algorithm
 import util.Timeout
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
+import it.polimi.hyperh.neighbourhood._
+import util.RoundRobinIterator
 
 /**
  * @author Nemanja
@@ -20,14 +22,15 @@ object Framework {
   def getConf(): FrameworkConf = conf.getOrElse(throw new RuntimeException("FrameworkConf not set"))
   private def getSparkContext(): SparkContext = sparkContext.getOrElse(throw new RuntimeException("SparkContext error"))
   private var notStarted: Boolean = true
-  private var handler: MapReduceHandler = new MapReduceHandler()
+  private var mrHandler: MapReduceHandler = new MapReduceHandler()
+  private var seedingStrategy: SeedingStrategy = new SameSeeds()
   
   def run(conf: FrameworkConf): EvaluatedSolution = {
     //problem specific settings
     val problem = conf.getProblem()
     val algorithms = conf.getAlgorithms()
     val numOfTasks = algorithms.size
-    val seeds = conf.getSeeds()
+    val seeds = conf.getInitialSeeds()
     val iterationTimeLimit = conf.getIterationTimeLimit()
     val iterations = conf.getNumberOfIterations()
     val totalTimeLimit = iterationTimeLimit * iterations
@@ -40,7 +43,8 @@ object Framework {
     }
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
-    handler = conf.getMapReduceHandler()
+    mrHandler = conf.getMapReduceHandler()
+    seedingStrategy = conf.getSeedingStrategy()
     //run the hyperLoop
     val solution = hyperLoop(problem, rdd, iterations, 1)
     solution
@@ -50,7 +54,7 @@ object Framework {
     val problem = conf.getProblem()
     val algorithms = conf.getAlgorithms()
     val numOfTasks = algorithms.size
-    val seeds = conf.getSeeds()
+    val seeds = conf.getInitialSeeds()
     val iterationTimeLimit = conf.getIterationTimeLimit()
     val iterations = conf.getNumberOfIterations()//coop. iterations to be performed in one run
     val totalTimeLimit = iterationTimeLimit * iterations
@@ -63,7 +67,8 @@ object Framework {
     }
     val sc = getSparkContext()
     val rdd = sc.parallelize(dataset).cache
-    handler = conf.getMapReduceHandler()
+    mrHandler = conf.getMapReduceHandler()
+    seedingStrategy = conf.getSeedingStrategy()
     //run the hyperLoop
     var solutions: Array[EvaluatedSolution] = Array()
      for(runNo <- 1 to runs) {
@@ -81,22 +86,25 @@ object Framework {
   def hyperLoop(problem: Problem, rdd: RDD[DistributedDatum], maxIter: Int, runNo: Int):EvaluatedSolution = {
 
     def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
-      rdd.map(datum => handler.hyperMap(problem, datum, runNo)).reduce(handler.hyperReduce(_,_))
+      rdd.map(datum => mrHandler.hyperMap(problem, datum, runNo)).reduce(mrHandler.hyperReduce(_,_))
     }
-    def iterloop(rdd: RDD[DistributedDatum], iteration: Int, bestSolution: EvaluatedSolution):EvaluatedSolution = 
-      if(iteration <= maxIter) {
-        val bestIterSolution = applyIteration(problem, rdd)
-        val newBest = List(bestIterSolution, bestSolution).min
-        if(iteration == maxIter)//if it is last iteration don't update the rdd
-          newBest
-        else {//modify the seed
-          val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, Some(newBest), d.iterationTimeLimit))
-          iterloop(updatedRDD, iteration+1, newBest)
-        }
-      }
+    def iterloop(rdd: RDD[DistributedDatum], iteration: Int, bestSolution: EvaluatedSolution):EvaluatedSolution = {
+      val bestIterSolution = applyIteration(problem, rdd)
+      val newBest = List(bestIterSolution, bestSolution).min
+      if(iteration == maxIter)//if it is last iteration don't update the rdd
+        newBest
       else {
-        bestSolution
+        val updatedRDD = updateRDD(rdd, newBest)
+        iterloop(updatedRDD, iteration+1, newBest)
       }
+    }
     iterloop(rdd, 1, DummyEvaluatedSolution(problem))
+  }
+  def updateRDD(rdd: RDD[DistributedDatum], seed: EvaluatedSolution): RDD[DistributedDatum] = {
+    val numOfTasks = conf.get.getAlgorithms().size
+    val seeds = seedingStrategy.divide(Some(seed), numOfTasks)
+    val rr = new RoundRobinIterator(numOfTasks)//round robin access to seeds array
+    val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, seeds(rr.next()), d.iterationTimeLimit))
+    updatedRDD
   }
 }

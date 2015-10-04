@@ -2,13 +2,17 @@ package it.polimi.hyperh
 import scala.util.Random
 import it.polimi.hyperh.algorithms.NEHAlgorithm
 import it.polimi.hyperh.solution.EvaluatedSolution
-import it.polimi.hyperh.search.NeighbourhoodSearch
+import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.algorithms.TSAlgorithm
 import it.polimi.hyperh.problem.Problem
 import util.ConsolePrinter
 import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.neighbourhood.NeighbourhoodDivider
+import it.polimi.hyperh.neighbourhood.SeedingStrategy
+import util.RoundRobin
+import it.polimi.hyperh.neighbourhood.SlidingWindow
 
-object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(423); 
+object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(620); 
 	println("Welcome to the scala worksheet");$skip(749); 
 	
 	def crossoverLOX(parent1:List[Int], parent2: List[Int]):(List[Int],List[Int]) = {
@@ -363,37 +367,19 @@ object testAlgorithms {;import org.scalaide.worksheet.runtime.library.WorksheetS
       move = better
     }
     (path, rgh(p.numOfMachines, p.numOfJobs))
-  };System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(569); 
+  };System.out.println("""criticalPath: (p: it.polimi.hyperh.problem.Problem, jobsPermutation: Array[Int])(List[(Int, Int)], Int)""");$skip(130); val res$3 = 
   /*def qgh(g: Int, h: Int): Int = {
   	
   }*/
   
-  def slidingWindow(solution: List[Int], windowSize: Int): List[List[Int]] = {
-    var list: List[List[Int]] = List()
-    for(i <- 0 to solution.size - windowSize){
-      val window = solution.drop(i).take(windowSize)
-      val allowed = solution.filterNot(window.toSet)
-      val listTake = Random.shuffle(allowed)
-      val leftPart = listTake.take(i)
-      val rightPart = listTake.drop(i)
-      val newSol = leftPart ::: window ::: rightPart
-      list = list ::: List(newSol)
-    }
-    List(solution) ::: list
-  };System.out.println("""slidingWindow: (solution: List[Int], windowSize: Int)List[List[Int]]""");$skip(526); 
-  def slidingWindow(solution: Array[Int], windowSize: Int): Array[Array[Int]] = {
-    var array: Array[Array[Int]] = Array()
-    for(i <- 0 to solution.size - windowSize){
-      val window = solution.drop(i).take(windowSize)
-      val allowed = solution.filterNot(window.toSet)
-      val arrayTake = Random.shuffle(allowed.toList).toArray
-      val leftPart = arrayTake.take(i)
-      val rightPart = arrayTake.drop(i)
-      val newSol = leftPart ++ window ++ rightPart
-      array = array ++ Array(newSol)
-    }
-    array
-  };System.out.println("""slidingWindow: (solution: Array[Int], windowSize: Int)Array[Array[Int]]""");$skip(48); val res$3 = 
-  slidingWindow(Array(1,2,3,4,5,6,7,8,9,10), 3);System.out.println("""res3: Array[Array[Int]] = """ + $show(res$3))}
+ 
+  new SlidingWindow(6).divide(Some(Solution(Array(1,2,3,4,5,6,7,8,9,10))), 4);System.out.println("""res3: Array[Option[it.polimi.hyperh.solution.Solution]] = """ + $show(res$3));$skip(59); 
+  val circular = Iterator.continually((0 until 5)).flatten;System.out.println("""circular  : Iterator[Int] = """ + $show(circular ));$skip(18); val res$4 = 
+  circular.next();System.out.println("""res4: Int = """ + $show(res$4));$skip(18); val res$5 = 
+  circular.next();System.out.println("""res5: Int = """ + $show(res$5));$skip(18); val res$6 = 
+  circular.next();System.out.println("""res6: Int = """ + $show(res$6));$skip(18); val res$7 = 
+  circular.next();System.out.println("""res7: Int = """ + $show(res$7));$skip(18); val res$8 = 
+  circular.next();System.out.println("""res8: Int = """ + $show(res$8));$skip(18); val res$9 = 
+  circular.next();System.out.println("""res9: Int = """ + $show(res$9))}
  
 }

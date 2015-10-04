@@ -1,7 +1,6 @@
 package it.polimi.hyperh.neighbourhood
 
 import scala.util.Random
-import util.RNG
 
 /**
  * @author Nemanja

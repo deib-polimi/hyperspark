@@ -3,6 +3,7 @@ import it.polimi.hyperh.algorithms.Algorithm
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.problem.Problem
+import it.polimi.hyperh.neighbourhood._
 /**
  * @author Nemanja
  */
@@ -14,6 +15,7 @@ class FrameworkConf() {
   private var iter: Int = 1
   private var properties: List[(String,String)] = loadDefaults()
   private var handler: MapReduceHandler = new MapReduceHandler()
+  private var seedingStrategy: SeedingStrategy = new SameSeeds()
   
   def setProblem(p: Problem) = {
     problem = p
@@ -40,19 +42,15 @@ class FrameworkConf() {
     this
   }
   
-  def setSeeds(seeds: Array[Option[Solution]]) = { 
+  def setInitialSeeds(seeds: Array[Option[Solution]]) = { 
     sds = seeds
     this
   }
-  def appendSeed(seed: Option[EvaluatedSolution]) = {
-    sds :+= seed
-    this
-  }
-  def setNSeeds(seedOption: Option[EvaluatedSolution], N: Int) = {
+  def setNInitialSeeds(seedOption: Option[EvaluatedSolution], N: Int) = {
     sds = Array.fill(N)(seedOption)
     this
   }
-  def setNDefaultSeeds(N: Int) = {
+  def setNDefaultInitialSeeds(N: Int) = {
     sds = Array.fill(N)(None)
     this
   }
@@ -60,8 +58,13 @@ class FrameworkConf() {
     sds = Array()
     this
   }
-  def getSeeds() = sds.clone()
+  def getInitialSeeds() = sds.clone()
   
+  def setSeedingStrategy(strategy: SeedingStrategy) = { 
+    seedingStrategy = strategy
+    this
+  }
+  def getSeedingStrategy(): SeedingStrategy = { seedingStrategy }
   def setDefaultExecutionTimeLimit() = {
     tLimit = problem.numOfMachines*(problem.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
     this
