@@ -8,16 +8,19 @@ import scala.util.Random
  */
 trait SeedingStrategy {
   def divide(seed: Option[Solution], N: Int): Array[Option[Solution]]
+  def usesTheSeed(): Boolean
 }
 class NoStrategy extends SeedingStrategy {
   override def divide(seed: Option[Solution], N: Int): Array[Option[Solution]] = {
     Array.fill(N)(None)
   }
+  override def usesTheSeed(): Boolean = false
 }
 class SameSeeds extends SeedingStrategy {
   override def divide(seed: Option[Solution], N: Int): Array[Option[Solution]] = {
     Array.fill(N)(seed)
   }
+  override def usesTheSeed(): Boolean = true
 }
 class SlidingWindow(windowSize: Int) extends SeedingStrategy {
   override def divide(seedOption: Option[Solution], N: Int): Array[Option[Solution]] = {
@@ -37,9 +40,11 @@ class SlidingWindow(windowSize: Int) extends SeedingStrategy {
     }
     array
   }
+  override def usesTheSeed(): Boolean = true
 }
 class SeedPlusSlidingWindow(windowSize: Int) extends SeedingStrategy {
   override def divide(seed: Option[Solution], N: Int): Array[Option[Solution]] = {
     seed +: new SlidingWindow(windowSize).divide(seed, N-1)
   }
+  override def usesTheSeed(): Boolean = true
 }

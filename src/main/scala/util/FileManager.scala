@@ -14,4 +14,8 @@ object FileManager {
   def write(filepath: String, content: String) = {
     Path(filepath).createFile().writeAll(content)
   }
+  def append(filepath: String, content: String) = {
+    File(filepath).appendAll(content)
+  }
+  
 }

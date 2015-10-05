@@ -56,7 +56,7 @@ object Framework {
     val numOfTasks = algorithms.size
     val seeds = conf.getInitialSeeds()
     val iterationTimeLimit = conf.getIterationTimeLimit()
-    val iterations = conf.getNumberOfIterations()//coop. iterations to be performed in one run
+    val iterations = conf.getNumberOfIterations()//coop. iterations to be performed in one run, default: 1
     val totalTimeLimit = iterationTimeLimit * iterations
     val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
     //spark specific settings
