@@ -1,21 +1,23 @@
-package it.polimi.hyperh.spark
+package it.polimi.hyperh.apps
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
-import it.polimi.hyperh.algorithms.Algorithm
 import util.Timeout
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
 import it.polimi.hyperh.algorithms.IGAlgorithm
 import util.Performance
 import util.FileManager
+import util.Logger
+import util.Timeout
+import it.polimi.hyperh.spark.Framework
+import it.polimi.hyperh.spark.FrameworkConf
+import java.io.File
+
 /**
  * @author Nemanja
  */
-object Tester {
+object TesterApp {
+  val logger = Logger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
     str.size match {
@@ -31,13 +33,19 @@ object Tester {
       case _ => str
     }
   }
-  def main(args: Array[String]) {
+  def run() {
     val runs = 10
     val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
-    val format = "instance\tn\tm\talgorithmName\t\tparallelism\ttotalTime(s)\tmakespan\tbest\trpd\t\tmode\n"
+    for(file <- new File(".").listFiles ){
+     println(file.getAbsolutePath)
+    }
+    logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
+    val format = logger.getFormatString()
     print(format)
-    FileManager.write("./resources/a-results.txt", format)
+    val logname = Timeout.getCurrentTime()
+    print(logname)
+    //FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
     for (i <- 1 to 120) {
       val problem = Problem("./resources/" + filename("inst_ta", i, ".txt"))
@@ -49,9 +57,10 @@ object Tester {
         .setDefaultExecutionTimeLimit()
       val resultStr = testInstance(i, runs, conf, true)
       results = results ++ Array(resultStr)
-      FileManager.append("./resources/a-results.txt", resultStr)
+      //FileManager.append("./output/"+logname+".txt", resultStr)
+      print(resultStr)
     }
-    FileManager.write("./resources/a-results.txt", results.mkString)
+    //FileManager.write("./output/"+logname+".txt", results.mkString)
 
   }
   def testInstance(i: Int, runs: Int, conf: FrameworkConf, solutionPresent: Boolean = false) = {
@@ -80,17 +89,18 @@ object Tester {
     }
     for (j <- 0 until solutions.size) {
       val rpd = Performance.RPD(solutions(j), bestSolution)
-      val newString: String = 
-        filename("inst_ta", i, "") + "\t" +
-        n.toString + "\t" +
-        m.toString + "\t" +
-        algName + "\t\t\t" +
-        parallelism + "\t\t\t" +
-        totalTime / 1000.0 + "\t\t\t\t" +
-        solutions(j).value + "\t\t" +
-        bestSolution.value + "\t" +
-        formatNum(rpd) + "\t" +
-        mode + "\n"
+      val newString = logger.getValuesString(List(
+        filename("inst_ta", i, ""),
+        n, 
+        m,
+        algName,
+        parallelism,
+        totalTime / 1000.0,
+        solutions(j).value,
+        bestSolution.value,
+        formatNum(rpd),
+        mode
+      ))
       print(newString)
       resString = resString + newString
       //rpds :+= rpd

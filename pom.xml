@@ -127,25 +127,26 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.scalastyle</groupId>
-				<artifactId>scalastyle-maven-plugin</artifactId>
-				<version>0.6.0</version>
-				<configuration>
-					<verbose>false</verbose>
-					<failOnViolation>true</failOnViolation>
-					<includeTestSourceDirectory>true</includeTestSourceDirectory>
-					<failOnWarning>false</failOnWarning>
-					<sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-					<testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-					<configLocation>${basedir}/lib/scalastyle_config.xml</configLocation>
-					<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>
-					<outputEncoding>UTF-8</outputEncoding>
-				</configuration>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>package-jar-with-dependencies</id>
+						<phase>package</phase>
 						<goals>
-							<goal>check</goal>
+							<goal>single</goal>
 						</goals>
+						<configuration>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<archive>
+								<manifest>
+									<mainClass>it.polimi.hyperh.apps.MainApp</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

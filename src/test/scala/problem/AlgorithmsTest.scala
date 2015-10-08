@@ -27,7 +27,7 @@ import it.polimi.hyperh.algorithms.HGAAlgorithm
 @Test
 class AlgorithmsTest extends Assertions {
   @Test def testAlgorithms() {
-    val path = "./resources/"
+    /*val path = "./resources/"
     val i = "007"
     val problem = Problem(path + "inst_ta"+i+".txt")
     
@@ -110,7 +110,7 @@ class AlgorithmsTest extends Assertions {
     val hgaEvSolution = hgaAlgorithm.evaluate(problem, timeLimit)
     val hgaRPD = Performance.RPD(hgaEvSolution, optimalSolution)
     println("HGA: " + hgaRPD)
-    
+    */
     assert(true)
     
     
