@@ -7,6 +7,7 @@ import it.polimi.hyperh.types.Types._
 import util.ProblemParser
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
+import java.io.InputStream
 
 @SerialVersionUID(100L)
 class Problem  (
@@ -85,11 +86,13 @@ object Problem{
 	/**
 	 * @arg path - path to a file 
 	 */	
-	def apply(path:String):Problem = ProblemParser(Source.fromFile(path).getLines().mkString(" x ") + " x ").getOrElse(throw new RuntimeException("ParserError"))
-  /*def evaluate(p: Problem, solution: Solution):EvaluatedSolution = {
-    val jobsArray = solution.permutation
-    val evaluatedSolution = p.evaluatePartialSolution(jobsArray)
-    evaluatedSolution
-  }*/
+	def apply(path:String):Problem = ProblemParser(Source.fromFile(path).getLines().mkString(" x ") + " x ").getOrElse(throw new RuntimeException("ParserError")) 
+  /**
+   * @arg name - name of a resource in src/main/resources and src/test/resources 
+   */ 
+  def fromResources(name: String): Problem = {
+    val stream: InputStream = getClass.getResourceAsStream("/"+name)
+    ProblemParser(Source.fromInputStream(stream).getLines().mkString(" x ") + " x ").getOrElse(throw new RuntimeException("ParserError"))
+  }
 	
 }

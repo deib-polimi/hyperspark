@@ -12,10 +12,14 @@ object FileManager {
     Source.fromFile(filepath).getLines()
   }
   def write(filepath: String, content: String) = {
-    Path(filepath).createFile().writeAll(content)
+    val f = new java.io.File(filepath);
+    if(! f.getParentFile().exists())
+      f.getParentFile().mkdirs();
+    if (!f.exists())
+      //f.createNewFile();
+      Path(filepath).createFile().writeAll(content)  
   }
   def append(filepath: String, content: String) = {
     File(filepath).appendAll(content)
   }
-  
 }

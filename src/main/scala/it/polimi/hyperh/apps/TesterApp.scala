@@ -37,27 +37,27 @@ object TesterApp {
     val runs = 10
     val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
-    for(file <- new File(".").listFiles ){
+    /*for(file <- new File(".").listFiles ){
      println(file.getAbsolutePath)
-    }
+    }*/
     logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
     val format = logger.getFormatString()
     print(format)
     val logname = Timeout.getCurrentTime()
-    print(logname)
-    //FileManager.write("./output/"+logname+".txt", format)
+    print(logname+"\n")
+    FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
     for (i <- 1 to 120) {
-      val problem = Problem("./resources/" + filename("inst_ta", i, ".txt"))
+      val problem = Problem.fromResources(filename("inst_ta", i, ".txt"))
       val conf = new FrameworkConf()
-        .setDeploymentLocalNumExecutors(numOfAlgorithms)
+        .setDeploymentYarnCluster()//.setDeploymentLocalNumExecutors(numOfAlgorithms)
         .setProblem(problem)
         .setNAlgorithms(algorithm, numOfAlgorithms)
         .setNDefaultInitialSeeds(numOfAlgorithms)
         .setDefaultExecutionTimeLimit()
       val resultStr = testInstance(i, runs, conf, true)
       results = results ++ Array(resultStr)
-      //FileManager.append("./output/"+logname+".txt", resultStr)
+      FileManager.append("./output/"+logname+".txt", resultStr)
       print(resultStr)
     }
     //FileManager.write("./output/"+logname+".txt", results.mkString)
@@ -83,7 +83,7 @@ object TesterApp {
     //var rpds: List[Double] = List()
     val solutions = Framework.multipleRuns(conf, runs)
     if (solutionPresent) {
-      bestSolution = EvaluatedSolution("./resources/" + filename("sol_ta", i, ".txt"))
+      bestSolution = EvaluatedSolution.fromResources(filename("sol_ta", i, ".txt"))
     } else {
       bestSolution = solutions.min
     }

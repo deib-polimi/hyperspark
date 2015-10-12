@@ -25,16 +25,14 @@ class FrameworkConf() {
   
   def setAlgorithms(algorithms: Array[Algorithm]) = { 
     algs = algorithms
+    setNumberOfExecutors(algs.size)
     this
   }
   def getAlgorithms() = algs.clone()
   
-  def appendAlgorithm(algorithm: Algorithm) = {
-    algs :+= algorithm
-    this
-  }
   def setNAlgorithms(algorithm: Algorithm, N: Int) = {
     algs = Array.fill(N)(algorithm)
+    setNumberOfExecutors(algs.size)
     this
   }
   def clearAlgorithms() = { 
@@ -120,6 +118,9 @@ class FrameworkConf() {
   
   def setAppName(name: String) = {
     setProperty("spark.app.name", name)
+  }
+  def setNumberOfExecutors(N: Int) = {
+    setProperty("spark.executor.instances", N.toString())
   }
   private def loadDefaults() = {
     List(
