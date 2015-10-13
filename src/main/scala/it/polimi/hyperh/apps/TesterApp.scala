@@ -53,7 +53,7 @@ object TesterApp {
         .setNDefaultInitialSeeds(numOfAlgorithms)
         .setDefaultExecutionTimeLimit()
       val resultStr = testInstance(i, runs, conf, true)
-      results = results ++ Array(resultStr)
+      results :+= resultStr
       FileManager.append("./output/"+logname+".txt", resultStr)
       logger.printInfo(resultStr)
     }

@@ -28,8 +28,7 @@ object ParallelWork extends App {
       // start the calculation
       master ! Calculate
     }
-    val path = "./resources/"
-    val p = Problem(path + "inst_ta001")
+    val p = Problem.fromResources("inst_ta001.txt")
     val permutationList = Random.shuffle(p.jobs.toList)
     val oldSolution = new Solution(permutationList)
     var evOldSolution = p.evaluate(oldSolution)
@@ -45,7 +44,7 @@ class Worker extends Actor {
   def receive = {
     case Work(p, solution, initEndTimesMatrix) =>
       val evSolution = p.evaluatePartialSolution(solution.permutation)
-      sender() ! SingleResult(evSolution)
+      sender ! SingleResult(evSolution)
   }
 }
 class Listener extends Actor {

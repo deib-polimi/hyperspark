@@ -11,7 +11,7 @@ import it.polimi.hyperh.spark.Framework
  */
 object LocalApp {
   def run() {
-    val problem = Problem("./resources/inst_ta002.txt")
+    val problem = Problem.fromResources("inst_ta002.txt")
     val algorithm = new PACOAlgorithm(problem)
     val numOfAlgorithms = 4
     val conf = new FrameworkConf()
