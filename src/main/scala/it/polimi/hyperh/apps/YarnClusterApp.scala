@@ -8,14 +8,14 @@ import it.polimi.hyperh.spark.FrameworkConf
 import it.polimi.hyperh.spark.Framework
 import util.FileManager
 import util.Performance
-import util.Logger
+import util.CustomLogger
 import util.Timeout
 
 /**
  * @author Nemanja
  */
 object YarnClusterApp {
-  val logger = Logger() 
+  val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
     str.size match {

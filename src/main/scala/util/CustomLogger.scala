@@ -1,9 +1,10 @@
 package util
 
+import org.apache.spark.Logging
 /**
  * @author Nemanja
  */
-class Logger {
+class CustomLogger extends Logging {
   protected var params: List[String] = List()
   protected def reformat(ps: List[String]) = {
     def produceBlanks(N: Int) = {
@@ -24,13 +25,17 @@ class Logger {
     val toprint = params.reduceLeft(_ concat _).concat("\n")
     toprint
   }
-  def printFormat() = { print(getFormatString()) }
+  def printInfo(msg: String) = {
+    print(msg)
+    logInfo(msg)
+  }
+  def printFormat() = { printInfo(getFormatString()) }
   def getValuesString(values: List[Any]): String = {
     reformat(values.map { x => x.toString() }).reduceLeft(_ concat _).concat("\n")
   }
-  def printValues(values: List[Any]) = { print(getValuesString(values)) }
+  def printValues(values: List[Any]) = { printInfo(getValuesString(values)) }
 }
-object Logger {
-  def apply() = new Logger()
-  def apply(parameters: List[String]) = new Logger().setFormat(parameters)
+object CustomLogger {
+  def apply() = new CustomLogger()
+  def apply(parameters: List[String]) = new CustomLogger().setFormat(parameters)
 }

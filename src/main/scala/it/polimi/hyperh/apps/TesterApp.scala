@@ -7,7 +7,7 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
 import it.polimi.hyperh.algorithms.IGAlgorithm
 import util.Performance
 import util.FileManager
-import util.Logger
+import util.CustomLogger
 import util.Timeout
 import it.polimi.hyperh.spark.Framework
 import it.polimi.hyperh.spark.FrameworkConf
@@ -17,7 +17,7 @@ import java.io.File
  * @author Nemanja
  */
 object TesterApp {
-  val logger = Logger() 
+  val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
     str.size match {
@@ -37,14 +37,11 @@ object TesterApp {
     val runs = 10
     val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
-    /*for(file <- new File(".").listFiles ){
-     println(file.getAbsolutePath)
-    }*/
+    val logname = Timeout.getCurrentTime()
+    logger.printInfo("Start time\t\t"+logname+"\n")
     logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
     val format = logger.getFormatString()
-    print(format)
-    val logname = Timeout.getCurrentTime()
-    print(logname+"\n")
+    logger.printInfo(format)
     FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
     for (i <- 1 to 120) {
@@ -58,7 +55,7 @@ object TesterApp {
       val resultStr = testInstance(i, runs, conf, true)
       results = results ++ Array(resultStr)
       FileManager.append("./output/"+logname+".txt", resultStr)
-      print(resultStr)
+      logger.printInfo(resultStr)
     }
     //FileManager.write("./output/"+logname+".txt", results.mkString)
 
@@ -101,7 +98,7 @@ object TesterApp {
         formatNum(rpd),
         mode
       ))
-      print(newString)
+      logger.printInfo(newString)
       resString = resString + newString
       //rpds :+= rpd
     }
