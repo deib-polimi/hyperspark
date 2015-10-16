@@ -7,16 +7,16 @@ import it.polimi.hyperh.solution.DummyEvaluatedSolution
 import it.polimi.hyperh.algorithms.IGAlgorithm
 import util.Performance
 import util.FileManager
-import util.CustomLogger
 import util.Timeout
 import it.polimi.hyperh.spark.Framework
 import it.polimi.hyperh.spark.FrameworkConf
 import java.io.File
+import util.CustomLogger
 
 /**
  * @author Nemanja
  */
-object TesterApp {
+object LocalTesterApp {
   val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
@@ -41,13 +41,13 @@ object TesterApp {
     logger.printInfo("Start time\t\t"+logname+"\n")
     logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
     val format = logger.getFormatString()
-    logger.printInfo(format)
+    logger.printInfo(format, true)
     FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
     for (i <- 1 to 120) {
       val problem = Problem.fromResources(filename("inst_ta", i, ".txt"))
       val conf = new FrameworkConf()
-        .setDeploymentYarnCluster()//.setDeploymentLocalNumExecutors(numOfAlgorithms)
+        .setDeploymentLocalNumExecutors(numOfAlgorithms)
         .setProblem(problem)
         .setNAlgorithms(algorithm, numOfAlgorithms)
         .setNDefaultInitialSeeds(numOfAlgorithms)
@@ -55,10 +55,11 @@ object TesterApp {
       val resultStr = testInstance(i, runs, conf, true)
       results :+= resultStr
       FileManager.append("./output/"+logname+".txt", resultStr)
-      logger.printInfo(resultStr)
+      logger.printInfo(resultStr, true)
     }
-    //FileManager.write("./output/"+logname+".txt", results.mkString)
-    logger.printInfo("End time\t\t"+Timeout.getCurrentTime()+"\n")
+    val strEnd = "End time\t\t"+Timeout.getCurrentTime()+"\n"
+    FileManager.append("./output/"+logname+".txt", strEnd)
+    logger.printInfo(strEnd, true)
 
   }
   def testInstance(i: Int, runs: Int, conf: FrameworkConf, solutionPresent: Boolean = false) = {

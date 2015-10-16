@@ -64,7 +64,8 @@ class FrameworkConf() {
   }
   def getSeedingStrategy(): SeedingStrategy = { seedingStrategy }
   def setDefaultExecutionTimeLimit() = {
-    tLimit = problem.numOfMachines*(problem.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    val totalTime = problem.numOfMachines*(problem.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
+    tLimit = totalTime / iter//if there are multiple iterations, total time is divided by #iterations
     this
   }
   def setIterationTimeLimit(millis: Double) = {

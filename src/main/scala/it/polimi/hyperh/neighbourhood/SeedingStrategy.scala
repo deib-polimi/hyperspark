@@ -6,7 +6,7 @@ import scala.util.Random
 /**
  * @author Nemanja
  */
-trait SeedingStrategy {
+trait SeedingStrategy extends Serializable {
   def divide(seed: Option[Solution], N: Int): Array[Option[Solution]]
   def usesTheSeed(): Boolean
 }

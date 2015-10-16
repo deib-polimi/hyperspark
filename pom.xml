@@ -19,8 +19,10 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
-		<scala.tools.version>2.10</scala.tools.version>
-		<scala.version>2.10.4</scala.version>
+		<scala.binary.version>2.11</scala.binary.version>
+		<scala.version>2.11.7</scala.version>
+		<akka.group>com.typesafe.akka</akka.group>
+		<akka.version>2.3.12</akka.version>
 	</properties>
 
 	<repositories>
@@ -28,13 +30,6 @@
 			<id>scala-tools.org</id>
 			<name>Scala-Tools Maven2 Repository</name>
 			<url>http://scala-tools.org/repo-releases</url>
-		</repository>
-		<repository>
-			<id>akka-snapshots</id>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<url>http://repo.akka.io/snapshots/</url>
 		</repository>
 		<repository>
 			<id>mvnrepository</id>
@@ -45,6 +40,24 @@
 			<releases>
 				<enabled>true</enabled>
 			</releases>
+		</repository>
+		<repository>
+			<id>apache-repo</id>
+			<name>Apache Repository</name>
+			<url>https://repository.apache.org/content/repositories/releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>akka-snapshots</id>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>http://repo.akka.io/snapshots/</url>
 		</repository>
 	</repositories>
 
@@ -59,13 +72,33 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_2.10</artifactId>
-			<version>1.3.0</version>
+			<artifactId>spark-core_${scala.binary.version}</artifactId>
+			<version>1.5.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-compiler</artifactId>
+			<version>${scala.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-reflect</artifactId>
+			<version>${scala.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
+			<version>${scala.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-actors</artifactId>
+			<version>${scala.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scalap</artifactId>
 			<version>${scala.version}</version>
 		</dependency>
 
@@ -78,14 +111,14 @@
 		</dependency>
 		<dependency>
 			<groupId>org.specs2</groupId>
-			<artifactId>specs2_${scala.tools.version}</artifactId>
+			<artifactId>specs2_${scala.binary.version}</artifactId>
 			<version>2.3.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.10</artifactId>
-			<version>2.0.M6-SNAP5</version>
+			<artifactId>scalatest_${scala.binary.version}</artifactId>
+			<version>2.2.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -95,9 +128,35 @@
 		</dependency>
 		<!-- Akka Actors for parallel execution -->
 		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-actor_2.10</artifactId>
-			<version>2.3.12</version>
+			<groupId>${akka.group}</groupId>
+			<artifactId>akka-actor_${scala.binary.version}</artifactId>
+			<version>${akka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${akka.group}</groupId>
+			<artifactId>akka-remote_${scala.binary.version}</artifactId>
+			<version>${akka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${akka.group}</groupId>
+			<artifactId>akka-slf4j_${scala.binary.version}</artifactId>
+			<version>${akka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${akka.group}</groupId>
+			<artifactId>akka-testkit_${scala.binary.version}</artifactId>
+			<version>${akka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${akka.group}</groupId>
+			<artifactId>akka-zeromq_${scala.binary.version}</artifactId>
+			<version>${akka.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>${akka.group}</groupId>
+					<artifactId>akka-actor_${scala.binary.version}</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 

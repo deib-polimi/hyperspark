@@ -25,9 +25,9 @@ class CustomLogger extends Logging {
     val toprint = params.reduceLeft(_ concat _).concat("\n")
     toprint
   }
-  def printInfo(msg: String) = {
-    print(msg)
-    logInfo(msg)
+  def printInfo(msg: String, printLocally: Boolean = false) = {
+    if(printLocally)  print(msg)
+    else  logInfo(msg)
   }
   def printFormat() = { printInfo(getFormatString()) }
   def getValuesString(values: List[Any]): String = {

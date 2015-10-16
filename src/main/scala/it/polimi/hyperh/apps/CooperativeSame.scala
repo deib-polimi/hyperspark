@@ -16,7 +16,7 @@ import java.io.File
 /**
  * @author Nemanja
  */
-object TesterApp {
+object CooperativeSame {
   val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
@@ -42,19 +42,20 @@ object TesterApp {
     logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
     val format = logger.getFormatString()
     logger.printInfo(format)
-    FileManager.write("./output/"+logname+".txt", format)
+    //FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
-    for (i <- 1 to 120) {
+    for (i <- 1 to 60) {
       val problem = Problem.fromResources(filename("inst_ta", i, ".txt"))
       val conf = new FrameworkConf()
-        .setDeploymentYarnCluster()//.setDeploymentLocalNumExecutors(numOfAlgorithms)
+        .setDeploymentYarnCluster()
         .setProblem(problem)
         .setNAlgorithms(algorithm, numOfAlgorithms)
         .setNDefaultInitialSeeds(numOfAlgorithms)
+        .setNumberOfIterations(10)
         .setDefaultExecutionTimeLimit()
       val resultStr = testInstance(i, runs, conf, true)
       results :+= resultStr
-      FileManager.append("./output/"+logname+".txt", resultStr)
+      //FileManager.append("./output/"+logname+".txt", resultStr)
       logger.printInfo(resultStr)
     }
     //FileManager.write("./output/"+logname+".txt", results.mkString)
@@ -100,9 +101,7 @@ object TesterApp {
         mode
       ))
       resString = resString + newString
-      //rpds :+= rpd
     }
-    //val arpd = Performance.ARPD(rpds)
     resString
   }
 

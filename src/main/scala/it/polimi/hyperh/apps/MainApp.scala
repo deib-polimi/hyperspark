@@ -5,8 +5,8 @@ package it.polimi.hyperh.apps
  */
 object MainApp {
   def main(args: Array[String]) {
-    TesterApp.run()
-    //LocalApp.run()
+    //TesterApp.run()
     //YarnClusterApp.run()
+    CooperativeSame.run()
   }
 }

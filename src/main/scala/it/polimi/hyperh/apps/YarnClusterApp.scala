@@ -1,15 +1,17 @@
 package it.polimi.hyperh.apps
 
-import it.polimi.hyperh.algorithms.IGAlgorithm
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
+import util.Timeout
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
-import it.polimi.hyperh.spark.FrameworkConf
-import it.polimi.hyperh.spark.Framework
-import util.FileManager
+import it.polimi.hyperh.algorithms.IGAlgorithm
 import util.Performance
+import util.FileManager
 import util.CustomLogger
 import util.Timeout
+import it.polimi.hyperh.spark.Framework
+import it.polimi.hyperh.spark.FrameworkConf
+import java.io.File
 
 /**
  * @author Nemanja
@@ -35,28 +37,28 @@ object YarnClusterApp {
     val runs = 10
     val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
+    val logname = Timeout.getCurrentTime()
+    logger.printInfo("Start time\t\t"+logname+"\n")
     logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
     val format = logger.getFormatString()
-    print(format)
-    val logname = Timeout.getCurrentTime()
-    FileManager.write("./output/"+logname+".txt", format)
+    logger.printInfo(format)
+    //FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
     for (i <- 1 to 120) {
-      val problem = Problem("./resources/" + filename("inst_ta", i, ".txt"))
+      val problem = Problem.fromResources(filename("inst_ta", i, ".txt"))
       val conf = new FrameworkConf()
-      .setDeploymentYarnCluster()
-      .enableDynamicResourceAllocation()
-      .setProperty("spark.dynamicAllocation.minExecutors", numOfAlgorithms.toString())
-      .setProblem(problem)
-      .setNAlgorithms(algorithm, numOfAlgorithms)
-      .setNDefaultInitialSeeds(numOfAlgorithms)
-      .setDefaultExecutionTimeLimit()
+        .setDeploymentYarnCluster()
+        .setProblem(problem)
+        .setNAlgorithms(algorithm, numOfAlgorithms)
+        .setNDefaultInitialSeeds(numOfAlgorithms)
+        .setDefaultExecutionTimeLimit()
       val resultStr = testInstance(i, runs, conf, true)
-      results = results ++ Array(resultStr)
-      FileManager.append("./output/"+logname+".txt", resultStr)
-      print(resultStr)
+      results :+= resultStr
+      //FileManager.append("./output/"+logname+".txt", resultStr)
+      logger.printInfo(resultStr)
     }
     //FileManager.write("./output/"+logname+".txt", results.mkString)
+    logger.printInfo("End time\t\t"+Timeout.getCurrentTime()+"\n")
 
   }
   def testInstance(i: Int, runs: Int, conf: FrameworkConf, solutionPresent: Boolean = false) = {
@@ -79,7 +81,7 @@ object YarnClusterApp {
     //var rpds: List[Double] = List()
     val solutions = Framework.multipleRuns(conf, runs)
     if (solutionPresent) {
-      bestSolution = EvaluatedSolution("./resources/" + filename("sol_ta", i, ".txt"))
+      bestSolution = EvaluatedSolution.fromResources(filename("sol_ta", i, ".txt"))
     } else {
       bestSolution = solutions.min
     }
@@ -97,7 +99,6 @@ object YarnClusterApp {
         formatNum(rpd),
         mode
       ))
-      print(newString)
       resString = resString + newString
       //rpds :+= rpd
     }
