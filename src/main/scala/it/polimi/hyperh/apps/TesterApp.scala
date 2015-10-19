@@ -16,7 +16,7 @@ import java.io.File
 /**
  * @author Nemanja
  */
-object TesterApp {
+class TesterApp {
   val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
@@ -106,4 +106,9 @@ object TesterApp {
     resString
   }
 
+}
+object TesterApp {
+  def main(args: Array[String]) {
+     new TesterApp().run()
+  }
 }

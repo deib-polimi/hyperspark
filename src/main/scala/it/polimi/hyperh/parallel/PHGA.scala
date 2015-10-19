@@ -102,9 +102,11 @@ class PHGA(
     val children = operator(parent1.solution.toList, parent2.solution.toList)
     val child1 = (tupple._1, p.evaluate(Solution(children._1)))
     val child2 = (tupple._1, p.evaluate(Solution(children._2)))
-    var newPopulationArr: Array[(Int,EvaluatedSolution)]= newPopulation.collect() ++ Array(child1) ++ Array(child2)
-    newPopulationArr = newPopulationArr.sortBy[Int](_._2.value)(Ordering.Int).take(Ps)
-    PHGA.createRDD(newPopulationArr)
+    var newPopulationArr: RDD[(Int,EvaluatedSolution)]= newPopulation ++ PHGA.createRDD(Array(child1,child2))
+    val sortedRDD = newPopulationArr.sortBy[Int](_._2.value)(Ordering.Int, ClassTag.Int)
+    val indexKeyRDD = sortedRDD.zipWithIndex().map{case (k,v) => (v,k)}
+    newPopulationArr = indexKeyRDD.filter(tupple => tupple._1 < Ps).map(t => t._2)
+    newPopulationArr
   }
   def metropolis(p: Problem, population: RDD[(Int,EvaluatedSolution)], expireTimeMillis: Double):RDD[(Int,EvaluatedSolution)] = {
     var evOldPopulation = population

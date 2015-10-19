@@ -9,7 +9,7 @@ import it.polimi.hyperh.spark.Framework
 /**
  * @author Nemanja
  */
-object LocalApp {
+class LocalApp {
   def run() {
     val problem = Problem.fromResources("inst_ta002.txt")
     val algorithm = new PACOAlgorithm(problem)
@@ -24,5 +24,10 @@ object LocalApp {
     val solution = Framework.run(conf)
     println(solution)
     //Performance.RPD(solution, optVal)
+  }
+}
+object LocalApp {
+  def main(args: Array[String]) {
+    new LocalApp().run()
   }
 }

@@ -16,7 +16,7 @@ import java.io.File
 /**
  * @author Nemanja
  */
-object CooperativeSame {
+class CooperativeSame {
   val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
@@ -105,4 +105,9 @@ object CooperativeSame {
     resString
   }
 
+}
+object CooperativeSame {
+  def main(args: Array[String]) {
+    new CooperativeSame().run()
+  }
 }

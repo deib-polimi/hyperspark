@@ -16,7 +16,7 @@ import util.CustomLogger
 /**
  * @author Nemanja
  */
-object LocalTesterApp {
+class LocalTesterApp {
   val logger = CustomLogger() 
   def filename(prefix: String, i: Int, sufix: String) = {
     val str = i.toString
@@ -107,4 +107,9 @@ object LocalTesterApp {
     resString
   }
 
+}
+object LocalTesterApp {
+  def main(args: Array[String]) {
+    new LocalTesterApp().run()
+  }
 }

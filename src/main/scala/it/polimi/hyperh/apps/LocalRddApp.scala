@@ -7,10 +7,8 @@ import scala.util.Random
 /**
  * @author Nemanja
  */
-object LocalMainApp {
-  def main(args: Array[String]) {
-    //LocalApp.run()
-    //LocalTesterApp.run()
+class LocalRddApp {
+  def run() {
     val arr = (for(i<-0 to 99) yield (i, Random.nextDouble)).toArray
     val sconf = new SparkConf().setAppName("test").setMaster("local[*]")
     val sc = new SparkContext(sconf)
@@ -25,5 +23,10 @@ object LocalMainApp {
     println("rdd2 size "+rdd2.count)
     println("rdd3 size "+rdd3.count)
     println("rdd4 size "+rdd4.count)
+  }
+}
+object LocalRddApp {
+  def main(args: Array[String]) {
+    new LocalRddApp().run()
   }
 }
