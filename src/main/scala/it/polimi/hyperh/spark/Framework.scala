@@ -26,6 +26,7 @@ object Framework {
   private var seedingStrategy: SeedingStrategy = new SameSeeds()
   
   def run(conf: FrameworkConf): EvaluatedSolution = {
+    setConf(conf)
     //problem specific settings
     val problem = conf.getProblem()
     val algorithms = conf.getAlgorithms()
@@ -50,6 +51,7 @@ object Framework {
     solution
   }
   def multipleRuns(conf: FrameworkConf, runs: Int): Array[EvaluatedSolution] = {
+    setConf(conf)
     //problem specific settings
     val problem = conf.getProblem()
     val algorithms = conf.getAlgorithms()
@@ -101,7 +103,7 @@ object Framework {
     iterloop(rdd, 1, DummyEvaluatedSolution(problem))
   }
   def updateRDD(rdd: RDD[DistributedDatum], seed: EvaluatedSolution): RDD[DistributedDatum] = {
-    val numOfTasks = conf.get.getAlgorithms().size
+    val numOfTasks = getConf().getAlgorithms().size
     val seeds = seedingStrategy.divide(Some(seed), numOfTasks)
     val rr = new RoundRobinIterator(numOfTasks)//round robin access to seeds array
     val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, seeds(rr.next()), d.iterationTimeLimit))
