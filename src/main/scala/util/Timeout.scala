@@ -23,11 +23,7 @@ object Timeout {
       false
     else true
   }
-  def getCurrentTime(): String = {
-    val timeMillis = System.currentTimeMillis()
-    val date = new java.util.Date(timeMillis)
-    val formatter = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")
-    val result = formatter.format(date)
-    result.replace('.', ':').replace(':', '-')
+  def getCurrentTime(): TimeObject = {
+    new TimeObject(System.currentTimeMillis())
   }
 }

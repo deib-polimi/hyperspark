@@ -43,7 +43,7 @@ object Framework {
       notStarted = false
     }
     val sc = getSparkContext()
-    val rdd = sc.parallelize(dataset).cache
+    val rdd = sc.parallelize(dataset, numOfTasks).cache
     mrHandler = conf.getMapReduceHandler()
     seedingStrategy = conf.getSeedingStrategy()
     //run the hyperLoop
@@ -68,7 +68,7 @@ object Framework {
       notStarted = false
     }
     val sc = getSparkContext()
-    val rdd = sc.parallelize(dataset).cache
+    val rdd = sc.parallelize(dataset, numOfTasks).cache
     mrHandler = conf.getMapReduceHandler()
     seedingStrategy = conf.getSeedingStrategy()
     //run the hyperLoop
