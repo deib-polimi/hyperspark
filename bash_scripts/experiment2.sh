@@ -10,7 +10,7 @@ for i in "${instances[@]}"; do							#for each instance
 		for run in $(seq 1 10); do						#run 10 times
 			#execute the command
 			echo "submitting a jar... parsing application state to get application id..."
-			app_id=`grep 'tracking' <<< "$(exec spark-submit --conf spark.root.logger=INFO,console --class it.polimi.hyperh.experiments.Experiment2 hyperh-0.0.1-SNAPSHOT.jar $i $c   2>&1)" | head -n1 | cut -c57-86`
+			app_id=`grep 'tracking' <<< "$(exec spark-submit --conf spark.root.logger=INFO,console --num-executors $c --class it.polimi.hyperh.experiments.Experiment2 hyperh-0.0.1-SNAPSHOT.jar $i $c   2>&1)" | head -n1 | cut -c57-86`
 			echo $app_id
 			echo "collecting yarn logs...parsing yarn logs to get application's results..."
 			log_contents=$(grep 'CustomLogger' <<< "$(exec yarn logs -applicationId $app_id)")

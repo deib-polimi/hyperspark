@@ -11,6 +11,8 @@ import util.Timeout
 import it.polimi.hyperh.solution.DummyEvaluatedSolution
 import it.polimi.hyperh.neighbourhood._
 import util.RoundRobinIterator
+import it.polimi.hyperh.spark.SeedingStrategy
+import it.polimi.hyperh.spark.SameSeeds
 
 /**
  * @author Nemanja

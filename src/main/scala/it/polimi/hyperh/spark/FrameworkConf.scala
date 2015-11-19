@@ -4,6 +4,8 @@ import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.neighbourhood._
+import it.polimi.hyperh.spark.SeedingStrategy
+import it.polimi.hyperh.spark.SameSeeds
 /**
  * @author Nemanja
  */
@@ -26,6 +28,7 @@ class FrameworkConf() {
   def setAlgorithms(algorithms: Array[Algorithm]) = { 
     algs = algorithms
     setNumberOfExecutors(algs.size)
+    setNumberOfResultingRDDPartitions(algs.size)
     this
   }
   def getAlgorithms() = algs.clone()
@@ -33,6 +36,7 @@ class FrameworkConf() {
   def setNAlgorithms(algorithm: Algorithm, N: Int) = {
     algs = Array.fill(N)(algorithm)
     setNumberOfExecutors(algs.size)
+    setNumberOfResultingRDDPartitions(algs.size)
     this
   }
   def clearAlgorithms() = { 
@@ -123,6 +127,9 @@ class FrameworkConf() {
   def setNumberOfExecutors(N: Int) = {
     setProperty("spark.executor.instances", N.toString())
   }
+  def setNumberOfResultingRDDPartitions(N: Int) = {
+    setProperty("spark.default.parallelism", N.toString())
+  }
   private def loadDefaults() = {
     List(
         ("spark.master", "local[*]"),
@@ -142,6 +149,3 @@ class FrameworkConf() {
   def setMapReduceHandler(h: MapReduceHandler) = { handler = h }
   def getMapReduceHandler(): MapReduceHandler = handler
 }
-/*object DefaultYarnConf() {
-  def apply(algorithms: Array[Algorithm], seeds: Option[Solution], )
-}*/
