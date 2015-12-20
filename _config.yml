@@ -10,6 +10,7 @@ title:            Hyperspark
 tagline:          'Distributed meta-heuristics on top of Spark'
 description:      'A framework for running meta-heuristic algorithms on a cluster of commodity computers.<br>Developed at <a href="http://www.deib.polimi.it/eng/home-page">DEIB</a> in Politecnico di Milano by <a href="https://github.com/nemtajo">Nemanja Stolic</a>'
 url:              http://deib-polimi.github.io/hyperspark
+baseurl:          /hyperspark
 
 authors:
   nemanja:
