@@ -22,6 +22,9 @@ authors:
 paginate:         1
 paginate_path:    "/blog/page:num/"
 
+# Optional features
+google_analytics_id: UA-71635220-1
+
 # Custom vars
 version:          1.0.0
 
