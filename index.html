@@ -1,36 +1,38 @@
 ---
 layout: default
+title: Home
 ---
 
-<div class="posts">
-  {% for post in paginator.posts %}
-  <div class="post">
-    <h1 class="post-title">
-      <a href="{{ post.url }}">
-        {{ post.title }}
-      </a>
-    </h1>
+<p class="message">
+  HyperSpark is a framework for running meta-heuristic algorithms on a cluster of commodity computers. The project is written in Scala and the cluster is managed by Spark.
+</p>
 
-    <span class="post-date">{{ post.date | date_to_string }}</span>
+<p>
+  The general idea is to use "Big Calculations" paradigm for running algorithms written by the user. What does that mean? It means that we perform some heavy computation algorithms on a cluster of machines, and we strive to optimize the usage of resources and time.
+</p>
 
-    {{ post.content }}
-  </div>
-  {% endfor %}
-</div>
+<p>
+  If you want to see what are we up to check our <a href="/blog">blog</a>
+</p>
 
-<div class="pagination">
-  {% if paginator.next_page %}
-    <a class="pagination-item older" href="/page{{paginator.next_page}}">Older</a>
-  {% else %}
-    <span class="pagination-item older">Older</span>
-  {% endif %}
-  {% if paginator.previous_page %}
-    {% if paginator.page == 2 %}
-      <a class="pagination-item newer" href="/">Newer</a>
-    {% else %}
-      <a class="pagination-item newer" href="/page{{paginator.previous_page}}">Newer</a>
-    {% endif %}
-  {% else %}
-    <span class="pagination-item newer">Newer</span>
-  {% endif %}
-</div>
+<h3>Goals of the project</h3>
+
+<ul>
+  <li>Examine the performance of popular algorithms for PFSP when run in Scala/Spark environment</li>
+  <li>Show that performance of one parallel run is more efficient than the performance of single algorithm run</li>
+  <li>Show that reusing the best solution found during single run for next runs is more efficient than just taking the best solution out of N independent runs</li>
+  <li>Show that Scala/Spark environment suits better for implementation of cooperative algorithms than Hadoop's environment</li>
+  <li>Simplicity: Show that the use of Scala/Spark environment is much simpler than using Hadoop environment, and that there is almost no setup of cluster using our framework</li>
+</ul>
+
+<h3>How to use the framework?</h3>
+
+<ul>
+  <li>The user writes its Problem, Solution, EvaluatedSolution and Algorithm classes</li>
+  <li>The user specifies how many algorithms will be run in parallel to evaluate the problem</li>
+  <li>What user could do is to define how the seeding solution (if exists) is provided to each of the algorithms that are run in parallel and how the results of the algorithms are combined (min, max, sum,etc.) and whether if the final result will be reused for another desired parallel run</li>
+</ul>
+
+<p>
+  We post development updates on our <a href="/blog">blog</a>
+</p>
