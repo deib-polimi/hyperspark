@@ -7,12 +7,7 @@ import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.algorithms.Algorithm
-import util.Timeout
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
-import it.polimi.hyperh.neighbourhood._
 import util.RoundRobinIterator
-import it.polimi.hyperh.spark.SeedingStrategy
-import it.polimi.hyperh.spark.SameSeeds
 
 /**
  * @author Nemanja
@@ -34,10 +29,9 @@ object Framework {
     val algorithms = conf.getAlgorithms()
     val numOfTasks = algorithms.size
     val seeds = conf.getInitialSeeds()
-    val iterationTimeLimit = conf.getIterationTimeLimit()
+    val stopCond = conf.getStoppingCondition()
     val iterations = conf.getNumberOfIterations()
-    val totalTimeLimit = iterationTimeLimit * iterations
-    val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
+    val dataset = DistributedDataset(numOfTasks, algorithms, seeds, stopCond)
     //spark specific settings
     val sparkConf = new SparkConf().setAll(conf.getProperties())
     if(notStarted){//allow only one instance of SparkContext to run
@@ -59,10 +53,9 @@ object Framework {
     val algorithms = conf.getAlgorithms()
     val numOfTasks = algorithms.size
     val seeds = conf.getInitialSeeds()
-    val iterationTimeLimit = conf.getIterationTimeLimit()
+    val stopCond = conf.getStoppingCondition()
     val iterations = conf.getNumberOfIterations()//coop. iterations to be performed in one run, default: 1
-    val totalTimeLimit = iterationTimeLimit * iterations
-    val dataset = DistributedDataset(numOfTasks, algorithms, seeds, iterationTimeLimit)
+    val dataset = DistributedDataset(numOfTasks, algorithms, seeds, stopCond)
     //spark specific settings
     val sparkConf = new SparkConf().setAll(conf.getProperties())
     if(notStarted){//allow only one instance of SparkContext to run
@@ -92,23 +85,27 @@ object Framework {
     def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
       rdd.map(datum => mrHandler.hyperMap(problem, datum, runNo)).reduce(mrHandler.hyperReduce(_,_))
     }
-    def iterloop(rdd: RDD[DistributedDatum], iteration: Int, bestSolution: EvaluatedSolution):EvaluatedSolution = {
+    var bestSolution: EvaluatedSolution = null
+    
+    def iterloop(rdd: RDD[DistributedDatum], iteration: Int): EvaluatedSolution = {
       val bestIterSolution = applyIteration(problem, rdd)
-      val newBest = List(bestIterSolution, bestSolution).min
+      if(iteration == 1)  bestSolution = bestIterSolution
+      else bestSolution = List(bestIterSolution, bestSolution).min
+      
       if(iteration == maxIter)//if it is last iteration don't update the rdd
-        newBest
+        bestSolution          //return best solution found
       else {
-        val updatedRDD = updateRDD(rdd, newBest)
-        iterloop(updatedRDD, iteration+1, newBest)
+        val updatedRDD = updateRDD(rdd, bestSolution)
+        iterloop(updatedRDD, iteration+1)
       }
     }
-    iterloop(rdd, 1, DummyEvaluatedSolution(problem))
+    iterloop(rdd, 1)
   }
   def updateRDD(rdd: RDD[DistributedDatum], seed: EvaluatedSolution): RDD[DistributedDatum] = {
     val numOfTasks = getConf().getAlgorithms().size
     val seeds = seedingStrategy.divide(Some(seed), numOfTasks)
     val rr = new RoundRobinIterator(numOfTasks)//round robin access to seeds array
-    val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, seeds(rr.next()), d.iterationTimeLimit))
+    val updatedRDD = rdd.map(d => DistributedDatum(d.algorithm, seeds(rr.next()), d.stoppingCondition))
     updatedRDD
   }
 }

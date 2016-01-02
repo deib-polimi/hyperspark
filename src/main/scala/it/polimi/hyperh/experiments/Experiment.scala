@@ -1,22 +1,15 @@
 package it.polimi.hyperh.experiments
 
-import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.EvaluatedSolution
-import util.Timeout
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
-import util.Performance
-import util.Timeout
+
 import it.polimi.hyperh.spark.Framework
 import it.polimi.hyperh.spark.FrameworkConf
-import util.CustomLogger
-import util.CustomLogger
-import it.polimi.hyperh.algorithms.HGAAlgorithm
-import it.polimi.hyperh.problem.Problem
-import util.Timeout
-import it.polimi.hyperh.spark.FrameworkConf
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
-import it.polimi.hyperh.solution.EvaluatedSolution
+import pfsp.problem.PfsProblem
+import pfsp.solution.PfsEvaluatedSolution
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.algorithms.HGAAlgorithm
 import util.Performance
+import util.CustomLogger
+import it.polimi.hyperh.spark.TimeExpired
 
 /**
  * @author Nemanja
@@ -55,21 +48,22 @@ abstract class Experiment(instance: Int, parallelism: Int) {
     }
     val mode = getMode()
     var resString = ""
-    val problem = conf.getProblem()
-    var bestSolution = DummyEvaluatedSolution(problem)
+    val problem = conf.getProblem().asInstanceOf[PfsProblem]
+    var bestSolution = BadPfsEvaluatedSolution(problem)
     val n = problem.numOfJobs
     val m = problem.numOfMachines
     val algName = conf.getAlgorithms().apply(0).name //take first alg name
     val parallelism = conf.getAlgorithms().size
-    val totalTime = conf.getIterationTimeLimit() * conf.getNumberOfIterations()
+    val iterTimeLimit = conf.getStoppingCondition().asInstanceOf[TimeExpired].getLimit()
+    val totalTime = iterTimeLimit * conf.getNumberOfIterations()
     val solutions = Framework.multipleRuns(conf, runs)
     if (solutionPresent) {
-      bestSolution = EvaluatedSolution.fromResources(filename("sol_ta", i, ".txt"))
+      bestSolution = PfsEvaluatedSolution.fromResources(filename("sol_ta", i, ".txt"))
     } else {
-      bestSolution = solutions.min
+      bestSolution = solutions.min.asInstanceOf[PfsEvaluatedSolution]
     }
     for (j <- 0 until solutions.size) {
-      val rpd = Performance.RPD(solutions(j), bestSolution)
+      val rpd = Performance.RPD(solutions(j).asInstanceOf[PfsEvaluatedSolution], bestSolution)
       val newString = logger.getValuesString(List(
         filename("inst_ta", i, ""),
         n,

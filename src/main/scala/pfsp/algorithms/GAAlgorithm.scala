@@ -1,13 +1,17 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
+import scala.Ordering
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
-import scala.util.Random
-import util.Timeout
-import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.solution.Solution
-import util.ConsolePrinter
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
+import it.polimi.hyperh.algorithms.Algorithm
+import pfsp.problem.PfsProblem
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.PfsSolution
+import pfsp.solution.PfsEvaluatedSolution
+import pfsp.neighbourhood.NeighbourhoodOperator
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.TimeExpired
 
 /**
  * @author Nemanja
@@ -19,12 +23,12 @@ class GAAlgorithm(
     val mutRate: Double, 
     val mutDecreaseFactor: Double, 
     val mutResetThreshold: Double,
-    val seedOption: Option[Solution]
+    val seedOption: Option[PfsSolution]
     ) extends Algorithm {
   /**
    * Secondary constructors
    */
-  def this(popSize: Int, seedOption: Option[Solution]) {
+  def this(popSize: Int, seedOption: Option[PfsSolution]) {
     this(popSize, 1.0, 0.8, 0.99, 0.95, seedOption)
   }
   def this(popSize: Int) {
@@ -35,28 +39,31 @@ class GAAlgorithm(
     this(30, 1.0, 0.8, 0.99, 0.95, None)
   }
   seed = seedOption
-  def initNEHSolution(p: Problem) = {
+  def initNEHSolution(p: PfsProblem): PfsEvaluatedSolution = {
     val nehAlgorithm = new NEHAlgorithm()
-    nehAlgorithm.evaluate(p)
+    nehAlgorithm.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
   }
-  def initialSolution(p: Problem): EvaluatedSolution = {
+  def initialSolution(p: PfsProblem): PfsEvaluatedSolution = {
     seed match {
-      case Some(seedValue) => seedValue.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
       case None => initNEHSolution(p)
     }
   }
-  override def evaluate(p: Problem): EvaluatedSolution = {
-    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
-    evaluate(p, timeLimit)
+  override def evaluate(problem: Problem): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit)
+    evaluate(p, stopCond)
   }
-  override def evaluate(p:Problem, timeLimit: Double): EvaluatedSolution = {
+  override def evaluate(problem:Problem, stopCond: StoppingCondition): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
+    val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
     //INITIALIZE POPULATION
-    var child1 = DummyEvaluatedSolution(p)
-    var child2 = DummyEvaluatedSolution(p)
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    var child1 = BadPfsEvaluatedSolution(p)
+    var child2 = BadPfsEvaluatedSolution(p)
     
-    def loop(pop: Array[EvaluatedSolution], stats: (Double, Int, Int), mRate: Double, iter: Int): EvaluatedSolution = {
-      if(Timeout.notTimeout(expireTimeMillis)) {
+    def loop(pop: Array[PfsEvaluatedSolution], stats: (Double, Int, Int), mRate: Double, iter: Int): EvaluatedSolution = {
+      if(stop.isNotSatisfied()) {
           var population = pop
           var triple = stats
           var mean = triple._1
@@ -84,15 +91,15 @@ class GAAlgorithm(
           //select parent2 using uniform distribution
           val parent2 = population(random.nextInt(popSize))
           val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
-          child1 = p.evaluate(Solution(children._1))
-          child2 = p.evaluate(Solution(children._2))
+          child1 = p.evaluate(PfsSolution(children._1)).asInstanceOf[PfsEvaluatedSolution]
+          child2 = p.evaluate(PfsSolution(children._2)).asInstanceOf[PfsEvaluatedSolution]
         }
         //MUTATION
         if (randomNo < mutRate) {
           val mutation1 = mutationSWAP(child1.solution.toList)
           val mutation2 = mutationSWAP(child2.solution.toList)
-          child1 = p.evaluate(Solution(mutation1))
-          child2 = p.evaluate(Solution(mutation2))
+          child1 = p.evaluate(PfsSolution(mutation1)).asInstanceOf[PfsEvaluatedSolution]
+          child2 = p.evaluate(PfsSolution(mutation2)).asInstanceOf[PfsEvaluatedSolution]
         }
         //UPDATE POPULATION
         //delete sequence from unfit members, whose makespan value is below the median
@@ -122,18 +129,18 @@ class GAAlgorithm(
     loop(Array(), (1.0, 1, 1), mutRate, 1)
   }
 
-  def initRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
-    def randomGenerate(jobs: List[Int]): EvaluatedSolution = {
-      p.evaluate(Solution(random.shuffle(jobs)))
+  def initRandom(p: PfsProblem, size: Int): Array[PfsEvaluatedSolution] = {
+    def randomGenerate(jobs: List[Int]): PfsEvaluatedSolution = {
+      p.evaluate(PfsSolution(random.shuffle(jobs))).asInstanceOf[PfsEvaluatedSolution]
     }
-    val population = Array.ofDim[EvaluatedSolution](size)
+    val population = Array.ofDim[PfsEvaluatedSolution](size)
     val jobsList = p.jobs.toList
     for (i <- 0 until size) {
       population(i) = randomGenerate(jobsList)
     }
     population
   }
-  def initSeedPlusRandom(p: Problem, size: Int): Array[EvaluatedSolution] = {
+  def initSeedPlusRandom(p: PfsProblem, size: Int): Array[PfsEvaluatedSolution] = {
     val seedSol = initialSolution(p)//NEH or provided seed in constructor, or in special evaluate function signature
     val population = Array(seedSol) ++ initRandom(p, size-1)
     population
@@ -203,7 +210,7 @@ class GAAlgorithm(
   def mutationINS(parent: List[Int]): List[Int] = {
     NeighbourhoodOperator(random).BckINS(parent)
   }
-  def calculateStatistics(sortedPopulation:Array[EvaluatedSolution]):(Double,Int,Int) = {
+  def calculateStatistics(sortedPopulation:Array[PfsEvaluatedSolution]):(Double,Int,Int) = {
     val makespans = sortedPopulation.map(_.value)
     val mean = makespans.sum.asInstanceOf[Double] / sortedPopulation.size
     val median = makespans.apply(sortedPopulation.size / 2 + 1)

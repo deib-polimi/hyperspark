@@ -1,6 +1,7 @@
-package util
-import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.EvaluatedSolution
+package pfsp.util
+
+import pfsp.solution.PfsEvaluatedSolution
+import pfsp.problem.PfsProblem
 
 /**
  * @author Nemanja
@@ -30,8 +31,8 @@ object PermutationUtility {
   }  
   
   //evaluate all permutations, and return the best evaluated solution as pair (value, permutation)
-    def getBestPermutation(permutations: List[List[Int]],p:Problem): EvaluatedSolution = {
-      var evaluatedSolutions = List[EvaluatedSolution]()
+    def getBestPermutation(permutations: List[List[Int]],p:PfsProblem): PfsEvaluatedSolution = {
+      var evaluatedSolutions = List[PfsEvaluatedSolution]()
       for(i <- 0 until permutations.size) {
         val evaluatedSolution=p.evaluatePartialSolution(permutations(i))
         evaluatedSolutions = evaluatedSolutions ::: List(evaluatedSolution)
@@ -39,4 +40,5 @@ object PermutationUtility {
       val minEvaluatedSolution = evaluatedSolutions.sortBy(_.value).head//endTimes.min
       minEvaluatedSolution
     }
+    
 }

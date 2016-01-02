@@ -1,16 +1,16 @@
 package it.polimi.hyperh.apps
 
-import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.EvaluatedSolution
-import util.Timeout
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
-import it.polimi.hyperh.algorithms.IGAlgorithm
+import it.polimi.hyperh.spark.Framework
+import it.polimi.hyperh.spark.FrameworkConf
+import it.polimi.hyperh.spark.TimeExpired
+import pfsp.algorithms.IGAlgorithm
+import pfsp.problem.PfsProblem
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.PfsEvaluatedSolution
 import util.Performance
 import util.FileManager
 import util.CustomLogger
-import util.Timeout
-import it.polimi.hyperh.spark.Framework
-import it.polimi.hyperh.spark.FrameworkConf
+import util.CurrentTime
 import java.io.File
 
 /**
@@ -37,7 +37,8 @@ class TesterApp {
     val runs = 10
     val algorithm = new IGAlgorithm()
     val numOfAlgorithms = 4
-    val logname = Timeout.getCurrentTime()
+    val logname = CurrentTime()
+    
     logger.printInfo("Start time\t\t"+logname+"\n")
     logger.setFormat(List("instance","n","m","algorithmName","parallelism","totalTime(s)","makespan","best","rpd","mode"))
     val format = logger.getFormatString()
@@ -45,20 +46,26 @@ class TesterApp {
     FileManager.write("./output/"+logname+".txt", format)
     var results: Array[String] = Array(format)
     for (i <- 1 to 120) {
-      val problem = Problem.fromResources(filename("inst_ta", i, ".txt"))
+      val problem = PfsProblem.fromResources(filename("inst_ta", i, ".txt"))
+      val totalTime = problem.getExecutionTime()
+      val numOfIterations = 1
+      val iterTimeLimit = totalTime / numOfIterations
+      val stopCond = new TimeExpired(iterTimeLimit)
+      
       val conf = new FrameworkConf()
         .setDeploymentYarnCluster()//.setDeploymentLocalNumExecutors(numOfAlgorithms)
         .setProblem(problem)
         .setNAlgorithms(algorithm, numOfAlgorithms)
         .setNDefaultInitialSeeds(numOfAlgorithms)
-        .setDefaultExecutionTimeLimit()
+        .setNumberOfIterations(numOfIterations)
+        .setStoppingCondition(stopCond)
       val resultStr = testInstance(i, runs, conf, true)
       results :+= resultStr
       FileManager.append("./output/"+logname+".txt", resultStr)
       logger.printInfo(resultStr)
     }
     //FileManager.write("./output/"+logname+".txt", results.mkString)
-    logger.printInfo("End time\t\t"+Timeout.getCurrentTime()+"\n")
+    logger.printInfo("End time\t\t"+CurrentTime()+"\n")
 
   }
   def testInstance(i: Int, runs: Int, conf: FrameworkConf, solutionPresent: Boolean = false) = {
@@ -71,22 +78,23 @@ class TesterApp {
     }
     val mode = getMode()
     var resString = ""
-    val problem = conf.getProblem()
-    var bestSolution = DummyEvaluatedSolution(problem)
+    val problem = conf.getProblem().asInstanceOf[PfsProblem]
+    var bestSolution = BadPfsEvaluatedSolution(problem)
     val n = problem.numOfJobs
     val m = problem.numOfMachines
     val algName = conf.getAlgorithms().apply(0).name //take first alg name
     val parallelism = conf.getAlgorithms().size
-    val totalTime = conf.getIterationTimeLimit() * conf.getNumberOfIterations()
+    val iterTimeLimit = conf.getStoppingCondition().asInstanceOf[TimeExpired].getLimit()
+    val totalTime = iterTimeLimit * conf.getNumberOfIterations()
     //var rpds: List[Double] = List()
     val solutions = Framework.multipleRuns(conf, runs)
     if (solutionPresent) {
-      bestSolution = EvaluatedSolution.fromResources(filename("sol_ta", i, ".txt"))
+      bestSolution = PfsEvaluatedSolution.fromResources(filename("sol_ta", i, ".txt"))
     } else {
-      bestSolution = solutions.min
+      bestSolution = solutions.min.asInstanceOf[PfsEvaluatedSolution]
     }
     for (j <- 0 until solutions.size) {
-      val rpd = Performance.RPD(solutions(j), bestSolution)
+      val rpd = Performance.RPD(solutions(j).asInstanceOf[PfsEvaluatedSolution], bestSolution)
       val newString = logger.getValuesString(List(
         filename("inst_ta", i, ""),
         n, 

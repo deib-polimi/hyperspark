@@ -1,41 +1,46 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
+import scala.Ordering
 import it.polimi.hyperh.problem.Problem
+import it.polimi.hyperh.algorithms.Algorithm
 import it.polimi.hyperh.solution.EvaluatedSolution
-import scala.util.Random
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
-import util.Timeout
+import pfsp.problem.PfsProblem
+import pfsp.neighbourhood.NeighbourhoodOperator
+import pfsp.solution.PfsEvaluatedSolution
+import pfsp.solution.PfsSolution
+import it.polimi.hyperh.spark.TimeExpired
+import it.polimi.hyperh.spark.StoppingCondition
 
 /**
  * @author Nemanja
  */
-class MMASAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution])
+class MMASAlgorithm(p: PfsProblem, t0: Double, cand: Int, seedOption: Option[PfsSolution])
 extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, seedOption: Option[Solution]) {
+  def this(p: PfsProblem, seedOption: Option[PfsSolution]) {
     this(p, 0.2, 5, seedOption)//default values
   }
-  def this(p: Problem) {
+  def this(p: PfsProblem) {
     this(p, 0.2, 5, None)//default values
   }
   //private var seed = seedOption
   
-  def initNEHSolution(p: Problem) = {
+  def initNEHSolution(p: PfsProblem) = {
     val nehAlgorithm = new NEHAlgorithm()
-    nehAlgorithm.evaluate(p)
+    nehAlgorithm.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
   }
   override def initialSolution() = {
     def getSolution() ={
       seed match {    
-      case Some(seedValue) => seedValue.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
         case None => initNEHSolution(p)
       }
     }
     var solution = getSolution()
-    solution = localSearch(solution, Timeout.setTimeout(300))
+    solution = localSearch(solution, new TimeExpired(300).initialiseLimit())
     updateTmax(solution)
     updateTmin
     initializeTrails(Tmax)
@@ -58,7 +63,7 @@ extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
       pij
     }
   }
-  override def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution = {  
+  override def constructAntSolution(bestSolution: PfsEvaluatedSolution): PfsEvaluatedSolution = {  
     var scheduled: List[Int] = List()
     var jPos = 1
     var candidates: List[Int]  = List()
@@ -86,7 +91,7 @@ extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
   def evaporationRate: Double = 1 - persistenceRate
   var Tmax = 0.2
   var Tmin = 0.04
-  def updateTmax(bestSolution: EvaluatedSolution) = { Tmax = 1/(evaporationRate * bestSolution.value) }
+  def updateTmax(bestSolution: PfsEvaluatedSolution) = { Tmax = 1/(evaporationRate * bestSolution.value) }
   def updateTmin = { Tmin = Tmax / 5 }
   
   def getNextJob(scheduled: List[Int], notScheduled: List[Int], jPos: Int): Int = {
@@ -118,20 +123,20 @@ extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
     }
     sample(items)
   }
-  override def localSearch(completeSolution: EvaluatedSolution, expireTimeMillis: Double): EvaluatedSolution = {
+  override def localSearch(completeSolution: PfsEvaluatedSolution, stopCond: StoppingCondition): PfsEvaluatedSolution = {
     val tsAlgorithm = new TSAlgorithm()
     var bestSolution = completeSolution
     if(p.numOfJobs <= 50) {
       val moves = NeighbourhoodOperator(random).generateAllNeighbourhoodMoves(p.numOfJobs)
-      while(Timeout.notTimeout(expireTimeMillis)) {
-        bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1
+      while(stopCond.isNotSatisfied()) {
+        bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, stopCond)._1
       }
       bestSolution
     }
     else {
-      while(Timeout.notTimeout(expireTimeMillis)) {
+      while(stopCond.isNotSatisfied()) {
         val moves = NeighbourhoodOperator(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, tsAlgorithm.getNumOfRandomMoves())
-        bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, expireTimeMillis)._1 
+        bestSolution = tsAlgorithm.firstImprovement(p, bestSolution, moves, stopCond)._1 
       }
       bestSolution
     }
@@ -147,12 +152,12 @@ extends ACOAlgorithm(p, t0, seedOption) with Algorithm {
       else
         T(i)(j) = newTij
   }
-  override def updatePheromones(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution) = {
+  override def updatePheromones(antSolution: PfsEvaluatedSolution, bestSolution: PfsEvaluatedSolution) = {
     updateTmax(bestSolution)
     updateTmin
     val usedSolution = bestSolution
     def deposit(iJob: Int,jPos: Int): Double = {
-      if(usedSolution.solution(jPos-1) == iJob)
+      if(usedSolution.permutation(jPos-1) == iJob)
         1.0/usedSolution.value
       else
         0.0

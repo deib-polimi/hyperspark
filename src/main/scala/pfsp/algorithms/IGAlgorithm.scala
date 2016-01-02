@@ -1,21 +1,27 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
-import scala.util.Random
 import Array._
 import it.polimi.hyperh._
 import it.polimi.hyperh.types.Types._
-import it.polimi.hyperh.solution.EvaluatedSolution
-import util.PermutationUtility
 import it.polimi.hyperh.problem.Problem
-import util.Timeout
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
+import it.polimi.hyperh.solution.EvaluatedSolution
+import it.polimi.hyperh.algorithms.Algorithm
+import pfsp.util.PermutationUtility
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.problem.PfsProblem
+import pfsp.solution.PfsSolution
+import pfsp.solution.PfsEvaluatedSolution
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.TimeExpired
+
+
 /**
  * @author Nemanja
  */
 
 //Problem Factory
-class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends Algorithm {
+class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[PfsSolution]) extends Algorithm {
   /**
    * A secondary constructor.
    */
@@ -23,40 +29,43 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
     //d: 2, T: 0.2
     this(2, 0.2, None)
   }
-  def this(seedOption: Option[Solution]) {
+  def this(seedOption: Option[PfsSolution]) {
     this(2, 0.2, seedOption)
   }
   seed = seedOption 
   
-  def initNEHSolution(p: Problem) = {
+  def initNEHSolution(p: PfsProblem): PfsEvaluatedSolution = {
     val nehAlgorithm = new NEHAlgorithm()
-    nehAlgorithm.evaluate(p)
+    nehAlgorithm.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
   }
-  def initialSolution(p: Problem): EvaluatedSolution = {
+  def initialSolution(p: PfsProblem): PfsEvaluatedSolution = {
     seed match {
-      case Some(seed) => seed.evaluate(p)
+      case Some(seed) => seed.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
       case None => initNEHSolution(p)
     }
   }
-  override def evaluate(p:Problem):EvaluatedSolution = {
-    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
-    evaluate(p, timeLimit)
+  override def evaluate(problem:Problem):EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit)
+    evaluate(p, stopCond)
   }  
-  override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
-    val dummySol = DummyEvaluatedSolution(p)
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    def loop(currentSol: EvaluatedSolution, bestSol: EvaluatedSolution, iter: Int): EvaluatedSolution = {
-      if(Timeout.notTimeout(expireTimeMillis)) {
+  override def evaluate(problem:Problem, stopCond: StoppingCondition):EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
+    val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
+    val dummySol = BadPfsEvaluatedSolution(p)
+    def loop(currentSol: PfsEvaluatedSolution, bestSol: PfsEvaluatedSolution, iter: Int): PfsEvaluatedSolution = {
+      if(stop.isNotSatisfied()) {
         var currentSolution = currentSol
         var bestSolution = bestSol
         if(iter == 1){
           currentSolution = initialSolution(p)
-          currentSolution = localSearch(currentSolution.solution,p)//improve it by local search
+          currentSolution = localSearch(currentSolution.permutation,p)//improve it by local search
           bestSolution = currentSolution
         }
-        val pair = destruction(currentSolution.solution, d)
+        val pair = destruction(currentSolution.permutation, d)
         val bestPermutation = construction(pair._1, pair._2,p)
-        bestSolution = p.evaluate(Solution(bestPermutation))
+        bestSolution = p.evaluate(PfsSolution(bestPermutation)).asInstanceOf[PfsEvaluatedSolution]
         val improvedSolution = localSearch(bestPermutation,p)
         //pi - currentSolution,piPrime - bestSolution, piSecond - improvedSolution
         if(improvedSolution.value < currentSolution.value){//acceptance criterion
@@ -79,9 +88,9 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
     }
     loop(dummySol, dummySol, 1)
   }
-  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+  override def evaluate(p:Problem, seedSol: Option[Solution], stopCond: StoppingCondition):EvaluatedSolution = {
     seed = seedSol
-    evaluate(p, timeLimit)
+    evaluate(p, stopCond)
   }
   //removes d jobs from permutation list, and produces two lists (left,removed)
   def destruction(permutation: Array[Int],d: Int): (List[Int],List[Int]) = {
@@ -96,19 +105,19 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[Solution]) extends 
     val left = tmp.toList//convert buffer to list
     (left, removed)
   }
-  def construction(left:List[Int], removed: List[Int],p:Problem) = { 
+  def construction(left:List[Int], removed: List[Int],p:PfsProblem) = { 
     var bestPermutation = left.toArray
     //STEP 3 of NEH algorithm
     //from 0 until numOfRemainingJobs (in NEH this is marked as for k=3 to numOfJobs)
     for(i <- 0 until removed.size) {
       val genPermutations = PermutationUtility.generateInserts(bestPermutation.toList,removed(i))
-        bestPermutation = PermutationUtility.getBestPermutation(genPermutations,p).solution
+        bestPermutation = PermutationUtility.getBestPermutation(genPermutations,p).permutation
     }
     bestPermutation
   }
   //Iterative improvement based on insertion
-  def localSearch(permutation: Array[Int],p:Problem):EvaluatedSolution = {
-    var bestSolution = p.evaluate(Solution(permutation))
+  def localSearch(permutation: Array[Int],p:PfsProblem):PfsEvaluatedSolution = {
+    var bestSolution = p.evaluate(PfsSolution(permutation)).asInstanceOf[PfsEvaluatedSolution]
     var improve = true
     while(improve == true) {
       improve = false

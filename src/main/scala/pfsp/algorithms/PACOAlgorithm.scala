@@ -1,34 +1,40 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
 import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.EvaluatedSolution
-import scala.util.Random
-import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
-import util.Timeout
-import util.ConsolePrinter
 import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.solution.EvaluatedSolution
+import pfsp.problem.PfsProblem
+import pfsp.neighbourhood.NeighbourhoodOperator
+import pfsp.solution.PfsSolution
+import pfsp.solution.PfsEvaluatedSolution
+import it.polimi.hyperh.spark.TimeExpired
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.TimeExpired
+import pfsp.solution.BadPfsEvaluatedSolution
+import it.polimi.hyperh.spark.StoppingCondition
 
 /**
  * @author Nemanja
  */
-class PACOAlgorithm(p: Problem, t0: Double, cand: Int, seedOption: Option[Solution]) 
+class PACOAlgorithm(p: PfsProblem, t0: Double, cand: Int, seedOption: Option[PfsSolution]) 
 extends MMMASAlgorithm(p, t0, cand, seedOption) {
   /**
    * A secondary constructor.
    */
 
-  def this(p: Problem, seedOption: Option[Solution]) {
+  def this(p: PfsProblem, seedOption: Option[PfsSolution]) {
     this(p, 0.2, 5, seedOption)
   }
 
-  def this(p: Problem) {
+  def this(p: PfsProblem) {
     this(p, 0.2, 5, None)//default values
   }
   seed = seedOption
   
-  def initialSolution(p: Problem): EvaluatedSolution = {
+  def initialSolution(p: PfsProblem): PfsEvaluatedSolution = {
     seed match {
-      case Some(seedValue) => seedValue.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
       case None => initNEHSolution(p)
     }
   }
@@ -40,8 +46,8 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
     T(i)(j) = newTij
   }
   //differential initialization of trails based on the seed solution
-  def initializeTrails(bestSolution: EvaluatedSolution) = {
-    val seed = bestSolution.solution
+  def initializeTrails(bestSolution: PfsEvaluatedSolution) = {
+    val seed = bestSolution.permutation
     val Zbest = bestSolution.value
     for(i <- 1 to p.numOfJobs)
       for(j <- 1 to p.numOfJobs) {
@@ -60,13 +66,13 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
   }
   override def initialSolution() = {
     var solution = initialSolution(p)
-    solution = localSearch(solution, Timeout.setTimeout(300))
+    solution = localSearch(solution, new TimeExpired(300).initialiseLimit())
     updateTmax(solution)
     updateTmin
     initializeTrails(solution)
     solution
   }
-  override def constructAntSolution(bestSolution: EvaluatedSolution): EvaluatedSolution = {  
+  override def constructAntSolution(bestSolution: PfsEvaluatedSolution): PfsEvaluatedSolution = {  
     var scheduled: List[Int] = List()
     var jPos = 1
     var notScheduled = (1 to p.numOfJobs).toList//.filterNot(j => scheduled.contains(j))
@@ -99,13 +105,13 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
     }
     p.evaluatePartialSolution(scheduled)
   }
-  override def updatePheromones(antSolution: EvaluatedSolution, bestSolution: EvaluatedSolution) = {
+  override def updatePheromones(antSolution: PfsEvaluatedSolution, bestSolution: PfsEvaluatedSolution) = {
     val usedSolution = antSolution
     val Zcurrent = antSolution.value
     for(i <- 1 to p.numOfJobs)
       for(j <- 1 to p.numOfJobs) {
-        val h = antSolution.solution.indexWhere( _ == i) + 1
-        val hbest = bestSolution.solution.indexWhere( _ == i) + 1
+        val h = antSolution.permutation.indexWhere( _ == i) + 1
+        val hbest = bestSolution.permutation.indexWhere( _ == i) + 1
         val x = scala.math.abs(hbest - j) + 1
         val diff = scala.math.pow(x, 1/2.0)
         var newTij: Double = -1.0
@@ -128,14 +134,14 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
       }
   }
   //job-index-based swap scheme
-  def swapScheme(completeSolution: EvaluatedSolution, expireTimeMillis: Double): EvaluatedSolution = {
+  def swapScheme(completeSolution: PfsEvaluatedSolution, stopCond: StoppingCondition): PfsEvaluatedSolution = {
     var bestSolution = completeSolution
-    val seed = bestSolution.solution
+    val seed = bestSolution.permutation
     val seedList = seed.toList
     var i = 1
-    while(i <= p.numOfJobs && Timeout.notTimeout(expireTimeMillis)){
+    while(i <= p.numOfJobs && stopCond.isNotSatisfied()){
       var j = 1
-      while(j <= p.numOfJobs && Timeout.notTimeout(expireTimeMillis)) {
+      while(j <= p.numOfJobs && stopCond.isNotSatisfied()) {
         if(seed(j-1) != i) {
           val indI = seed.indexWhere( _ == i)
           val indK = j-1
@@ -150,22 +156,23 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
     }//while i
     bestSolution
   }
-  override def evaluate(p: Problem, timeLimit: Double): EvaluatedSolution = {
-    val bestSol = new EvaluatedSolution(999999999, p.jobs)//dummy initialization
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    def loop(bestSol: EvaluatedSolution, iter: Int): EvaluatedSolution = {
-      if(notStopCondition && Timeout.notTimeout(expireTimeMillis)) {
+  override def evaluate(problem: Problem, stopCond: StoppingCondition): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
+    val bestSol = BadPfsEvaluatedSolution(p)
+    val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
+    def loop(bestSol: PfsEvaluatedSolution, iter: Int): PfsEvaluatedSolution = {
+      if(stop.isNotSatisfied()) {
         var bestSolution = bestSol
         if(iter == 0) {
           bestSolution = initialize()
         }
         var antSolution = constructAntSolution(bestSolution)//pass global best or ant best solution
-        antSolution = localSearch(antSolution, Timeout.setTimeout(300))
+        antSolution = localSearch(antSolution, new TimeExpired(300).initialiseLimit())
         if(antSolution.value < bestSolution.value)
           bestSolution = antSolution
         updatePheromones(antSolution, bestSolution)////use global best or ant best solution in impl
         if(iter % 40 == 0)
-          bestSolution = swapScheme(bestSolution, expireTimeMillis)
+          bestSolution = swapScheme(bestSolution, stop)
         loop(bestSolution, iter + 1)
       }
       else bestSol
@@ -173,13 +180,15 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
     loop(bestSol, 0)
   }
   
-  override def evaluate(p: Problem) = {
-    val timeLimit = p.numOfMachines*(p.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
-    evaluate(p, timeLimit)
+  override def evaluate(problem: Problem) = {
+    val p = problem.asInstanceOf[PfsProblem]
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit)
+    evaluate(p, stopCond)
   }
   
-  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+  override def evaluate(p:Problem, seedSol: Option[Solution], stopCond: StoppingCondition):EvaluatedSolution = {
     seed = seedSol
-    evaluate(p, timeLimit)
+    evaluate(p, stopCond)
   }
 }

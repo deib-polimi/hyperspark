@@ -1,19 +1,22 @@
-package it.polimi.hyperh.parallel;
+package pfsp.parallel;
+
+import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.solution.EvaluatedSolution
+import pfsp.problem.PfsProblem
+import scala.util.Random
 import akka.actor.Actor
 import akka.actor.Props
 import akka.event.Logging
-import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.EvaluatedSolution
-import akka.routing.RoundRobinPool
-import scala.util.Random
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
+import akka.routing.RoundRobinPool
+import pfsp.solution.PfsSolution
+import pfsp.solution.PfsEvaluatedSolution
 
 object ParallelWork extends App {
   override def main(args: Array[String]) {
     
-    def calculate(p:Problem, evOldSolution:EvaluatedSolution, nrOfWorkers: Int, sizeOfNeighbourhood: Int) {
+    def calculate(p:PfsProblem, evOldSolution:PfsEvaluatedSolution, nrOfWorkers: Int, sizeOfNeighbourhood: Int) {
       // Create an Akka system
       val system = ActorSystem("ParallelSystem")
 
@@ -28,14 +31,14 @@ object ParallelWork extends App {
       // start the calculation
       master ! Calculate
     }
-    val p = Problem.fromResources("inst_ta001.txt")
+    val p = PfsProblem.fromResources("inst_ta001.txt")
     val permutationList = Random.shuffle(p.jobs.toList)
-    val oldSolution = new Solution(permutationList)
-    var evOldSolution = p.evaluate(oldSolution)
+    val oldSolution = PfsSolution(permutationList)
+    var evOldSolution = p.evaluate(oldSolution).asInstanceOf[PfsEvaluatedSolution]
     calculate(p, evOldSolution, 7, 300)
   }
   case object Calculate
-  case class Work(p: Problem, solution: Solution, initEndTimesMatrix: Array[Array[Int]])
+  case class Work(p: PfsProblem, solution: PfsSolution, initEndTimesMatrix: Array[Array[Int]])
   case class SingleResult(evSolution: EvaluatedSolution)
   case class FinalResult(evSolution: EvaluatedSolution, startMillis: Long)
 }
@@ -55,8 +58,8 @@ class Listener extends Actor {
       context.system.shutdown()
   }
 }
-class Master(p: Problem,
-             evOldSolution: EvaluatedSolution,
+class Master(p: PfsProblem,
+             evOldSolution: PfsEvaluatedSolution,
              nrOfWorkers: Int,
              sizeOfNeighbourhood: Int,
              listener: ActorRef) extends Actor {
@@ -71,12 +74,10 @@ class Master(p: Problem,
   override def receive = {
     case Calculate =>
       for (i <- 0 until sizeOfNeighbourhood)
-        workerRouter ! Work(p, new Solution(Random.shuffle(p.jobs.toList)), initEndTimesMatrix)
+        workerRouter ! Work(p, PfsSolution(Random.shuffle(p.jobs.toList)), initEndTimesMatrix)
     case SingleResult(evNewSolution) =>
       nrOfResults += 1
-      if (evNewSolution.value < bestSolution.value) {
-        bestSolution = evNewSolution
-      }
+      bestSolution = List(evNewSolution, bestSolution).min
       if (nrOfResults == sizeOfNeighbourhood) {
         // Send the result to the listener
         listener ! FinalResult(bestSolution, System.currentTimeMillis - startMillis)

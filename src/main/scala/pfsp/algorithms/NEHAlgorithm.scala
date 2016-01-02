@@ -1,12 +1,15 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
 import Array._
 import it.polimi.hyperh._
 import it.polimi.hyperh.types.Types._
 import it.polimi.hyperh.solution.EvaluatedSolution
-import util.PermutationUtility
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
+import it.polimi.hyperh.algorithms.Algorithm
+import pfsp.problem.PfsProblem
+import pfsp.util.PermutationUtility
+import it.polimi.hyperh.spark.StoppingCondition
 
 /**
  * @author Nemanja
@@ -18,7 +21,7 @@ import it.polimi.hyperh.solution.Solution
 //Problem Factory
 class NEHAlgorithm() extends Algorithm {
   
-  def constructSolution(p:Problem, partialSolution: List[Int], remainingJobs: List[Int]): EvaluatedSolution = {
+  def constructSolution(p:PfsProblem, partialSolution: List[Int], remainingJobs: List[Int]): EvaluatedSolution = {
       //STEP 2.2 get best permutation of two jobs
       var bestPermutation = PermutationUtility.getBestPermutation(PermutationUtility.generatePermutations(partialSolution), p)
       //STEP 3 of NEH algorithm
@@ -30,7 +33,8 @@ class NEHAlgorithm() extends Algorithm {
       }
       bestPermutation
   }
-  override def evaluate(p: Problem): EvaluatedSolution = {
+  override def evaluate(problem: Problem): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
     val pairs = p.createJobValuePairs(p.jobs, p.extractEndTimes(p.initEndTimesMatrix))
     //STEP 1: sort jobs in decreasing order, STEP 2.1.take best two,
     val sortedList = p.sortJobsDecreasing(pairs).map(x => x._1).toList
@@ -42,12 +46,12 @@ class NEHAlgorithm() extends Algorithm {
   }
   //useless to have time limit on NEH, because it will not construct complete solution
   //by the way, NEH is pretty fast comparing to other algorithms, so it will generate
-  //complete solution faster than other algorithms
-  override def evaluate(p: Problem, timeLimit: Double): EvaluatedSolution = {
+  //complete solution in polynomial time (faster than other algorihtms)
+  override def evaluate(p: Problem, stopCond: StoppingCondition): EvaluatedSolution = {
     evaluate(p)
   }
   
-  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+  override def evaluate(p:Problem, seedSol: Option[Solution], stopCond: StoppingCondition):EvaluatedSolution = {
     def getSolution(seedOption: Option[Solution]) ={
       seedOption match {
         case Some(seedOption) => seedOption.evaluate(p)

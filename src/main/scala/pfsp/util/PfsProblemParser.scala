@@ -1,18 +1,18 @@
-package util
+package pfsp.util
 
 import scala.util.parsing.combinator.RegexParsers
-import it.polimi.hyperh.problem.Problem
+import pfsp.problem.PfsProblem
 
-object ProblemParser extends RegexParsers {
+object PfsProblemParser extends RegexParsers {
 
 	def number: Parser[Int] = """\d+""".r ^^ { _.toInt }
 	def params: Parser[(Int,Int)] = number ~ number <~ "x" ^^ {case x ~ y => (x,y)}
 	def row: Parser[Array[Int]] = number.+ <~ "x" ^^ {_.toArray}
 	def matrix: Parser[Array[Array[Int]]] = row.+ ^^ {_.toArray}
-	def problem: Parser[Problem] = params ~ matrix ^^ {
-	  case p ~ m => new Problem(p._1,p._2,m)
+	def problem: Parser[PfsProblem] = params ~ matrix ^^ {
+	  case p ~ m => new PfsProblem(p._1,p._2,m)
 	}
-	def apply(input: String): Option[Problem] = parseAll(problem, input) match {
+	def apply(input: String): Option[PfsProblem] = parseAll(problem, input) match {
     	case Success(result, _) => Some(result)
     	case NoSuccess(_, _) => None
 	}
@@ -33,10 +33,10 @@ object DelphiProblemParser extends RegexParsers {
      transposed :+= getColumn(i, m)
    transposed
   }
-  def problem: Parser[Problem] = params ~ matrix ^^ {
-    case p ~ m => new Problem(p._1,p._2,transpose(m))
+  def problem: Parser[PfsProblem] = params ~ matrix ^^ {
+    case p ~ m => new PfsProblem(p._1,p._2,transpose(m))
   }
-  def apply(input: String): Option[Problem] = parseAll(problem, input) match {
+  def apply(input: String): Option[PfsProblem] = parseAll(problem, input) match {
       case Success(result, _) => Some(result)
       case NoSuccess(_, _) => None
   }

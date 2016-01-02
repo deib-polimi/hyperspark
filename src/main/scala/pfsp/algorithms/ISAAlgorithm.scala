@@ -1,17 +1,20 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
 import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.solution.EvaluatedSolution
-import scala.util.Random
-import util.Timeout
-import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
+import it.polimi.hyperh.solution.EvaluatedSolution
+import pfsp.neighbourhood.NeighbourhoodOperator
+import pfsp.problem.PfsProblem
+import pfsp.solution.PfsSolution
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.PfsEvaluatedSolution
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.TimeExpired
 
 /**
  * @author Nemanja
  */
-class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
+class ISAAlgorithm(p: PfsProblem) extends SAAlgorithm(p) {
   
   protected var maxNotChangedTemp = 70  //pmax
   protected var maxNotChangedMS = 250  //qmax
@@ -19,7 +22,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
   /**
    * A secondary constructor.
    */
-  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int) {
+  def this(p: PfsProblem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int) {
     this(p)
     temperatureUB = tUB
     temperatureLB = tLB
@@ -28,7 +31,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     maxNotChangedMS = mncMS
     maxItPerMS = mitpMS
   }
-  def this(p: Problem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[Solution]) {
+  def this(p: PfsProblem, tUB: Double, tLB: Double, cRate: Double, mncTemp: Int, mncMS: Int, mitpMS: Int, seedOption: Option[Solution]) {
     this(p)
     temperatureUB = tUB
     temperatureLB = tLB
@@ -38,26 +41,29 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
     maxItPerMS = mitpMS
     seed = seedOption
   }
-  def this(p: Problem, seedOption: Option[Solution]) {
+  def this(p: PfsProblem, seedOption: Option[Solution]) {
     this(p)
     seed = seedOption
   }
 
-  override def evaluate(p: Problem): EvaluatedSolution = {
+  override def evaluate(problem: Problem): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
     //algorithm time limit
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
-    evaluate(p, timeLimit)
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit)
+    evaluate(p, stopCond)
   }
-  override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
-    def cost(list: List[Int]) = p.evaluate(Solution(list))
+  override def evaluate(problem:Problem, stopCond: StoppingCondition):EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
+    def cost(list: List[Int]) = p.evaluate(PfsSolution(list)).asInstanceOf[PfsEvaluatedSolution]
     def neighbour(sol: List[Int]): List[Int] = NeighbourhoodOperator(random).SHIFT(sol) //forward or backward shift at random
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))
     } 
-    val dummySol = DummyEvaluatedSolution(p)
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    val dummySol = BadPfsEvaluatedSolution(p)
+    val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
     
-    def loop(presSol: EvaluatedSolution, bestGlob: EvaluatedSolution, temp: Double, tIt: Int, iNCTemp: Int): EvaluatedSolution = {
+    def loop(presSol: PfsEvaluatedSolution, bestGlob: PfsEvaluatedSolution, temp: Double, tIt: Int, iNCTemp: Int): PfsEvaluatedSolution = {
       var presentSol = presSol
       var bestLocal = presSol
       var bestGlobal = bestGlob
@@ -66,7 +72,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
       var totalIterations = tIt
       
       if ((temperature >= temperatureLB) && (iNotChangedTemp < maxNotChangedTemp) && 
-          Timeout.notTimeout(expireTimeMillis)) {
+          stop.isNotSatisfied()) {
         //INITIALIZE
         if(totalIterations == 0) {
           presentSol = initialSolution(p)
@@ -75,7 +81,7 @@ class ISAAlgorithm(p: Problem) extends SAAlgorithm(p) {
         }
         var iNotChangedMS = 0 //q
         var iterationsMS = 0  //j
-        while ((iNotChangedMS < maxNotChangedMS) && (iterationsMS < maxItPerMS) && Timeout.notTimeout(expireTimeMillis)) {
+        while ((iNotChangedMS < maxNotChangedMS) && (iterationsMS < maxItPerMS) && stop.isNotSatisfied()) {
           iterationsMS = iterationsMS + 1//step1
           //START METROPOLIS SAMPLE ITERATION
           //generate random neighbouring solution, step1

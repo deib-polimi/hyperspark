@@ -3,27 +3,24 @@ import it.polimi.hyperh.algorithms.Algorithm
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.problem.Problem
-import it.polimi.hyperh.neighbourhood._
-import it.polimi.hyperh.spark.SeedingStrategy
-import it.polimi.hyperh.spark.SameSeeds
 /**
  * @author Nemanja
  */
 class FrameworkConf() {
   private var algs: Array[Algorithm] = Array()
   private var sds: Array[Option[Solution]] = Array()
-  private var problem: Problem = new Problem(3,3,Array(Array(1,2,1), Array(1,1,2),Array(2,2,1)))//dummy
-  private var tLimit: Double = 3000
+  private var problem: Option[Problem] = None
   private var iter: Int = 1
   private var properties: List[(String,String)] = loadDefaults()
   private var handler: MapReduceHandler = new MapReduceHandler()
   private var seedingStrategy: SeedingStrategy = new SameSeeds()
+  private var stoppingCondition: StoppingCondition = new TimeExpired(300)
   
   def setProblem(p: Problem) = {
-    problem = p
+    problem = Some(p)
     this
   }
-  def getProblem() = { problem }
+  def getProblem() = { problem.getOrElse(throw new RuntimeException("FrameworkConf: Problem is not set.")) }
   
   def setAlgorithms(algorithms: Array[Algorithm]) = { 
     algs = algorithms
@@ -67,18 +64,12 @@ class FrameworkConf() {
     this
   }
   def getSeedingStrategy(): SeedingStrategy = { seedingStrategy }
-  def setDefaultExecutionTimeLimit() = {
-    val totalTime = problem.numOfMachines*(problem.numOfJobs/2.0)*60//termination is n*(m/2)*60 milliseconds
-    tLimit = totalTime / iter//if there are multiple iterations, total time is divided by #iterations
+  
+  def setStoppingCondition(stopCond: StoppingCondition) = {
+    stoppingCondition = stopCond
     this
   }
-  def setIterationTimeLimit(millis: Double) = {
-    tLimit = millis
-    this
-  }
-  def getIterationTimeLimit() = {
-    tLimit
-  }
+  def getStoppingCondition(): StoppingCondition = { stoppingCondition }
   
   def setNumberOfIterations(n: Int) = {
     iter = n

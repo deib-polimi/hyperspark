@@ -1,9 +1,7 @@
-package util
+package pfsp.util
 
 import scala.io.Source
-import it.polimi.hyperh.problem.Problem
-import scala.tools.nsc.io.File
-import scala.tools.nsc.io.Path
+import util.FileManager
 
 
 /**

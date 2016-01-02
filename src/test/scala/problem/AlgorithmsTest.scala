@@ -7,108 +7,113 @@ import Assert._
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
-import it.polimi.hyperh.algorithms.IGAlgorithm
-import it.polimi.hyperh.algorithms.NEHAlgorithm
-import it.polimi.hyperh.algorithms.GAAlgorithm
+import pfsp.algorithms.IGAlgorithm
+import pfsp.algorithms.NEHAlgorithm
+import pfsp.algorithms.GAAlgorithm
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import it.polimi.hyperh.algorithms.SAAlgorithm
-import it.polimi.hyperh.algorithms.ISAAlgorithm
-import it.polimi.hyperh.algorithms.TSAlgorithm
+import pfsp.algorithms.SAAlgorithm
+import pfsp.algorithms.TSAlgorithm
 import util.ConsolePrinter
-import it.polimi.hyperh.algorithms.TSABAlgorithm
-import it.polimi.hyperh.algorithms.TSABAlgorithm
-import it.polimi.hyperh.algorithms.MMASAlgorithm
-import it.polimi.hyperh.algorithms.MMMASAlgorithm
-import it.polimi.hyperh.algorithms.PACOAlgorithm
+import pfsp.algorithms.TSABAlgorithm
+import pfsp.algorithms.MMASAlgorithm
 import util.Performance
-import it.polimi.hyperh.algorithms.HGAAlgorithm
+import pfsp.algorithms.HGAAlgorithm
+import pfsp.problem.PfsProblem
+import pfsp.solution.PfsEvaluatedSolution
+import it.polimi.hyperh.spark.TimeExpired
+import pfsp.algorithms.MMMASAlgorithm
+import pfsp.algorithms.PACOAlgorithm
+import pfsp.algorithms.ISAAlgorithm
 
 @Test
 class AlgorithmsTest extends Assertions {
   @Test def testAlgorithms() {
-    /*val path = "./resources/"
-    val i = "007"
-    val problem = Problem(path + "inst_ta"+i+".txt")
+    //uncomment to use testing
+    /*
+    val i = "008"  //taillard's PFSP instance number "i"
+    val problem = PfsProblem.fromResources("inst_ta"+i+".txt")
     
     println("numOfJobs: "+problem.numOfJobs)
     println("numOfMachines: "+problem.numOfMachines)
    //ConsolePrinter.print(problem.jobTimesMatrix)
-    val timeLimit =  problem.numOfMachines*(problem.numOfJobs/2.0)*60//+15000
+    
+    val timeLimit =  problem.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit)
     println("Time limit: "+timeLimit/1000.0+"s")
     
-    //Get OPTIMAL SOLUTION from sol_ta001
-    val optimalSolution = EvaluatedSolution(path + "sol_ta"+i+".txt")
-    println("Optimal: " + optimalSolution)
+    //Get OPTIMAL SOLUTION from sol_ta+"i"
+    val bestFoundSol = PfsEvaluatedSolution.fromResources("sol_ta"+i+".txt")
+    println("BestFound: " + bestFoundSol)
     
-    //Use NEHAlgorithm to evaluate inst_ta001
+    //Use NEHAlgorithm to evaluate inst_ta+"i"
     val nehAlgorithm = new NEHAlgorithm()
-    val nehEvSolution = nehAlgorithm.evaluate(problem, timeLimit)
-    val nehRPD = Performance.RPD(nehEvSolution, optimalSolution)
+    val nehEvSolution = nehAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val nehRPD = Performance.RPD(nehEvSolution, bestFoundSol)
     println("NEH: " + nehRPD)
     
-    //Use IGAlgorithm to evaluate inst_ta001
+    //Use IGAlgorithm to evaluate inst_ta+"i"
     //d:2, T:0.2
     //val algorithm = new IGAlgorithm(2, 0.2)
     val igAlgorithm = new IGAlgorithm()//initialized with defaults
-    val igEvSolution = igAlgorithm.evaluate(problem, timeLimit)
-    val igRPD = Performance.RPD(igEvSolution, optimalSolution)
+    val igEvSolution = igAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val igRPD = Performance.RPD(igEvSolution, bestFoundSol)
     println("IG: " + igRPD)
     
-     //Use GAAlgorithm to evaluate inst_ta001
+     //Use GAAlgorithm to evaluate inst_ta+"i"
     //popSize:30, crossRate:1.0, mutRate: 0.8, mutDecreaseFactor: 0.99, mutResetThreshold: 0.95
     val gaAlgorithm = new GAAlgorithm()//initialized with defaults
-    val gaEvSolution = gaAlgorithm.evaluate(problem, timeLimit)
-    val gaRPD = Performance.RPD(gaEvSolution, optimalSolution)
+    val gaEvSolution = gaAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val gaRPD = Performance.RPD(gaEvSolution, bestFoundSol)
     println("GA: " + gaRPD)
     
-    //Use SAAlgorithm to evaluate inst_ta001
+    //Use SAAlgorithm to evaluate inst_ta+"i"
     val saAlgorithm = new SAAlgorithm(problem)
-    val saEvSolution = saAlgorithm.evaluate(problem, timeLimit)
-    val saRPD = Performance.RPD(saEvSolution, optimalSolution)
+    val saEvSolution = saAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val saRPD = Performance.RPD(saEvSolution, bestFoundSol)
     println("SA: " + saRPD)
     
-    //Use ISAAlgorithm to evaluate inst_ta001
+    //Use ISAAlgorithm to evaluate inst_ta+"i"
     val isaAlgorithm = new ISAAlgorithm(problem)
-    val isaEvSolution = isaAlgorithm.evaluate(problem, timeLimit)
-    val isaRPD = Performance.RPD(isaEvSolution, optimalSolution)
+    val isaEvSolution = isaAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val isaRPD = Performance.RPD(isaEvSolution, bestFoundSol)
     println("ISA: " + isaRPD)
     
-    //Use TSAlgorithm to evaluate inst_ta001
+    //Use TSAlgorithm to evaluate inst_ta+"i"
     val tsAlgorithm = new TSAlgorithm()
-    val tsEvSolution = tsAlgorithm.evaluate(problem, timeLimit)
-    val tsRPD = Performance.RPD(tsEvSolution, optimalSolution)
+    val tsEvSolution = tsAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val tsRPD = Performance.RPD(tsEvSolution, bestFoundSol)
     println("TS: " + tsRPD)
     
     
-    //Use TSABAlgorithm to evaluate inst_ta001
+    //Use TSABAlgorithm to evaluate inst_ta+"i"
     val tsabAlgorithm = new TSABAlgorithm()
-    val tsabEvSolution = tsabAlgorithm.evaluate(problem, timeLimit)
-    val tsabRPD = Performance.RPD(tsabEvSolution, optimalSolution)
+    val tsabEvSolution = tsabAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val tsabRPD = Performance.RPD(tsabEvSolution, bestFoundSol)
     println("TSAB: " + tsabRPD)
     
-    //Use MMASAlgorithm to evaluate inst_ta001
+    //Use MMASAlgorithm to evaluate inst_ta+"i"
     val mmasAlgorithm = new MMASAlgorithm(problem)
-    val mmasEvSolution = mmasAlgorithm.evaluate(problem, timeLimit)
-    val mmasRPD = Performance.RPD(mmasEvSolution, optimalSolution)
+    val mmasEvSolution = mmasAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val mmasRPD = Performance.RPD(mmasEvSolution, bestFoundSol)
     println("MMAS: " + mmasRPD)
     
-    //Use MMMASAlgorithm to evaluate inst_ta001
+    //Use MMMASAlgorithm to evaluate inst_ta+"i"
     val mmmasAlgorithm = new MMMASAlgorithm(problem)
-    val mmmasEvSolution = mmmasAlgorithm.evaluate(problem, timeLimit)
-    val mmmasRPD = Performance.RPD(mmmasEvSolution, optimalSolution)
+    val mmmasEvSolution = mmmasAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val mmmasRPD = Performance.RPD(mmmasEvSolution, bestFoundSol)
     println("MMMAS: " + mmmasRPD)
     
-    //Use PACOAlgorithm to evaluate inst_ta001
+    //Use PACOAlgorithm to evaluate inst_ta+"i"
     val pacoAlgorithm = new PACOAlgorithm(problem)
-    val pacoEvSolution = pacoAlgorithm.evaluate(problem, timeLimit)
-    val pacoRPD = Performance.RPD(pacoEvSolution, optimalSolution)
+    val pacoEvSolution = pacoAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val pacoRPD = Performance.RPD(pacoEvSolution, bestFoundSol)
     println("PACO: " + pacoRPD)
     
-    //Use HGAAlgorithm to evaluate inst_ta001
+    //Use HGAAlgorithm to evaluate inst_ta+"i"
     val hgaAlgorithm = new HGAAlgorithm(problem)
-    val hgaEvSolution = hgaAlgorithm.evaluate(problem, timeLimit)
-    val hgaRPD = Performance.RPD(hgaEvSolution, optimalSolution)
+    val hgaEvSolution = hgaAlgorithm.evaluate(problem, stopCond).asInstanceOf[PfsEvaluatedSolution]
+    val hgaRPD = Performance.RPD(hgaEvSolution, bestFoundSol)
     println("HGA: " + hgaRPD)
     */
     assert(true)

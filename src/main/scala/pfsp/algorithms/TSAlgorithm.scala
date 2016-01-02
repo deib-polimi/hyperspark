@@ -1,18 +1,21 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
-import scala.util.Random
-import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.solution.EvaluatedSolution
-import akka.actor._
-import util.Timeout
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
+import it.polimi.hyperh.algorithms.Algorithm
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.TimeExpired
+import pfsp.problem.PfsProblem
+import pfsp.solution.PfsSolution
+import pfsp.solution.PfsEvaluatedSolution
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.neighbourhood.NeighbourhoodOperator
 /**
  * @author Nemanja
  */
 class TSAlgorithm(
-    seedOption: Option[Solution]
+    seedOption: Option[PfsSolution]
     ) extends Algorithm {
   
   private var maxTabooListSize: Int = 7
@@ -39,38 +42,38 @@ class TSAlgorithm(
     val copy = numOfRandomMoves
     copy
   }
-  def initNEHSolution(p: Problem) = {
+  def initNEHSolution(p: PfsProblem) = {
     val nehAlgorithm = new NEHAlgorithm()
-    nehAlgorithm.evaluate(p)
+    nehAlgorithm.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
   }
-  def initialSolution(p: Problem): EvaluatedSolution = {
+  def initialSolution(p: PfsProblem): PfsEvaluatedSolution = {
     seed match {
-      case Some(seedValue) => seedValue.evaluate(p)
+      case Some(seedValue) => seedValue.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
       case None => initNEHSolution(p)
     }
   }
   //with default time limit
-  def evaluateSmallProblem(p: Problem): EvaluatedSolution = {
+  def evaluateSmallProblem(p: PfsProblem): PfsEvaluatedSolution = {
     //algorithm time limit
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
-    evaluateSmallProblem(p, timeLimit)
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit).initialiseLimit()
+    evaluateSmallProblem(p, stopCond)
   }
-  def evaluateSmallProblem(p: Problem, timeLimit: Double): EvaluatedSolution = {
-    var evBestSolution = DummyEvaluatedSolution(p)
+  def evaluateSmallProblem(p: PfsProblem, stopCond: StoppingCondition): PfsEvaluatedSolution = {
+    var evBestSolution = BadPfsEvaluatedSolution(p)
     var allMoves: List[(Int,Int)] = List()//dummy initalization
-    //algorithm time limit
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    def loop(bestSolution: EvaluatedSolution, taboo: List[Int], iter: Int): EvaluatedSolution = {
-      if(Timeout.notTimeout(expireTimeMillis)) {
+    
+    def loop(bestSolution: PfsEvaluatedSolution, taboo: List[Int], iter: Int): PfsEvaluatedSolution = {
+      if(stopCond.isNotSatisfied()) {
         if(iter == 1) {
           evBestSolution = initialSolution(p)
           allMoves = NeighbourhoodOperator(random).generateAllNeighbourhoodMoves(p.numOfJobs)
         } else {
           evBestSolution = bestSolution
         }
-        val pair = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
+        val pair = firstImprovement(p, evBestSolution, allMoves, taboo, stopCond)
         val evNewSolution = pair._1
-        evBestSolution = List(evNewSolution, evBestSolution).min
+        evBestSolution = List(evNewSolution, evBestSolution).minBy(_.value)
         val tabooList = updateTabooList(taboo, evBestSolution)
         loop(evBestSolution, tabooList, iter + 1)
       }
@@ -79,17 +82,17 @@ class TSAlgorithm(
     loop(evBestSolution, List(), 1)
   }
   //with default time limit
-  def evaluateBigProblem(p: Problem): EvaluatedSolution = {
+  def evaluateBigProblem(p: PfsProblem): PfsEvaluatedSolution = {
     //algorithm time limit
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
-    evaluateBigProblem(p, timeLimit)
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit).initialiseLimit()
+    evaluateBigProblem(p, stopCond)
   }
-  def evaluateBigProblem(p: Problem, timeLimit: Double): EvaluatedSolution = {
-    var evBestSolution = DummyEvaluatedSolution(p)
-    //algorithm time limit
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
-    def loop(bestSolution: EvaluatedSolution, taboo: List[Int], iter: Int): EvaluatedSolution = {
-      if(Timeout.notTimeout(expireTimeMillis)) {
+  def evaluateBigProblem(p: PfsProblem, stopCond: StoppingCondition): PfsEvaluatedSolution = {
+    var evBestSolution = BadPfsEvaluatedSolution(p)
+    
+    def loop(bestSolution: PfsEvaluatedSolution, taboo: List[Int], iter: Int): PfsEvaluatedSolution = {
+      if(stopCond.isNotSatisfied()) {
         if(iter == 1) {
           evBestSolution = initialSolution(p)
         } else {
@@ -97,9 +100,9 @@ class TSAlgorithm(
         }
         //Examine a fixed number of moves that are not taboo, randomly generated. Good method for huge instances
         val allMoves = NeighbourhoodOperator(random).generateNRandomNeighbourhoodMoves(p.numOfJobs, numOfRandomMoves)
-        val pair1 = firstImprovement(p, evBestSolution, allMoves, taboo, expireTimeMillis)
+        val pair1 = firstImprovement(p, evBestSolution, allMoves, taboo, stopCond)
         val evNewSolution = pair1._1
-        evBestSolution = List(evNewSolution, evBestSolution).min
+        evBestSolution = List(evNewSolution, evBestSolution).minBy(_.value)
         val tabooList = updateTabooList(taboo, evBestSolution)
         loop(evBestSolution, tabooList, iter + 1)
       }
@@ -107,24 +110,25 @@ class TSAlgorithm(
     }
     loop(evBestSolution, List(), 1)
   }
-  override def evaluate(p: Problem) = {
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
+  override def evaluate(problem: Problem) = {
+    val p = problem.asInstanceOf[PfsProblem]
     if(p.numOfJobs <= 11)
       evaluateSmallProblem(p)
     else
       evaluateBigProblem(p)
   }
-  override def evaluate(p:Problem, timeLimit: Double): EvaluatedSolution = {
+  override def evaluate(problem:Problem, stopCond: StoppingCondition): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
     if(p.numOfJobs <= 11)
-      evaluateSmallProblem(p, timeLimit)
+      evaluateSmallProblem(p, stopCond)
     else
-      evaluateBigProblem(p, timeLimit)
+      evaluateBigProblem(p, stopCond)
   }
-  override def evaluate(p:Problem, seedSol: Option[Solution], timeLimit: Double):EvaluatedSolution = {
+  override def evaluate(p:Problem, seedSol: Option[Solution], stopCond: StoppingCondition):EvaluatedSolution = {
     seed = seedSol
-    evaluate(p, timeLimit)
+    evaluate(p, stopCond)
   }
-  def updateTabooList(tabooList: List[Int], solution: EvaluatedSolution): List[Int] = {
+  def updateTabooList(tabooList: List[Int], solution: PfsEvaluatedSolution): List[Int] = {
     if (tabooList.size == maxTabooListSize) {
         //remove the oldest forbidden move, and add new move at the end
         tabooList.drop(1) ::: List(solution.value)
@@ -137,14 +141,14 @@ class TSAlgorithm(
   }
 
   //Examine all provided moves and take the first which improves the current solution
-  def firstImprovement(p: Problem, evOldSolution: EvaluatedSolution, allMoves: List[(Int, Int)], expireTimeMillis: Double) = {
+  def firstImprovement(p: PfsProblem, evOldSolution: PfsEvaluatedSolution, allMoves: List[(Int, Int)], stopCond: StoppingCondition) = {
     var bestSolution = evOldSolution
     var candidateMoves = allMoves
     var move = (0, 1) //dummy initialization
     var betterNotFound = true
-    while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
+    while (betterNotFound && candidateMoves.size != 0 && stopCond.isNotSatisfied()) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2) 
-      val evNewSolution = p.evaluate(Solution(perturbed))
+      val evNewSolution = p.evaluate(PfsSolution(perturbed)).asInstanceOf[PfsEvaluatedSolution]
       if (evNewSolution.value < bestSolution.value) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -155,14 +159,14 @@ class TSAlgorithm(
     (bestSolution, move)
   }
   //Examine the moves (that are not taboo) and take the first which improves the current solution
-  def firstImprovement(p: Problem, evOldSolution: EvaluatedSolution, allMoves: List[(Int, Int)], tabooList: List[Int], expireTimeMillis: Double) = {
+  def firstImprovement(p: PfsProblem, evOldSolution: PfsEvaluatedSolution, allMoves: List[(Int, Int)], tabooList: List[Int], stopCond: StoppingCondition) = {
     var bestSolution = evOldSolution
     var candidateMoves = allMoves
     var move = (0, 1) //dummy initialization
     var betterNotFound = true
-    while (betterNotFound && candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
+    while (betterNotFound && candidateMoves.size != 0 && stopCond.isNotSatisfied()) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val evNewSolution = p.evaluate(Solution(perturbed))
+      val evNewSolution = p.evaluate(PfsSolution(perturbed)).asInstanceOf[PfsEvaluatedSolution]
       if (evNewSolution.value < bestSolution.value && (! isForbidden(tabooList, evNewSolution.value))) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -174,13 +178,13 @@ class TSAlgorithm(
   }
   //Examine all the moves and take the best
   //the neighbourhood must be examined in parallel for big instances
-  def bestImprovement(p: Problem, evOldSolution: EvaluatedSolution, allMoves: List[(Int, Int)], expireTimeMillis: Double) = {
+  def bestImprovement(p: PfsProblem, evOldSolution: PfsEvaluatedSolution, allMoves: List[(Int, Int)], stopCond: StoppingCondition) = {
     var bestSolution = evOldSolution
     var candidateMoves = allMoves
     var move = (0, 1) //dummy initialization
-    while (candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
+    while (candidateMoves.size != 0 && stopCond.isNotSatisfied()) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val evNewSolution = p.evaluate(Solution(perturbed))
+      val evNewSolution = p.evaluate(PfsSolution(perturbed)).asInstanceOf[PfsEvaluatedSolution]
       if (evNewSolution.value < bestSolution.value) {
         bestSolution = evNewSolution
         move = candidateMoves.head
@@ -191,13 +195,13 @@ class TSAlgorithm(
   }
   //Examine all the moves (that are not taboo) and take the best
   //the neighbourhood must be examined in parallel for big instances
-  def bestImprovement(p: Problem, evOldSolution: EvaluatedSolution, allMoves: List[(Int, Int)], tabooList: List[Int], expireTimeMillis: Double) = {
+  def bestImprovement(p: PfsProblem, evOldSolution: PfsEvaluatedSolution, allMoves: List[(Int, Int)], tabooList: List[Int], stopCond: StoppingCondition) = {
     var bestSolution = evOldSolution
     var candidateMoves = allMoves
     var move = (0, 1) //dummy initialization
-    while (candidateMoves.size != 0 && Timeout.notTimeout(expireTimeMillis)) {
+    while (candidateMoves.size != 0 && stopCond.isNotSatisfied()) {
       val perturbed = neighbourhoodSearch(evOldSolution.solution.toList, candidateMoves.head._1, candidateMoves.head._2)
-      val evNewSolution = p.evaluate(Solution(perturbed))
+      val evNewSolution = p.evaluate(PfsSolution(perturbed)).asInstanceOf[PfsEvaluatedSolution]
       if (evNewSolution.value < bestSolution.value && (! isForbidden(tabooList, evNewSolution.value))) {
         bestSolution = evNewSolution
         move = candidateMoves.head

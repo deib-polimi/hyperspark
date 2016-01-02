@@ -1,6 +1,7 @@
 package util
 
 import it.polimi.hyperh.solution.EvaluatedSolution
+import pfsp.solution.PfsEvaluatedSolution
 
 /**
  * @author Nemanja
@@ -12,7 +13,13 @@ object Performance {
       println("New best :" + someVal)
     BigDecimal(100 * diff / bestVal.toDouble).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
-  def RPD(Csome: EvaluatedSolution, Cbest: EvaluatedSolution): Double = {
+  def RPD(someVal: Double, bestVal: Double): Double = {
+    val diff = someVal - bestVal
+    if(diff < 0)
+      println("New best :" + someVal)
+    BigDecimal(100 * diff / bestVal.toDouble).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  }
+  def RPD(Csome: PfsEvaluatedSolution, Cbest: PfsEvaluatedSolution): Double = {
     val someVal = Csome.value
     val bestVal = Cbest.value
     val diff = someVal - bestVal

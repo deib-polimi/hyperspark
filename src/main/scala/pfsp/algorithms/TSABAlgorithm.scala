@@ -1,17 +1,22 @@
-package it.polimi.hyperh.algorithms
+package pfsp.algorithms
 
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.Solution
-import it.polimi.hyperh.neighbourhood.NeighbourhoodOperator
 import it.polimi.hyperh.solution.EvaluatedSolution
-import util.Timeout
-import it.polimi.hyperh.solution.DummyEvaluatedSolution
+import pfsp.problem.PfsProblem
+import pfsp.neighbourhood.NeighbourhoodOperator
+import pfsp.solution.PfsSolution
+import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.PfsEvaluatedSolution
+import it.polimi.hyperh.spark.StoppingCondition
+import it.polimi.hyperh.spark.TimeExpired
+import it.polimi.hyperh.spark.TimeExpired
 
 /**
  * @author Nemanja
  */
 class TSABAlgorithm(
-    sd: Option[Solution]
+    sd: Option[PfsSolution]
     ) extends TSAlgorithm(sd) {
   /**
    * A secondary constructor.
@@ -22,7 +27,7 @@ class TSABAlgorithm(
   private var numOfRandomMoves: Int = 20
   private var neighbourhoodSearch: (List[Int], Int, Int) => List[Int] = NeighbourhoodOperator(random).INSdefineMove
   
-  def this(maxt: Int,numOfRandomMoves: Int, neighbourhoodSearch: (List[Int], Int, Int) => List[Int],maxret: Int,maxiter: Int, seed: Option[Solution]) {
+  def this(maxt: Int,numOfRandomMoves: Int, neighbourhoodSearch: (List[Int], Int, Int) => List[Int],maxret: Int,maxiter: Int, seed: Option[PfsSolution]) {
     this(seed)
     this.maxt = maxt
     this.numOfRandomMoves = numOfRandomMoves
@@ -44,7 +49,7 @@ class TSABAlgorithm(
       1.0
   }
 
-  def critMatrix(p: Problem, jobsPermutation: Array[Int]): Array[Array[Int]] = {
+  def critMatrix(p: PfsProblem, jobsPermutation: Array[Int]): Array[Array[Int]] = {
     val R = Array.ofDim[Int](p.numOfMachines, p.numOfJobs)
     R(0)(0) = p.jobTimesMatrix(0)(0)
     def rgh(g: Int, h: Int): Int = {
@@ -58,7 +63,7 @@ class TSABAlgorithm(
     }
     R
   }
-  def criticalPath(p: Problem, jobsPermutation: Array[Int]) = {
+  def criticalPath(p: PfsProblem, jobsPermutation: Array[Int]) = {
     val R = critMatrix(p, jobsPermutation)
     def rgh(g: Int, h: Int): Int = {
       if (g == 0 || h == 0)
@@ -146,7 +151,7 @@ class TSABAlgorithm(
     delta
   } //> calculateDelta: (u: Array[Int], epsilon: Double)Array[Int]
 
-  def calculateZRJ(p: Problem, jPos: Int, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  def calculateZRJ(p: PfsProblem, jPos: Int, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     if (jPos < 1 || jPos > uArr(uArr.size - 1) - 1)
       List()
     if (mArr(mArr.size - 1) == p.numOfMachines && (jPos >= (uArr(uArr.size - 2) + 1)))
@@ -181,24 +186,24 @@ class TSABAlgorithm(
       }
     }
   }
-  def calculateZR(p: Problem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  def calculateZR(p: PfsProblem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     var movesRight: List[(Int, Int)] = List()
     for (j <- 1 to p.numOfJobs - 1) {
       movesRight = movesRight ::: calculateZRJ(p, j, uArr, mArr, epsilon)
     }
     movesRight
   }
-  def calculateZL(p: Problem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  def calculateZL(p: PfsProblem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     var movesLeft: List[(Int, Int)] = List()
     for (j <- 2 to p.numOfJobs) {
       movesLeft = movesLeft ::: calculateZLJ(j, uArr, mArr, epsilon)
     }
     movesLeft
   }
-  def calculateZ(p: Problem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  def calculateZ(p: PfsProblem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     calculateZR(p, uArr, mArr, epsilon) ::: calculateZL(p, uArr, mArr, epsilon)
   }
-  def generateMoves(p: Problem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  def generateMoves(p: PfsProblem, uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
 
     var movesRight: List[(Int, Int)] = List()
     for (j <- 1 to p.numOfJobs - 1) {
@@ -220,14 +225,14 @@ class TSABAlgorithm(
     moves = moves.map(p => (p._1 - 1, p._2 - 1))
     moves
   }
-  def findRepresentatives(p: Problem, evOldSolution: EvaluatedSolution, moves: List[(Int, Int)], uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
+  def findRepresentatives(p: PfsProblem, evOldSolution: PfsEvaluatedSolution, moves: List[(Int, Int)], uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     var representatives: List[(Int, Int)] = List()
     def bestJRepresentative(j: Int, jMoves: List[(Int, Int)]): (Int, Int) = {
-      var bestJRepr = DummyEvaluatedSolution(p)
+      var bestJRepr = BadPfsEvaluatedSolution(p)
       var bestJMove = (j - 1, j - 1)
       for (i <- 0 until jMoves.size) {
         val neighbour = neighbourhoodSearch.apply(evOldSolution.solution.toList, jMoves(i)._1, jMoves(i)._2)
-        val evNeighbour = p.evaluate(Solution(neighbour))
+        val evNeighbour = p.evaluate(PfsSolution(neighbour)).asInstanceOf[PfsEvaluatedSolution]
         if (evNeighbour.value < bestJRepr.value) {
           bestJRepr = evNeighbour
           bestJMove = jMoves(i)
@@ -260,10 +265,10 @@ class TSABAlgorithm(
     }
     representatives
   }
-  def updateTabooList(tabooList: List[((Int, Int), (Int, Int))], move: (Int, Int), evOldSolution: EvaluatedSolution): List[((Int, Int), (Int, Int))] = {
+  def updateTabooList(tabooList: List[((Int, Int), (Int, Int))], move: (Int, Int), evOldSolution: PfsEvaluatedSolution): List[((Int, Int), (Int, Int))] = {
     val a = move._1
     val b = move._2
-    val P = evOldSolution.solution
+    val P = evOldSolution.permutation
     var t = ((0,0), (1,1))  //(move, jobs), dummy init
     if(a < b)
       t = ((a,b), (P(a), P(a+1)))
@@ -275,9 +280,9 @@ class TSABAlgorithm(
       } else
         tabooList ::: List(t)
   }
-  def isForbidden(tabooList: List[((Int, Int),(Int, Int))], evOldSolution: EvaluatedSolution, move: (Int,Int)): Boolean = {
+  def isForbidden(tabooList: List[((Int, Int),(Int, Int))], evOldSolution: PfsEvaluatedSolution, move: (Int,Int)): Boolean = {
     var answer = false
-    val P = evOldSolution.solution
+    val P = evOldSolution.permutation
     val a = move._1
     val b = move._2
     val forbiddenJobPairs = tabooList.map(t => t._2)
@@ -298,19 +303,19 @@ class TSABAlgorithm(
     answer
   }
   
-  def filterTabooMoves(allMoves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: EvaluatedSolution): List[(Int, Int)] = {
+  def filterTabooMoves(allMoves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: PfsEvaluatedSolution): List[(Int, Int)] = {
     allMoves.filterNot(move => isForbidden(tabooList, evOldSolution, move))
   }
   //allow a taboo move to be performed if it improves the best solution
-  def aspiration(p: Problem, bestSolution: EvaluatedSolution, forbiddenMoves: List[(Int,Int)], expireTimeMillis: Double) = {
-    bestImprovement(p, bestSolution, forbiddenMoves, expireTimeMillis)
+  def aspiration(p: PfsProblem, bestSolution: PfsEvaluatedSolution, forbiddenMoves: List[(Int,Int)], stopCond: StoppingCondition) = {
+    bestImprovement(p, bestSolution, forbiddenMoves, stopCond)
   }
   //update representative moves list
   def updateRepresentatives(representatives: List[(Int, Int)], move: (Int, Int)): List[(Int, Int)] = {
     representatives.filterNot((m: (Int, Int)) => (m._1 == move._1 && m._2 == move._2))
   }
   //separate allowed and forbidden moves
-  def processMoves(moves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: EvaluatedSolution) = {
+  def processMoves(moves: List[(Int, Int)], tabooList: List[((Int, Int), (Int, Int))], evOldSolution: PfsEvaluatedSolution) = {
     var allowed: List[(Int, Int)] = List()
     var forbidden: List[(Int, Int)] = List()
     for (i <- 0 until moves.size) {
@@ -321,15 +326,18 @@ class TSABAlgorithm(
     }
     (allowed, forbidden)
   }
-  override def evaluate(p: Problem): EvaluatedSolution = {
+  override def evaluate(problem: Problem): EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
     //algorithm time limit
-    val timeLimit = p.numOfMachines * (p.numOfJobs / 2.0) * 60 //termination is n*(m/2)*60 milliseconds
-    evaluate(p, timeLimit)
+    val timeLimit = p.getExecutionTime()
+    val stopCond = new TimeExpired(timeLimit)
+    evaluate(p, stopCond)
     
   }
-  override def evaluate(p:Problem, timeLimit: Double):EvaluatedSolution = {
+  override def evaluate(problem:Problem, stopCond: StoppingCondition):EvaluatedSolution = {
+    val p = problem.asInstanceOf[PfsProblem]
      val epsilon = getEpsilon(p.numOfJobs, p.numOfMachines)
-    var evOldSolution = DummyEvaluatedSolution(p)
+    var evOldSolution = BadPfsEvaluatedSolution(p)
     var evBestSolution = evOldSolution
     var tabooOld: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
     var tabooNew: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
@@ -347,7 +355,7 @@ class TSABAlgorithm(
     var uArr = Array[Int](1, 8)
 
     //algorithm time limit
-    val expireTimeMillis = Timeout.setTimeout(timeLimit)
+    val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
 
     def NSP() = {
       var move = (0, 0)
@@ -356,8 +364,8 @@ class TSABAlgorithm(
       var exit = false
       while (!exit) {
         if (X.size != 0 || forbiddenMoves.size != 0) {
-          val allowedPair = bestImprovement(p, evOldSolution, representatives, expireTimeMillis)
-          val aspirationPair = aspiration(p, evOldSolution, forbiddenMoves, expireTimeMillis)
+          val allowedPair = bestImprovement(p, evOldSolution, representatives, stop)
+          val aspirationPair = aspiration(p, evOldSolution, forbiddenMoves, stop)
           evNewSolution = allowedPair._1
           move = allowedPair._2
           if (aspirationPair._1.value < allowedPair._1.value) {
@@ -378,7 +386,7 @@ class TSABAlgorithm(
       (evNewSolution, move)
     }
 
-    while (ret < maxret && (!exit) && Timeout.notTimeout(expireTimeMillis)) {
+    while (ret < maxret && (!exit) && stop.isNotSatisfied()) {
       //step 1
       if (!skip1) {
         iter = iter + 1
@@ -387,7 +395,7 @@ class TSABAlgorithm(
           evOldSolution = initialSolution(p)
           evBestSolution = evOldSolution
         }
-        val pathC = criticalPath(p, evOldSolution.solution)._1 //pass the permutation
+        val pathC = criticalPath(p, evOldSolution.permutation)._1 //pass the permutation
         val blocks = getBlockLimits(pathC)
         mArr = getMachines(blocks)
         uArr = getU(blocks)

@@ -1,4 +1,4 @@
-package it.polimi.hyperh.neighbourhood
+package pfsp.neighbourhood
 
 import scala.util.Random
 
