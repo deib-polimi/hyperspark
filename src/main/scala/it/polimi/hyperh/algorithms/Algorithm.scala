@@ -11,18 +11,18 @@ import it.polimi.hyperh.spark.StoppingCondition
  */
 trait Algorithm extends Serializable {
   protected var seed: Option[Solution] = None
-  protected var run: Int = 1
-  protected var random: Random = new Random(run)
+  protected var runNo: Int = 1
+  protected var random: Random = new Random(runNo)
   def evaluate(p: Problem): EvaluatedSolution
   def evaluate(p: Problem, stopCond: StoppingCondition): EvaluatedSolution
   def evaluate(p: Problem, seedSol: Option[Solution], stopCond: StoppingCondition): EvaluatedSolution = {
     seed = seedSol
     evaluate(p, stopCond)
   }
-  def evaluate(p: Problem, seedSol: Option[Solution], stopCond: StoppingCondition, run: Int): EvaluatedSolution = {
+  def evaluate(p: Problem, seedSol: Option[Solution], stopCond: StoppingCondition, runNo: Int): EvaluatedSolution = {
     seed = seedSol
-    this.run = run
-    random = new Random(run)
+    this.runNo = runNo
+    random = new Random(runNo)
     evaluate(p, stopCond)
   }
   def name = this.getClass.getSimpleName
