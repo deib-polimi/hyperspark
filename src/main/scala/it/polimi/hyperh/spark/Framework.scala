@@ -83,7 +83,9 @@ object Framework {
   def hyperLoop(problem: Problem, rdd: RDD[DistributedDatum], maxIter: Int, runNo: Int):EvaluatedSolution = {
 
     def applyIteration(problem: Problem, rdd: RDD[DistributedDatum]):EvaluatedSolution = {
-      rdd.map(datum => mrHandler.hyperMap(problem, datum, runNo)).reduce(mrHandler.hyperReduce(_,_))
+      rdd
+      .map(datum => mrHandler.hyperMap(problem, datum, runNo))
+      .reduce((sol1, sol2) => mrHandler.hyperReduce(sol1, sol2))
     }
     var bestSolution: EvaluatedSolution = null
     
