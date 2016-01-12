@@ -7,7 +7,7 @@ import it.polimi.hyperh.solution.EvaluatedSolution
  * @author Nemanja
  */
 class MapReduceHandler {
-  def hyperMap(problem: Problem, d: DistributedDatum, runNo: Int): EvaluatedSolution = {
+  final def hyperMap(problem: Problem, d: DistributedDatum, runNo: Int): EvaluatedSolution = {
     d.algorithm.evaluate(problem, d.seed, d.stoppingCondition, runNo)
   }
   def hyperReduce(sol1: EvaluatedSolution, sol2: EvaluatedSolution): EvaluatedSolution = {
