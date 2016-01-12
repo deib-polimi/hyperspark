@@ -106,7 +106,7 @@ object Framework {
   def updateRDD(rdd: RDD[DistributedDatum], seed: EvaluatedSolution): RDD[DistributedDatum] = {
     val numOfTasks = getConf().getAlgorithms().size
     val seeds = seedingStrategy.divide(Some(seed), numOfTasks)
-    if(seeds.size != numOfTasks)
+    if(seeds.size < numOfTasks)
       throw new RuntimeException("Seeding strategy did not produce the correct number of seeds.")
     val updatedRDD = rdd.map(d => DistributedDatum(d.id, d.algorithm, seeds(d.id), d.stoppingCondition))
     updatedRDD
