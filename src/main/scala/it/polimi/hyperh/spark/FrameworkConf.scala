@@ -123,7 +123,6 @@ class FrameworkConf() {
   }
   private def loadDefaults() = {
     List(
-        ("spark.master", "local[*]"),
         ("spark.app.name","HyperH")
         )
   }
