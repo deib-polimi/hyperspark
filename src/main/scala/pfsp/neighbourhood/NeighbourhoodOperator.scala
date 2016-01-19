@@ -1,6 +1,6 @@
 package pfsp.neighbourhood
 
-import scala.util.Random
+import util.Random
 
 /**
  * @author Nemanja

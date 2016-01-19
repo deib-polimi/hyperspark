@@ -3,7 +3,7 @@ package it.polimi.hyperh.algorithms
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.solution.Solution
-import scala.util.Random
+import util.Random
 import it.polimi.hyperh.spark.StoppingCondition
 
 /**
