@@ -33,7 +33,6 @@ class Experiment2(instance: Int, parallelism: Int) extends Experiment(instance, 
     val format = logger.getFormatString()
     logger.printInfo(format)
     val conf = new FrameworkConf()
-      .setDeploymentYarnCluster()
       .setProblem(problem)
       .setNAlgorithms(algorithm, numOfAlgorithms)
       .setNDefaultInitialSeeds(numOfAlgorithms)
