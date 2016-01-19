@@ -110,7 +110,7 @@ class TSAlgorithm(
     }
     loop(evBestSolution, List(), 1)
   }
-  override def evaluate(problem: Problem) = {
+  override def evaluate(problem: Problem): EvaluatedSolution = {
     val p = problem.asInstanceOf[PfsProblem]
     if(p.numOfJobs <= 11)
       evaluateSmallProblem(p)
