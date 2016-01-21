@@ -24,7 +24,6 @@ class FrameworkConf() {
   
   def setAlgorithms(algorithms: Array[Algorithm]) = { 
     algs = algorithms
-    setNumberOfExecutors(algs.size)
     setNumberOfResultingRDDPartitions(algs.size)
     this
   }
@@ -32,7 +31,6 @@ class FrameworkConf() {
   
   def setNAlgorithms(algorithm: Algorithm, N: Int) = {
     algs = Array.fill(N)(algorithm)
-    setNumberOfExecutors(algs.size)
     setNumberOfResultingRDDPartitions(algs.size)
     this
   }
