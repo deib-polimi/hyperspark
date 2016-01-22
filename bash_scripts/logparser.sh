@@ -1,23 +1,14 @@
 #!/bin/bash -e
-
-#MODIFY THREE FOLLOWING VARIABLES FOR YOUR OWN PURPOSES
-container="application_1445451111831"	#id of the container
-from_id=807								#id of the first application ran
-to_id=1086								#id of the last application ran
-echo "instance		jobs			machines		algorithm		cores			thread_time		found			best			rpd				mode						 stages		   	stage0_T		stage0_OVR		st_1to9_T		st_1to9_OVR		avgSt_1to9OVR		init			close		   app" >> "logs_parsed.txt"
-padtowidth=4	#expand ids with leading zeroes up to 4 digits
-stage_limit=0
-num_of_stages=1
-for i in $(seq $from_id $to_id); do 
-	paddedInt="$(printf "%0*d\n" $padtowidth $i)"
-	app_id="${container}_${paddedInt}"
-	filename="${app_id}.txt"
+#copy this script to the logs folder and run it. it will parse all logs having "app" as the first part of the filename.
+for filename in `ls app*`; do 
+	num_of_stages=1
+	app_id=${filename%.*}
 	echo "parsing $filename"
 	dataLine=$(grep 'util.CustomLogger: inst_ta' $filename) #determine mode from this line
 	#total time provided to the algorithm
 	thread_time=`awk '{print $10}' <<< $dataLine`
 	#time for first stage
-	stage0_T=`awk '{print $12}' <<< $(grep "Stage 0 (reduce at Framework.scala:91) finished" $filename)`
+	stage0_T=`awk '{print $12}' <<< $(grep "Stage 0 (reduce at Framework.scala:90) finished" $filename)`
 	stage0_OVR=`echo $stage0_T $thread_time | awk '{print $1 - $2}'`
 	#calculate average stage time for stages after stage 0
 	st_1to9_T=0.0
@@ -29,7 +20,7 @@ for i in $(seq $from_id $to_id); do
 		echo "cooperative log"
 		num_of_stages=10
 		for st in $(seq 1 9); do
-			stage_T=`awk '{print $12}' <<< $(grep "Stage ${st} (reduce at Framework.scala:91) finished" $filename)`
+			stage_T=`awk '{print $12}' <<< $(grep "Stage ${st} (reduce at Framework.scala:90) finished" $filename)`
 			st_1to9_T=`echo $st_1to9_T $stage_T | awk '{print $1 + $2}'`
 		done
 		perSt_TT=`echo $thread_time $num_of_stages | awk '{print $1 / $2}'`
@@ -42,12 +33,12 @@ for i in $(seq $from_id $to_id); do
 	fi
 	
 	#measure spark's initalization overhead
-	line1=$(grep 'yarn.ApplicationMaster: Registered signal handlers' $filename)
-	line2=$(grep 'postStartHook done' $filename)
+	line1=$(grep 'spark.SparkContext: Running Spark version' $filename)
+	line2=$(grep 'spark.SparkContext: Starting job: reduce at Framework.scala:90' $filename)
 	#line1
-	#15/10/29 13:10:13 INFO yarn.ApplicationMaster: Registered signal handlers for [TERM, HUP, INT]
+	#16/01/21 11:10:43 INFO spark.SparkContext: Running Spark version 1.5.2
 	#line2
-	#15/10/29 13:10:40 INFO cluster.YarnClusterScheduler: YarnClusterScheduler.postStartHook done
+	#16/01/21 11:10:47 INFO spark.SparkContext: Starting job: reduce at Framework.scala:90
 	startDate=`awk '{print $1}' <<< $line1`
 	startTime=`awk '{print $2}' <<< $line1`
 	endDate=`awk '{print $1}' <<< $line2`
@@ -62,8 +53,8 @@ for i in $(seq $from_id $to_id); do
 	echo "initOverhead ${initOverhead} s"
 	
 	#measure closing time of spark
-	line4=$(grep 'Final app status' $filename)
-	line5=$(grep 'Successfully stopped SparkContext' $filename)
+	line4=$(grep 'Invoking stop() from shutdown hook' $filename)
+	line5=$(grep 'Shutdown hook called' $filename)
 	stDate=`awk '{print $1}' <<< $line4`
 	stTime=`awk '{print $2}' <<< $line4`
 	enDate=`awk '{print $1}' <<< $line5`
@@ -90,6 +81,8 @@ for i in $(seq $from_id $to_id); do
 	echo "${dataLine:42} ${padded1}${padded2}${padded3}${padded4}${padded5}${padded6}${padded7}${padded8}${padded9}" >> "logs_parsed.txt"
 	echo "finished..."
 done
+#replace all tabs with spaces
+sed -i 's/\t/ /g' logs_parsed.txt
 
 #run the script using "$(nohup bash logparser.sh  &)"
 #see running processes using "ps -fu ubuntu"
