@@ -6,7 +6,7 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import pfsp.problem.PfsProblem
 import pfsp.neighbourhood.NeighbourhoodOperator
 import pfsp.solution.PfsSolution
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.solution.PfsEvaluatedSolution
 import it.polimi.hyperh.spark.StoppingCondition
 import it.polimi.hyperh.spark.TimeExpired
@@ -228,7 +228,7 @@ class TSABAlgorithm(
   def findRepresentatives(p: PfsProblem, evOldSolution: PfsEvaluatedSolution, moves: List[(Int, Int)], uArr: Array[Int], mArr: Array[Int], epsilon: Double): List[(Int, Int)] = {
     var representatives: List[(Int, Int)] = List()
     def bestJRepresentative(j: Int, jMoves: List[(Int, Int)]): (Int, Int) = {
-      var bestJRepr = BadPfsEvaluatedSolution(p)
+      var bestJRepr = NaivePfsEvaluatedSolution(p)
       var bestJMove = (j - 1, j - 1)
       for (i <- 0 until jMoves.size) {
         val neighbour = neighbourhoodSearch.apply(evOldSolution.solution.toList, jMoves(i)._1, jMoves(i)._2)
@@ -337,7 +337,7 @@ class TSABAlgorithm(
   override def evaluate(problem:Problem, stopCond: StoppingCondition):EvaluatedSolution = {
     val p = problem.asInstanceOf[PfsProblem]
      val epsilon = getEpsilon(p.numOfJobs, p.numOfMachines)
-    var evOldSolution = BadPfsEvaluatedSolution(p)
+    var evOldSolution = NaivePfsEvaluatedSolution(p)
     var evBestSolution = evOldSolution
     var tabooOld: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))
     var tabooNew: List[((Int, Int), (Int, Int))] = List.fill(maxt)(((0, 0), (0, 0)))

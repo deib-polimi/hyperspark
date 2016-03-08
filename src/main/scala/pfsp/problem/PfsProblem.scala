@@ -59,10 +59,12 @@ class PfsProblem(
   def evaluatePartialSolution(jobsPermutation: Permutation): PfsEvaluatedSolution = {
     val numOfPartJobs = jobsPermutation.length
     val numOfMachines = jobTimesMatrix.size
+	//table represents completion time matrix
     val table = Array.ofDim[Int](numOfMachines, jobsPermutation.length)
-    //first job is the same
+	//first column is the same as in initEndTimesMatrix
     for (mInd <- 0 until numOfMachines)
       table(mInd)(0) = initEndTimesMatrix(mInd)(jobsPermutation(0) - 1)
+	//calculate the rest of completion time matrix
     for (jInd <- 1 until numOfPartJobs; mInd <- 0 until numOfMachines) {
       if (mInd > 0)
         table(mInd)(jInd) = Math.max(table(mInd - 1)(jInd), table(mInd)(jInd - 1)) + jobTimesMatrix(mInd)(jobsPermutation(jInd) - 1)

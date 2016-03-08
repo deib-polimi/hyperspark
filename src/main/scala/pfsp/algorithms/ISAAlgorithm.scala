@@ -6,7 +6,7 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import pfsp.neighbourhood.NeighbourhoodOperator
 import pfsp.problem.PfsProblem
 import pfsp.solution.PfsSolution
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.solution.PfsEvaluatedSolution
 import it.polimi.hyperh.spark.StoppingCondition
 import it.polimi.hyperh.spark.TimeExpired
@@ -60,7 +60,7 @@ class ISAAlgorithm(p: PfsProblem) extends SAAlgorithm(p) {
     def acceptanceProbability(delta: Int, temperature: Double): Double = {
       scala.math.pow(2.71828, (-delta / temperature))
     } 
-    val dummySol = BadPfsEvaluatedSolution(p)
+    val dummySol = NaivePfsEvaluatedSolution(p)
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
     
     def loop(presSol: PfsEvaluatedSolution, bestGlob: PfsEvaluatedSolution, temp: Double, tIt: Int, iNCTemp: Int): PfsEvaluatedSolution = {

@@ -35,6 +35,6 @@ object PfsEvaluatedSolution {
     PfsEvaluatedSolutionParser(Source.fromInputStream(stream).getLines().mkString).getOrElse(throw new RuntimeException("ParserError"))
   }
 }
-object BadPfsEvaluatedSolution {
+object NaivePfsEvaluatedSolution {
   def apply(problem: PfsProblem) = new PfsEvaluatedSolution(999999999, problem.jobs)
 }

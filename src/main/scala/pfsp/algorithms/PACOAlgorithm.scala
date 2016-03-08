@@ -11,7 +11,7 @@ import it.polimi.hyperh.spark.TimeExpired
 import it.polimi.hyperh.spark.StoppingCondition
 import it.polimi.hyperh.spark.StoppingCondition
 import it.polimi.hyperh.spark.TimeExpired
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import it.polimi.hyperh.spark.StoppingCondition
 
 /**
@@ -158,7 +158,7 @@ extends MMMASAlgorithm(p, t0, cand, seedOption) {
   }
   override def evaluate(problem: Problem, stopCond: StoppingCondition): EvaluatedSolution = {
     val p = problem.asInstanceOf[PfsProblem]
-    val bestSol = BadPfsEvaluatedSolution(p)
+    val bestSol = NaivePfsEvaluatedSolution(p)
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
     def loop(bestSol: PfsEvaluatedSolution, iter: Int): PfsEvaluatedSolution = {
       if(stop.isNotSatisfied()) {

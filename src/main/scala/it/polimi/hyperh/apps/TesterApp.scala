@@ -5,7 +5,7 @@ import it.polimi.hyperh.spark.FrameworkConf
 import it.polimi.hyperh.spark.TimeExpired
 import pfsp.algorithms.IGAlgorithm
 import pfsp.problem.PfsProblem
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.solution.PfsEvaluatedSolution
 import util.Performance
 import util.FileManager
@@ -79,7 +79,7 @@ class TesterApp {
     val mode = getMode()
     var resString = ""
     val problem = conf.getProblem().asInstanceOf[PfsProblem]
-    var bestSolution = BadPfsEvaluatedSolution(problem)
+    var bestSolution = NaivePfsEvaluatedSolution(problem)
     val n = problem.numOfJobs
     val m = problem.numOfMachines
     val algName = conf.getAlgorithms().apply(0).name //take first alg name

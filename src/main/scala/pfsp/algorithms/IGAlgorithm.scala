@@ -8,7 +8,7 @@ import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.algorithms.Algorithm
 import pfsp.util.PermutationUtility
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.problem.PfsProblem
 import pfsp.solution.PfsSolution
 import pfsp.solution.PfsEvaluatedSolution
@@ -26,11 +26,11 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[PfsSolution]) exten
    * A secondary constructor.
    */
   def this() {
-    //d: 2, T: 0.2
-    this(2, 0.2, None)
+    //d: 4, T: 0.4
+    this(4, 0.4, None)
   }
   def this(seedOption: Option[PfsSolution]) {
-    this(2, 0.2, seedOption)
+    this(4, 0.4, seedOption)
   }
   seed = seedOption 
   
@@ -53,16 +53,18 @@ class IGAlgorithm(val d:Int,val T:Double, seedOption: Option[PfsSolution]) exten
   override def evaluate(problem:Problem, stopCond: StoppingCondition):EvaluatedSolution = {
     val p = problem.asInstanceOf[PfsProblem]
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
-    val dummySol = BadPfsEvaluatedSolution(p)
+    val dummySol = NaivePfsEvaluatedSolution(p)
     def loop(currentSol: PfsEvaluatedSolution, bestSol: PfsEvaluatedSolution, iter: Int): PfsEvaluatedSolution = {
       if(stop.isNotSatisfied()) {
         var currentSolution = currentSol
         var bestSolution = bestSol
+		//initialisation phase
         if(iter == 1){
           currentSolution = initialSolution(p)
           currentSolution = localSearch(currentSolution.permutation,p)//improve it by local search
           bestSolution = currentSolution
         }
+		//in each phase do
         val pair = destruction(currentSolution.permutation, d)
         val bestPermutation = construction(pair._1, pair._2,p)
         bestSolution = p.evaluate(PfsSolution(bestPermutation)).asInstanceOf[PfsEvaluatedSolution]

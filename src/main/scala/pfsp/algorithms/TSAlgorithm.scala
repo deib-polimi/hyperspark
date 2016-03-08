@@ -9,7 +9,7 @@ import it.polimi.hyperh.spark.TimeExpired
 import pfsp.problem.PfsProblem
 import pfsp.solution.PfsSolution
 import pfsp.solution.PfsEvaluatedSolution
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.neighbourhood.NeighbourhoodOperator
 /**
  * @author Nemanja
@@ -60,7 +60,7 @@ class TSAlgorithm(
     evaluateSmallProblem(p, stopCond)
   }
   def evaluateSmallProblem(p: PfsProblem, stopCond: StoppingCondition): PfsEvaluatedSolution = {
-    var evBestSolution = BadPfsEvaluatedSolution(p)
+    var evBestSolution = NaivePfsEvaluatedSolution(p)
     var allMoves: List[(Int,Int)] = List()//dummy initalization
     
     def loop(bestSolution: PfsEvaluatedSolution, taboo: List[Int], iter: Int): PfsEvaluatedSolution = {
@@ -89,7 +89,7 @@ class TSAlgorithm(
     evaluateBigProblem(p, stopCond)
   }
   def evaluateBigProblem(p: PfsProblem, stopCond: StoppingCondition): PfsEvaluatedSolution = {
-    var evBestSolution = BadPfsEvaluatedSolution(p)
+    var evBestSolution = NaivePfsEvaluatedSolution(p)
     
     def loop(bestSolution: PfsEvaluatedSolution, taboo: List[Int], iter: Int): PfsEvaluatedSolution = {
       if(stopCond.isNotSatisfied()) {

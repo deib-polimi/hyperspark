@@ -6,7 +6,7 @@ import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.algorithms.Algorithm
 import pfsp.problem.PfsProblem
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.solution.PfsSolution
 import pfsp.solution.PfsEvaluatedSolution
 import pfsp.neighbourhood.NeighbourhoodOperator
@@ -59,8 +59,8 @@ class GAAlgorithm(
     val p = problem.asInstanceOf[PfsProblem]
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
     //INITIALIZE POPULATION
-    var child1 = BadPfsEvaluatedSolution(p)
-    var child2 = BadPfsEvaluatedSolution(p)
+    var child1 = NaivePfsEvaluatedSolution(p)
+    var child2 = NaivePfsEvaluatedSolution(p)
     
     def loop(pop: Array[PfsEvaluatedSolution], stats: (Double, Int, Int), mRate: Double, iter: Int): EvaluatedSolution = {
       if(stop.isNotSatisfied()) {

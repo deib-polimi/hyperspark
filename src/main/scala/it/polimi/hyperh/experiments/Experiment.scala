@@ -5,7 +5,7 @@ import it.polimi.hyperh.spark.Framework
 import it.polimi.hyperh.spark.FrameworkConf
 import pfsp.problem.PfsProblem
 import pfsp.solution.PfsEvaluatedSolution
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.algorithms.HGAAlgorithm
 import util.Performance
 import util.CustomLogger
@@ -49,7 +49,7 @@ abstract class Experiment(instance: Int, parallelism: Int) {
     val mode = getMode()
     var resString = ""
     val problem = conf.getProblem().asInstanceOf[PfsProblem]
-    var bestSolution = BadPfsEvaluatedSolution(problem)
+    var bestSolution = NaivePfsEvaluatedSolution(problem)
     val n = problem.numOfJobs
     val m = problem.numOfMachines
     val algName = conf.getAlgorithms().apply(0).name //take first alg name

@@ -1,5 +1,4 @@
 #!/bin/bash -e
-#copy this script to the logs folder and run it. it will parse all logs having "app" as the first part of the filename.
 for filename in `ls app*`; do 
 	num_of_stages=1
 	app_id=${filename%.*}
@@ -14,6 +13,7 @@ for filename in `ls app*`; do
 	st_1to9_T=0.0
 	st_1to9_OVR=0.0
 	avgSt_1to9OVR=0.0 #for parallel log there aren't stages after stage0
+	strategy="-" #seeding strategy. to be determined
 	#first determine kind of the log
 	if [[ $dataLine =~ .*cooperative.* ]]
 	then
@@ -28,6 +28,7 @@ for filename in `ls app*`; do
 		st_1to9_TT=`echo $perSt_TT 9 | awk '{print $1 * $2}'`
 		st_1to9_OVR=`echo $st_1to9_T $st_1to9_TT | awk '{print $1 - $2}'`
 		avgSt_1to9OVR=`echo $st_1to9_OVR 9 | awk '{print $1 / $2}'`
+		strategy=`awk '{print $2}' <<< $(grep "_strategy_used_" $filename)`
 	else
 		echo "parallel log"
 	fi
@@ -78,7 +79,8 @@ for filename in `ls app*`; do
 	padded7=`printf "\t%15s" $initOverhead`
 	padded8=`printf "\t%15s" $closingOverhead`
 	padded9=`printf "\t%15s" $paddedInt`
-	echo "${dataLine:42} ${padded1}${padded2}${padded3}${padded4}${padded5}${padded6}${padded7}${padded8}${padded9}" >> "logs_parsed.txt"
+	padded10=`printf "\t%25s" $strategy`
+	echo "${dataLine:42} ${padded1}${padded2}${padded3}${padded4}${padded5}${padded6}${padded7}${padded8}${padded9}${padded10}" >> "logs_parsed.txt"
 	echo "finished..."
 done
 #replace all tabs with spaces

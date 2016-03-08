@@ -10,7 +10,7 @@ import pfsp.neighbourhood.NeighbourhoodOperator
 import pfsp.problem.PfsProblem
 import pfsp.solution.PfsEvaluatedSolution
 import pfsp.solution.PfsSolution
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 
 /**
  * @author Nemanja
@@ -63,7 +63,7 @@ class SAAlgorithm(p: PfsProblem) extends Algorithm {
       scala.math.pow(2.71828,(-delta/temperature))
     }
      
-    var evOldSolution = BadPfsEvaluatedSolution(p)
+    var evOldSolution = NaivePfsEvaluatedSolution(p)
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
     def loop(old: PfsEvaluatedSolution, temp: Double, iter: Int): PfsEvaluatedSolution = {
       if((temp > temperatureLB) && stop.isNotSatisfied()) {

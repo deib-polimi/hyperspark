@@ -8,7 +8,7 @@ import it.polimi.hyperh.spark.StoppingCondition
 import it.polimi.hyperh.spark.TimeExpired
 import pfsp.problem.PfsProblem
 import pfsp.solution.PfsSolution
-import pfsp.solution.BadPfsEvaluatedSolution
+import pfsp.solution.NaivePfsEvaluatedSolution
 import pfsp.solution.PfsEvaluatedSolution
 
 /**
@@ -49,7 +49,7 @@ abstract class ACOAlgorithm(p: PfsProblem, t0: Double, seedOption: Option[PfsSol
   override def evaluate(problem: Problem, stopCond: StoppingCondition): EvaluatedSolution = {
     val p = problem.asInstanceOf[PfsProblem]
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
-    val bestSol = BadPfsEvaluatedSolution(p)
+    val bestSol = NaivePfsEvaluatedSolution(p)
     
     def loop(bestSol: PfsEvaluatedSolution, iter: Int): PfsEvaluatedSolution = {
       if(stop.isNotSatisfied()) {

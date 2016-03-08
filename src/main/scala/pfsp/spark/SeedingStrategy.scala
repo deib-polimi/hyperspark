@@ -4,13 +4,14 @@ import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.spark.SeedingStrategy
 import pfsp.solution.PfsSolution
 import scala.util.Random
+import pfsp.solution.PfsEvaluatedSolution
 /**
  * @author Nemanja
  */
 class SlidingWindow(windowSize: Int) extends SeedingStrategy {
   override def divide(seedOption: Option[Solution], N: Int): Array[Option[Solution]] = {
     val seed = seedOption.getOrElse(throw new RuntimeException("SeedingStrategySlidingWindow: None value for Option[Solution]"))
-    val perm = seed.asInstanceOf[PfsSolution].permutation
+    val perm = seed.asInstanceOf[PfsEvaluatedSolution].permutation
     if(N+windowSize > perm.size)
       throw new RuntimeException("SeedingStrategySlidingWindow: can't slide that much. Reason: N+windowSize  > solution.permutation.size. Try to decrease the windowSize parameter")
     var array: Array[Option[Solution]] = Array()
@@ -36,7 +37,7 @@ class SeedPlusSlidingWindow(windowSize: Int) extends SeedingStrategy {
 class FixedWindow(windowSize: Int) extends SeedingStrategy {
   override def divide(seedOption: Option[Solution], N: Int): Array[Option[Solution]] = {
     val seed = seedOption.getOrElse(throw new RuntimeException("SeedingStrategySlidingWindow: None value for Option[Solution]"))
-    val perm = seed.asInstanceOf[PfsSolution].permutation
+    val perm = seed.asInstanceOf[PfsEvaluatedSolution].permutation
     var array: Array[Option[Solution]] = Array()
     for (i <- 0 until N) {
       val windowIndex = Random.nextInt(perm.length-windowSize) //[0:perm.length-1-windowSize]
