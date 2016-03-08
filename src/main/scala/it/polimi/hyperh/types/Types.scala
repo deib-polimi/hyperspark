@@ -6,7 +6,7 @@ object Types {
   type Constraints = Array[Constraint]
   type Value = Int
 
-  def Permutation(x: Int, xs: Int*): Array[Int] = {
+  def Permutation(x: Int, xs: Int*): Permutation = {
     val array = new Array[Int](xs.length + 1)
     array(0) = x
     var i = 1
