@@ -90,10 +90,9 @@ class GAAlgorithm(
         //CROSSOVER
         val randomNo = random.nextDouble()
         if (randomNo < crossRate) {
-          //select parent1 using fitness_rank distribution
-          val parent1 = population(medianIndex+random.nextInt(popSize-medianIndex))
-          //select parent2 using uniform distribution
-          val parent2 = population(random.nextInt(popSize))
+          //select both parents
+          val parent1 = selectDetTour(population, 2)
+          val parent2 = selectDetTour(population, 2)
           val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
           child1 = p.evaluate(PfsSolution(children._1)).asInstanceOf[PfsEvaluatedSolution]
           child2 = p.evaluate(PfsSolution(children._2)).asInstanceOf[PfsEvaluatedSolution]
@@ -184,6 +183,20 @@ class GAAlgorithm(
     val child2 = applyMapping(child2Part1, mappings1, List()) ::: child1Part2 ::: applyMapping(child2Part3, mappings1, List())
     (child1.toList, child2.toList)
   }
+
+  // Runs a deterministic tournament of a given size to select a individual
+  def selectDetTour(pop: Array[PfsEvaluatedSolution], size: Int) = {
+    var best = getRandomIndividual(pop)
+    for (i <- 1 to (size-1)) {
+      val competitor = getRandomIndividual(pop)
+      if (competitor.value < best.value) {
+        best = competitor
+      }
+    }
+    best
+  }
+
+  def getRandomIndividual(pop: Array[PfsEvaluatedSolution]): PfsEvaluatedSolution = pop(random.nextInt(pop.length))
 
   def crossoverC1(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
     val crossoverPoint = 1 + random.nextInt(parent1.size - 2) //[1,n-2]
