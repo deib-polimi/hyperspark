@@ -43,10 +43,14 @@ class GAAlgorithm(
     val nehAlgorithm = new NEHAlgorithm()
     nehAlgorithm.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
   }
+  def initRandomSolution(p: PfsProblem): PfsEvaluatedSolution = {
+    val randomAlgo = new RandomAlgorithm()
+    randomAlgo.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
+  }
   def initialSolution(p: PfsProblem): PfsEvaluatedSolution = {
     seed match {
       case Some(seedValue) => seedValue.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
-      case None => initNEHSolution(p)
+      case None => initRandomSolution(p)
     }
   }
   override def evaluate(problem: Problem): EvaluatedSolution = {
@@ -141,7 +145,7 @@ class GAAlgorithm(
     population
   }
   def initSeedPlusRandom(p: PfsProblem, size: Int): Array[PfsEvaluatedSolution] = {
-    val seedSol = initialSolution(p)//NEH or provided seed in constructor, or in special evaluate function signature
+    val seedSol = initialSolution(p)//Random or provided seed in constructor, or in special evaluate function signature
     val population = Array(seedSol) ++ initRandom(p, size-1)
     population
   }
