@@ -93,7 +93,7 @@ class GAAlgorithm(
           //select both parents
           val parent1 = selectDetTour(population, 2)
           val parent2 = selectDetTour(population, 2)
-          val children = crossoverC1(parent1.solution.toList, parent2.solution.toList)
+          val children = crossoverQuad(parent1.solution.toList, parent2.solution.toList)
           child1 = p.evaluate(PfsSolution(children._1)).asInstanceOf[PfsEvaluatedSolution]
           child2 = p.evaluate(PfsSolution(children._2)).asInstanceOf[PfsEvaluatedSolution]
         }
@@ -197,6 +197,39 @@ class GAAlgorithm(
   }
 
   def getRandomIndividual(pop: Array[PfsEvaluatedSolution]): PfsEvaluatedSolution = pop(random.nextInt(pop.length))
+
+  def crossoverQuad(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
+    var point1 = 0
+    var point2 = 0
+    val popSize = parent1.size
+    // Get two cut points at least three positions apart
+    while (math.abs(point1 - point2) <= 2) {
+      point1 = random.nextInt(popSize)
+      point2 = random.nextInt(popSize)
+    }
+    // Swap values to order
+    if (point1 > point2) {
+      val temp = point1
+      point1 = point2
+      point2 = temp
+    }
+    val child1 = generateCrossoverQuad(parent1, parent2, point1, point2)
+    val child2 = generateCrossoverQuad(parent2, parent1, point1, point2)
+    (child1, child2)
+  }
+
+  def generateCrossoverQuad(parent1: List[Int], parent2: List[Int], point1: Int, point2: Int) : List[Int] = {
+    val p1Begin = parent1.slice(0, point1+1)
+    val p1Ending = parent1.slice(point2, parent1.size)
+
+    val takenValues = (p1Begin ::: p1Ending).toSet
+
+    val middleSize = point2-point1-1
+    val p2Middle = parent2.filterNot(takenValues).take(middleSize)
+
+    val child = p1Begin ::: p2Middle ::: p1Ending
+    child
+  }
 
   def crossoverC1(parent1: List[Int], parent2: List[Int]): (List[Int], List[Int]) = {
     val crossoverPoint = 1 + random.nextInt(parent1.size - 2) //[1,n-2]
