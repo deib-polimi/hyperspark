@@ -62,10 +62,7 @@ class GAAlgorithm(
   override def evaluate(problem:Problem, stopCond: StoppingCondition): EvaluatedSolution = {
     val p = problem.asInstanceOf[PfsProblem]
     val stop = stopCond.asInstanceOf[TimeExpired].initialiseLimit()
-    //INITIALIZE POPULATION
-    var child1 = NaivePfsEvaluatedSolution(p)
-    var child2 = NaivePfsEvaluatedSolution(p)
-    
+
     def loop(pop: Array[PfsEvaluatedSolution], stats: (Double, Int, Int), mRate: Double, iter: Int): EvaluatedSolution = {
       if(stop.isNotSatisfied()) {
           var population = pop
@@ -87,23 +84,13 @@ class GAAlgorithm(
           medianIndex = popSize / 2 + 1 //population.map(x => x.value).indexOf(median)
           mutationRate = mutRate
         }
-        //CROSSOVER
-        val randomNo = random.nextDouble()
-        if (randomNo < crossRate) {
-          //select both parents
-          val parent1 = selectDetTour(population, 2)
-          val parent2 = selectDetTour(population, 2)
-          val children = crossoverQuad(parent1.solution.toList, parent2.solution.toList)
-          child1 = p.evaluate(PfsSolution(children._1)).asInstanceOf[PfsEvaluatedSolution]
-          child2 = p.evaluate(PfsSolution(children._2)).asInstanceOf[PfsEvaluatedSolution]
-        }
+        // CROSSOVER
+        val children = crossover(population)
         //MUTATION
-        if (randomNo < mutRate) {
-          val mutation1 = mutationSWAP(child1.solution.toList)
-          val mutation2 = mutationSWAP(child2.solution.toList)
-          child1 = p.evaluate(PfsSolution(mutation1)).asInstanceOf[PfsEvaluatedSolution]
-          child2 = p.evaluate(PfsSolution(mutation2)).asInstanceOf[PfsEvaluatedSolution]
-        }
+        val mutation1 = mutation(children._1)
+        val mutation2 = mutation(children._2)
+        val child1 = p.evaluate(PfsSolution(mutation1)).asInstanceOf[PfsEvaluatedSolution]
+        val child2 = p.evaluate(PfsSolution(mutation2)).asInstanceOf[PfsEvaluatedSolution]
         //UPDATE POPULATION
         //delete sequence from unfit members, whose makespan value is below the median
         val index1 = random.nextInt(medianIndex)
@@ -129,6 +116,34 @@ class GAAlgorithm(
         pop.minBy(_.value)
       }
     } //end def loop
+
+    def crossover(pop: Array[PfsEvaluatedSolution]): (List[Int], List[Int]) = {
+      //select both parents
+      val parent1 = selectDetTour(pop, 2)
+      val parent2 = selectDetTour(pop, 2)
+      val parent1List = parent1.solution.toList
+      val parent2List = parent2.solution.toList
+      if (random.nextDouble() < crossRate) {
+        crossoverQuad(parent1List, parent2List)
+      } else {
+        (parent1List, parent2List)
+      }
+    } // end def crossover
+
+    def mutation(individual: List[Int]): List[Int] = {
+      if (random.nextDouble() < mutRate) {
+        // Run any of the two mutations
+        if (random.nextDouble() < 0.5) {
+          mutationINV(individual)
+        } else {
+          mutationSWAP(individual)
+        }
+      } else {
+        individual
+      }
+    } // end def mutation
+
+    //INITIALIZE POPULATION
     loop(Array(), (1.0, 1, 1), mutRate, 1)
   }
 
