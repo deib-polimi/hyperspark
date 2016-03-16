@@ -92,12 +92,7 @@ class GAAlgorithm(
         val child1 = p.evaluate(PfsSolution(mutation1)).asInstanceOf[PfsEvaluatedSolution]
         val child2 = p.evaluate(PfsSolution(mutation2)).asInstanceOf[PfsEvaluatedSolution]
         //UPDATE POPULATION
-        //delete sequence from unfit members, whose makespan value is below the median
-        val index1 = random.nextInt(medianIndex)
-        val index2 = random.nextInt(medianIndex)
-        //insert new members into population (at the same time deleting old members)
-        population(index1) = child1
-        population(index2) = child2
+        population = replacement(population, Array(child1, child2))
         //UPDATE STATISTICS
         population = population.sortBy[Int](_.value)(Ordering.Int.reverse)
         triple = calculateStatistics(population)
@@ -106,7 +101,7 @@ class GAAlgorithm(
         minimum = triple._3
         //UPDATE MUTATION RATE
         mutationRate = mutDecreaseFactor * mutationRate
-        //threshold for mutation rate reseting
+        //threshold for mutation rate resetting
         if (minimum / mean > mutResetThreshold) mutationRate = mutRate
         //REPEAT
         loop(population, triple, mutationRate, iter + 1)
@@ -142,6 +137,28 @@ class GAAlgorithm(
         individual
       }
     } // end def mutation
+
+    // How the children are included in the population
+    def replacement(pop: Array[PfsEvaluatedSolution], children: Array[PfsEvaluatedSolution]): Array[PfsEvaluatedSolution] = {
+      // Remember previous best
+      val prevBest = pop.minBy(_.value)
+      var newPop = pop ++ children
+      // Remove as many as needed
+      while (newPop.size > pop.size) {
+        // Select worst individual at random
+        val individualToRemove = selectDetTour(newPop, 2, false)
+        newPop = newPop.filterNot(_ == individualToRemove)
+      }
+      // Weak elitism
+      // Introduce previous best if we deteriorate
+      val newBest = newPop.minBy(_.value)
+      if (newBest.value > prevBest.value) {
+        // Tuple solution index, find max value, get its index
+        val worstIndex = newPop.zipWithIndex.maxBy(_._1.value)._2
+        newPop(worstIndex) = prevBest
+      }
+      newPop
+    }
 
     //INITIALIZE POPULATION
     loop(Array(), (1.0, 1, 1), mutRate, 1)
@@ -200,15 +217,18 @@ class GAAlgorithm(
   }
 
   // Runs a deterministic tournament of a given size to select a individual
-  def selectDetTour(pop: Array[PfsEvaluatedSolution], size: Int) = {
-    var best = getRandomIndividual(pop)
+  def selectDetTour(pop: Array[PfsEvaluatedSolution], size: Int, bestWins: Boolean = true) = {
+    var selected = getRandomIndividual(pop)
     for (i <- 1 to (size-1)) {
       val competitor = getRandomIndividual(pop)
-      if (competitor.value < best.value) {
-        best = competitor
+      val shouldBeSelected =
+        (bestWins && competitor.value < selected.value) || // Competitor is better
+        (!bestWins && competitor.value > selected.value)   // Competitor is worse
+      if (shouldBeSelected) {
+        selected = competitor
       }
     }
-    best
+    selected
   }
 
   def getRandomIndividual(pop: Array[PfsEvaluatedSolution]): PfsEvaluatedSolution = pop(random.nextInt(pop.length))
