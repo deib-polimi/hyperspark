@@ -13,18 +13,20 @@ import pfsp.algorithms.IGAlgorithm
  */
 object LocalApp {
   def main(args: Array[String]) {
-    val problem = PfsProblem.fromResources("inst_ta002.txt")
-    val algorithm = new IGAlgorithm()
+    val problem = PfsProblem.fromResources("inst_ta054.txt")
+    val makeAlgo = () => new GAAlgorithm()
     val numOfAlgorithms = 4
     val totalTime = problem.getExecutionTime()
     val numOfIterations = 1
     val iterTimeLimit = totalTime / numOfIterations
     val stopCond = new TimeExpired(iterTimeLimit)
-    
+    val randomSeed = 118337975
+
     val conf = new FrameworkConf()
+    .setRandomSeed(randomSeed)
     .setDeploymentLocalNumExecutors(numOfAlgorithms)
     .setProblem(problem)
-    .setNAlgorithms(algorithm, numOfAlgorithms)
+    .setNAlgorithms(makeAlgo, numOfAlgorithms)
     .setNDefaultInitialSeeds(numOfAlgorithms)
     .setNumberOfIterations(numOfIterations)
     .setStoppingCondition(stopCond)

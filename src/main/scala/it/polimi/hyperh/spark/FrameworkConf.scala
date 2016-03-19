@@ -3,6 +3,8 @@ import it.polimi.hyperh.algorithms.Algorithm
 import it.polimi.hyperh.solution.Solution
 import it.polimi.hyperh.solution.EvaluatedSolution
 import it.polimi.hyperh.problem.Problem
+import util.Random
+
 /**
  * @author Nemanja
  */
@@ -15,13 +17,19 @@ class FrameworkConf() {
   private var handler: MapReduceHandler = new MapReduceHandler()
   private var seedingStrategy: SeedingStrategy = new SameSeeds()
   private var stoppingCondition: StoppingCondition = new TimeExpired(300)
-  
+  private var randomSeed: Long = 0
+
   def setProblem(p: Problem) = {
     problem = Some(p)
     this
   }
   def getProblem() = { problem.getOrElse(throw new RuntimeException("FrameworkConf: Problem is not set.")) }
   
+  def setRandomSeed(seed: Long) = {
+    randomSeed = seed
+    this
+  }
+
   def setAlgorithms(algorithms: Array[Algorithm]) = { 
     algs = algorithms
     setNumberOfResultingRDDPartitions(algs.size)
@@ -31,8 +39,16 @@ class FrameworkConf() {
   
   def setNAlgorithms(algorithm: Algorithm, N: Int) = {
     algs = Array.fill(N)(algorithm)
-    setNumberOfResultingRDDPartitions(algs.size)
-    this
+    setAlgorithms(algs)
+  }
+
+  def setNAlgorithms(makeAlgo: () => Algorithm, N: Int) = {
+    var random = new Random()
+    if (randomSeed > 0) {
+      random = new Random(randomSeed)
+    }
+    algs = (1 to N).map(i => makeAlgo().setRandomSeed( random.nextLong() )).toArray
+    setAlgorithms(algs)
   }
   def clearAlgorithms() = { 
     algs = Array()
