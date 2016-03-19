@@ -44,8 +44,7 @@ class GAAlgorithm(
     nehAlgorithm.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
   }
   def initRandomSolution(p: PfsProblem): PfsEvaluatedSolution = {
-    val randomAlgo = new RandomAlgorithm()
-    randomAlgo.evaluate(p).asInstanceOf[PfsEvaluatedSolution]
+    generateRandomSolution(p)
   }
   def initialSolution(p: PfsProblem): PfsEvaluatedSolution = {
     seed match {
@@ -164,14 +163,16 @@ class GAAlgorithm(
     loop(Array(), (1.0, 1, 1), mutRate, 1)
   }
 
+  def generateRandomSolution(p: PfsProblem): PfsEvaluatedSolution = {
+    // Generate a random solution by shuffling the list of jobs
+    val randomSolution = random.shuffle(p.jobs.toList);
+    p.evaluate(PfsSolution(randomSolution.toList)).asInstanceOf[PfsEvaluatedSolution]
+  }
+
   def initRandom(p: PfsProblem, size: Int): Array[PfsEvaluatedSolution] = {
-    def randomGenerate(jobs: List[Int]): PfsEvaluatedSolution = {
-      p.evaluate(PfsSolution(random.shuffle(jobs))).asInstanceOf[PfsEvaluatedSolution]
-    }
     val population = Array.ofDim[PfsEvaluatedSolution](size)
-    val jobsList = p.jobs.toList
     for (i <- 0 until size) {
-      population(i) = randomGenerate(jobsList)
+      population(i) = generateRandomSolution(p)
     }
     population
   }
