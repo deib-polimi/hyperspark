@@ -6,6 +6,7 @@ import it.polimi.hyperh.spark.FrameworkConf
 import it.polimi.hyperh.spark.TimeExpired
 import pfsp.problem.PfsProblem
 import pfsp.algorithms.IGAlgorithm
+import pfsp.algorithms.GAAlgorithm
 
 
 /**
