@@ -2,15 +2,13 @@ package it.polimi.hyperh.experiments
 
 import it.polimi.hyperh.problem.Problem
 import it.polimi.hyperh.solution.EvaluatedSolution
-import it.polimi.hyperh.spark.Framework
-import it.polimi.hyperh.spark.FrameworkConf
+import it.polimi.hyperh.spark.{SameSeeds, Framework, FrameworkConf, TimeExpired}
 import pfsp.problem.PfsProblem
-import pfsp.algorithms.HGAAlgorithm
+import pfsp.algorithms.GAAlgorithm
 import util.Performance
 import util.CustomLogger
 import pfsp.util.PermutationUtility
 import util.CurrentTime
-import it.polimi.hyperh.spark.TimeExpired
 
 /**
  * @author Nemanja
@@ -20,13 +18,14 @@ class Experiment1(instance: Int, parallelism: Int) extends Experiment(instance, 
    override def run() {
     val runs = 1
     val problem = PfsProblem.fromResources(filename("inst_ta", instance, ".txt"))
-    val algorithm = new HGAAlgorithm(problem)
+    val makeAlgo = () => new GAAlgorithm(20, 0.5, 0.7, 1, 1, None)
     val numOfAlgorithms = parallelism
     val totalTime = problem.getExecutionTime()
-    val numOfIterations = 1
+    val numOfIterations = 10
     val iterTimeLimit = totalTime / numOfIterations
     val stopCond = new TimeExpired(iterTimeLimit)
-    
+    val strategy = new SameSeeds()
+
     val logStartTime = CurrentTime()
     val logname = logStartTime.toString()
     logger.printInfo("Start time\t\t"+logStartTime+"\n")
@@ -35,10 +34,11 @@ class Experiment1(instance: Int, parallelism: Int) extends Experiment(instance, 
     logger.printInfo(format)
     val conf = new FrameworkConf()
       .setProblem(problem)
-      .setNAlgorithms(algorithm, numOfAlgorithms)
+      .setNAlgorithms(makeAlgo, numOfAlgorithms)
       .setNDefaultInitialSeeds(numOfAlgorithms)
-      .setNumberOfIterations(1)
+      .setNumberOfIterations(numOfIterations)
       .setStoppingCondition(stopCond)
+      .setSeedingStrategy(strategy)
       val resultStr = testInstance(instance, runs, conf, true)
     logger.printInfo(resultStr)
     val logEndTime = CurrentTime()

@@ -14,10 +14,11 @@ import pfsp.algorithms.GAAlgorithm
 object LocalApp {
   def main(args: Array[String]) {
     val problem = PfsProblem.fromResources("inst_ta054.txt")
-    val makeAlgo = () => new GAAlgorithm()
+    val makeAlgo = () => new GAAlgorithm(20, 0.5, 0.7, 1, 1, None)
+    //val makeAlgo = () => new IGAlgorithm()
     val numOfAlgorithms = 4
     val totalTime = problem.getExecutionTime()
-    val numOfIterations = 1
+    val numOfIterations = 10
     val iterTimeLimit = totalTime / numOfIterations
     val stopCond = new TimeExpired(iterTimeLimit)
     val randomSeed = 118337975
