@@ -50,10 +50,6 @@ The general idea is to use "Big Calculations" paradigm for running algorithms wr
 - **m-MMAS**, Rajendran and Ziegler 2002 (MMMASAlgorithm)
 - **PACO**, Rajendran and Ziegler 2002 (PACOAlgorithm)
 
-### Contact info ###
+### License info ###
 
-Nemanja Stolic
-
-M.Sc. student at Politecnico di Milano University, Milan, Italy
-
-nemanja.stolic@mail.polimi.it
+The tool is available for use and improvement under a dual-licensing schema envisioning an Apache 2 license as well as a GPL-V3 License. Please contact the repository owners for further clarifications.
